@@ -22,18 +22,30 @@
 package net.lldp.checksims.algorithm;
 
 import net.lldp.checksims.algorithm.linesimilarity.LineSimilarityChecker;
+import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.util.reflection.NoSuchImplementationException;
 import net.lldp.checksims.util.reflection.RegistryWithDefault;
 
 /**
  * Registry for all supported similarity detection algorithms.
  */
-public final class AlgorithmRegistry extends RegistryWithDefault<SimilarityDetector> {
+public final class AlgorithmRegistry extends RegistryWithDefault<SimilarityDetector<? extends Percentable>> {
     private static AlgorithmRegistry instance;
 
     private AlgorithmRegistry() throws NoSuchImplementationException {
-        super("net.lldp.checksims.algorithm", SimilarityDetector.class, LineSimilarityChecker.getInstance().getName());
+        super("net.lldp.checksims.algorithm", clazz(), LineSimilarityChecker.getInstance().getName());
     }
+    
+    
+
+    @SuppressWarnings("unchecked")
+    private static Class<SimilarityDetector<? extends Percentable>> clazz()
+    {
+        Class<?> clazz = SimilarityDetector.class;
+        return (Class<SimilarityDetector<? extends Percentable>>) clazz;
+    }
+
+
 
     /**
      * @return Singleton instance of AlgorithmRegistry
