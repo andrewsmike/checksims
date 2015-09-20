@@ -94,7 +94,7 @@ public class CommonCodeLineRemovalPreprocessor implements SubmissionPreprocessor
 
         // This exception should never happen, but if it does, just rethrow as InternalAlgorithmException
         try {
-            results = getResults(removeFrom, common, algorithm);
+            results = getResults(removeFrom, common, algorithm).inverse();
         } catch(TokenTypeMismatchException e) {
             throw new InternalAlgorithmError(e.getMessage());
         }
@@ -117,7 +117,7 @@ public class CommonCodeLineRemovalPreprocessor implements SubmissionPreprocessor
         String newBody = listWithCommonInvalid.toString();
 
         DecimalFormat d = new DecimalFormat("###.00");
-        logs.trace("Submission " + removeFrom.getName() + " contained " + d.format(percentMatched.multiply(new Real(100)))
+        logs.trace("Submission " + removeFrom.getName() + " contained " + d.format(percentMatched.multiply(new Real(100)).asDouble())
                 + "% common code");
         logs.trace("Removed " + listWithCommonInvalid + " percent of submission");
 

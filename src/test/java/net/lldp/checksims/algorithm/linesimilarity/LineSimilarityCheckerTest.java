@@ -28,7 +28,6 @@ import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenTypeMismatchException;
-import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
 
 import org.apache.commons.lang3.tuple.Pair;

@@ -51,7 +51,10 @@ public class SubmissionUtils {
         assertNotNull(toCheck);
         assertNotNull(checkAgainst);
         assertEquals(checkAgainst.size(), toCheck.size());
-        checkAgainst.stream().forEach((submission) -> assertTrue(toCheck.contains(submission)));
+        for(Submission s : checkAgainst)
+        {
+            assertTrue(toCheck.contains(s));
+        }
     }
 
     /**
