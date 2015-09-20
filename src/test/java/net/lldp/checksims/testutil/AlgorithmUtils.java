@@ -22,8 +22,10 @@
 package net.lldp.checksims.testutil;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
+import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 
@@ -48,33 +50,27 @@ public class AlgorithmUtils {
      * @param expectedA Expected matching tokens for a
      * @param expectedB Expected matching tokens for b
      */
-    public static void checkResults(AlgorithmResults results, Submission a, Submission b, TokenList expectedA, TokenList expectedB) {
+    public static void checkResults(AlgorithmResults results, Submission a, Submission b, Percentable expectedA, Percentable expectedB) {
         assertNotNull(results);
         assertNotNull(a);
         assertNotNull(b);
         assertNotNull(expectedA);
         assertNotNull(expectedB);
 
-        int expectedIdenticalA = (int)expectedA.stream().filter((token) -> !token.isValid()).count();
-        int expectedIdenticalB = (int)expectedB.stream().filter((token) -> !token.isValid()).count();
+        //int expectedIdenticalA = (int)expectedA.stream().filter((token) -> !token.isValid()).count();
+        //int expectedIdenticalB = (int)expectedB.stream().filter((token) -> !token.isValid()).count();
 
         if(results.a.equals(a)) {
             Assert.assertEquals(results.b, b);
 
-            assertEquals(expectedIdenticalA, results.identicalTokensA);
-            assertEquals(expectedIdenticalB, results.identicalTokensB);
-
-            Assert.assertEquals(expectedA, results.finalListA);
-            Assert.assertEquals(expectedB, results.finalListB);
+            assertEquals(expectedA.getPercentageMatched(), results.percentableA.getPercentageMatched());
+            assertEquals(expectedB.getPercentageMatched(), results.percentableB.getPercentageMatched());
         } else {
             Assert.assertEquals(results.b, a);
             Assert.assertEquals(results.a, b);
 
-            assertEquals(expectedIdenticalB, results.identicalTokensA);
-            assertEquals(expectedIdenticalA, results.identicalTokensB);
-
-            Assert.assertEquals(expectedB, results.finalListA);
-            Assert.assertEquals(expectedA, results.finalListB);
+            assertEquals(expectedB.getPercentageMatched(), results.percentableA.getPercentageMatched());
+            assertEquals(expectedA.getPercentageMatched(), results.percentableB.getPercentageMatched());
         }
     }
 
@@ -90,46 +86,15 @@ public class AlgorithmUtils {
         assertNotNull(a);
         assertNotNull(b);
 
-        assertEquals(0, results.identicalTokensA);
-        assertEquals(0, results.identicalTokensB);
+        assertEquals(Real.ZERO, results.percentableA.getPercentageMatched());
+        assertEquals(Real.ZERO, results.percentableB.getPercentageMatched());
 
         if(results.a.equals(a)) {
             Assert.assertEquals(results.b, b);
-
-            Assert.assertEquals(a.getContentAsTokens(), results.finalListA);
-            Assert.assertEquals(b.getContentAsTokens(), results.finalListB);
         } else {
             Assert.assertEquals(results.b, a);
             Assert.assertEquals(results.a, b);
-
-            Assert.assertEquals(b.getContentAsTokens(), results.finalListA);
-            Assert.assertEquals(a.getContentAsTokens(), results.finalListB);
         }
-    }
-
-    /**
-     * Check algorithm results if two identical submissions are given
-     *
-     * We are expecting that they are 100% similar
-     *
-     * @param results Results to check
-     * @param a Submission used in results
-     */
-    public static void checkResultsIdenticalSubmissions(AlgorithmResults results, Submission a) {
-        assertNotNull(results);
-        assertNotNull(a);
-
-        Assert.assertEquals(a, results.a);
-        Assert.assertEquals(a, results.b);
-
-        assertEquals(a.getNumTokens(), results.identicalTokensA);
-        assertEquals(a.getNumTokens(), results.identicalTokensB);
-
-        TokenList expected = TokenList.cloneTokenList(a.getContentAsTokens());
-        expected.stream().forEach((token) -> token.setValid(false));
-
-        Assert.assertEquals(expected, results.finalListA);
-        Assert.assertEquals(expected, results.finalListB);
     }
 
     /**
@@ -152,5 +117,18 @@ public class AlgorithmUtils {
 
             assertEquals(1, numWithResult);
         }
+    }
+    
+    /**
+     * Check algorithm results if two identical submissions are given
+     *
+     * We are expecting that they are 100% similar
+     *
+     * @param results Results to check
+     * @param a Submission used in results
+     */
+    public static void checkResultsIdenticalSubmissions(AlgorithmResults results) {
+        assertNotNull(results);
+        assertEquals(true, results.identicalSubmissions());
     }
 }

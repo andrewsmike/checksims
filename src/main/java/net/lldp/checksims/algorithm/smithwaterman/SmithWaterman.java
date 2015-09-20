@@ -24,10 +24,15 @@ package net.lldp.checksims.algorithm.smithwaterman;
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.parse.SubmissionPercentableCalculator;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.TokenTypeMismatchException;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -35,7 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Implementation of the Smith-Waterman algorithm.
  */
-public final class SmithWaterman implements SimilarityDetector {
+public final class SmithWaterman implements SimilarityDetector<PercentableTokenListDecorator> {
     private static SmithWaterman instance;
 
     private SmithWaterman() {}
@@ -63,8 +68,8 @@ public final class SmithWaterman implements SimilarityDetector {
      * @return Default token type to be used for this similarity detector
      */
     @Override
-    public TokenType getDefaultTokenType() {
-        return TokenType.WHITESPACE;
+    public SubmissionPercentableCalculator<PercentableTokenListDecorator> getPercentableCalculator() {
+        return new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.WHITESPACE));
     }
 
     /**
@@ -79,34 +84,39 @@ public final class SmithWaterman implements SimilarityDetector {
      * @throws InternalAlgorithmError Thrown on internal error
      */
     @Override
-    public AlgorithmResults detectSimilarity(Submission a, Submission b)
+    public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab,
+            PercentableTokenListDecorator a, PercentableTokenListDecorator b)
             throws TokenTypeMismatchException, InternalAlgorithmError {
         checkNotNull(a);
         checkNotNull(b);
 
         // Test for token type mismatch
+        // TODO move this to the tokenizer
+        /*
         if(!a.getTokenType().equals(b.getTokenType())) {
             throw new TokenTypeMismatchException("Token list type mismatch: submission " + a.getName() + " has type " +
                     a.getTokenType().toString() + ", while submission " + b.getName() + " has type "
                     + b.getTokenType().toString());
         }
-
+        */
+        
+        
         // Handle a 0-token submission (no similarity)
-        if(a.getNumTokens() == 0 || b.getNumTokens() == 0) {
-            return new AlgorithmResults(a, b, a.getContentAsTokens(), b.getContentAsTokens());
+        if(a.size() == 0 || b.size() == 0) {
+            return new AlgorithmResults(ab, a, b);
         } else if(a.equals(b)) {
-            // Handle identical submissions
-            TokenList aInval = TokenList.cloneTokenList(a.getContentAsTokens());
-            aInval.stream().forEach((token) -> token.setValid(false));
-            return new AlgorithmResults(a, b, aInval, aInval);
+            PercentableTokenListDecorator aInval = new PercentableTokenListDecorator(TokenList.invalidList(b.size()));
+            return new AlgorithmResults(ab, aInval, aInval);
         }
 
         // Alright, easy cases taken care of. Generate an instance to perform the actual algorithm
-        SmithWatermanAlgorithm algorithm = new SmithWatermanAlgorithm(a.getContentAsTokens(), b.getContentAsTokens());
+        SmithWatermanAlgorithm algorithm = new SmithWatermanAlgorithm(a.getDataCopy(), b.getDataCopy());
 
         Pair<TokenList, TokenList> endLists = algorithm.computeSmithWatermanAlignmentExhaustive();
 
-        return new AlgorithmResults(a, b, endLists.getLeft(), endLists.getRight());
+        return new AlgorithmResults(ab,
+                new PercentableTokenListDecorator(endLists.getLeft()), 
+                new PercentableTokenListDecorator(endLists.getRight()));
     }
 
     @Override

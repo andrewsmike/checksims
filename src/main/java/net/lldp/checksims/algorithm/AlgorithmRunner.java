@@ -47,7 +47,7 @@ public final class AlgorithmRunner {
      * @return Collection of AlgorithmResults, one for each input pair
      */
     public static Set<AlgorithmResults> runAlgorithm(Set<Pair<Submission, Submission>> submissions,
-                                                     SimilarityDetector algorithm) throws ChecksimsException {
+                                                     SimilarityDetector<?> algorithm) throws ChecksimsException {
         checkNotNull(submissions);
         checkArgument(submissions.size() > 0, "Must provide at least one pair of submissions to run on!");
         checkNotNull(algorithm);

@@ -16,15 +16,22 @@
  *
  * CDDL HEADER END
  *
- * Copyright (c) 2014-2015 Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
+ * Copyright (c) 2014-2015 Nicholas DeMarinis, Matthew Heon, Ted Meyer, and Dolan Murvihill
  */
 
 package net.lldp.checksims.algorithm.smithwaterman;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
+import net.lldp.checksims.algorithm.InternalAlgorithmError;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenTypeMismatchException;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,6 +54,7 @@ public class SmithWatermanTest {
     private Submission helloWerld;
     private Submission helloLongPauseWorld;
     private Submission wrappedHelloPauseWorldIsWrapped;
+    private TokenType MEH = TokenType.WHITESPACE;
 
     private SmithWaterman instance;
 
@@ -57,109 +65,135 @@ public class SmithWatermanTest {
     public void setUp() {
         instance = SmithWaterman.getInstance();
 
-        empty = whitespaceSubmissionFromString("Empty", "");
-        typeMismatch = lineSubmissionFromString("Type Mismatch", "hello");
-        oneToken = whitespaceSubmissionFromString("One Token", "hello");
-        twoTokens = whitespaceSubmissionFromString("Two Tokens", "hello world");
-        hello = charSubmissionFromString("Hello", "hello");
-        world = charSubmissionFromString("World", "world");
-        helloWorld = charSubmissionFromString("Hello World", "hello world");
-        helloWerld = charSubmissionFromString("Hello Werld", "hello werld");
-        helloLongPauseWorld = charSubmissionFromString("Hello World with Pause", "hello long pause world");
-        wrappedHelloPauseWorldIsWrapped = charSubmissionFromString("Wrapped Hello World with Pause", "wrapped hello random world is wrapped");
+        // whitepsace
+        empty = submissionFromString("Empty", "");
+        oneToken = submissionFromString("One Token", "hello");
+        twoTokens = submissionFromString("Two Tokens", "hello world");
+        
+        //line
+        typeMismatch = submissionFromString("Type Mismatch", "hello");
+        
+        //char
+        hello = submissionFromString("Hello", "hello");
+        world = submissionFromString("World", "world");
+        helloWorld = submissionFromString("Hello World", "hello world");
+        helloWerld = submissionFromString("Hello Werld", "hello werld");
+        helloLongPauseWorld = submissionFromString("Hello World with Pause", "hello long pause world");
+        wrappedHelloPauseWorldIsWrapped = submissionFromString("Wrapped Hello World with Pause", "wrapped hello random world is wrapped");
     }
 
+    private AlgorithmResults runSmithWaterman(Submission a, Submission b, TokenType at, TokenType bt)
+            throws TokenTypeMismatchException, InternalAlgorithmError
+    {
+        if (bt != at)
+        {
+            throw new TokenTypeMismatchException("Tokenization of " + a + " and " + b + " do not match");
+        }
+        return instance.detectSimilarity(Pair.of(a, b),
+                new SubmissionTokenizer(Tokenizer.getTokenizer(at)).fromSubmission(a),
+                new SubmissionTokenizer(Tokenizer.getTokenizer(bt)).fromSubmission(b));
+    }
+    
+    private TokenList tokens(Submission s, TokenType tt)
+    {
+        return new SubmissionTokenizer(Tokenizer.getTokenizer(tt)).fromSubmission(s).getDataCopy();
+    }
+    
     // Tests for Smith-Waterman algorithm
 
     @Test
     public void TestNullSubmissionAThrowsException() throws Exception {
         expectedEx.expect(NullPointerException.class);
 
-        instance.detectSimilarity(null, empty);
+        runSmithWaterman(null, empty, MEH, TokenType.WHITESPACE);
     }
 
     @Test
     public void TestNullSubmissionBThrowsException() throws Exception {
         expectedEx.expect(NullPointerException.class);
 
-        instance.detectSimilarity(empty, null);
+        runSmithWaterman(empty, null, TokenType.WHITESPACE, MEH);
     }
 
     @Test(expected = TokenTypeMismatchException.class)
     public void TestTokenTypeMismatchThrowsException() throws Exception {
-        instance.detectSimilarity(empty, typeMismatch);
+        runSmithWaterman(empty, typeMismatch, TokenType.WHITESPACE, TokenType.CHARACTER);
     }
 
     @Test
     public void TestTwoEmptySubmissionsAreNotSimilar() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(empty, empty);
+        AlgorithmResults results = runSmithWaterman(empty, empty, TokenType.WHITESPACE, TokenType.WHITESPACE);
 
-        checkResultsIdenticalSubmissions(results, empty);
+        checkResultsIdenticalSubmissions(results);
     }
 
     @Test
     public void TestOneEmptyOneNonEmptySubmissionsAreNotSimilar() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(empty, oneToken);
+        AlgorithmResults results = runSmithWaterman(empty, oneToken, TokenType.WHITESPACE, TokenType.WHITESPACE);
 
         checkResultsNoMatch(results, empty, oneToken);
     }
 
     @Test
     public void TestIdenticalNonEmptySubmissionsAreIdentical() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(oneToken, oneToken);
+        AlgorithmResults results = runSmithWaterman(oneToken, oneToken, TokenType.WHITESPACE, TokenType.WHITESPACE);
 
-        checkResultsIdenticalSubmissions(results, oneToken);
+        checkResultsIdenticalSubmissions(results);
     }
 
     @Test
     public void TestIdenticalNonEmptySubmissionsMoreThanOneTokenAreIdentical() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(twoTokens, twoTokens);
+        AlgorithmResults results = runSmithWaterman(twoTokens, twoTokens, TokenType.WHITESPACE, TokenType.WHITESPACE);
 
-        checkResultsIdenticalSubmissions(results, twoTokens);
+        checkResultsIdenticalSubmissions(results);
     }
 
     @Test
     public void TestDifferentSubmissionsNoMatches() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(hello, world);
+        AlgorithmResults results = runSmithWaterman(hello, world, TokenType.CHARACTER, TokenType.CHARACTER);
 
         checkResultsNoMatch(results, hello, world);
     }
 
     @Test
     public void TestDifferentSubmissionsPartialOverlay() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(helloWorld, hello);
+        AlgorithmResults results = runSmithWaterman(helloWorld, hello, TokenType.CHARACTER, TokenType.CHARACTER);
 
-        TokenList expectedHelloWorld = TokenList.cloneTokenList(helloWorld.getContentAsTokens());
+        TokenList expectedHelloWorld = tokens(helloWorld, TokenType.CHARACTER);
         for(int i = 0; i < 5; i++) {
             expectedHelloWorld.get(i).setValid(false);
         }
 
-        TokenList expectedHello = TokenList.cloneTokenList(hello.getContentAsTokens());
+        TokenList expectedHello = tokens(hello, TokenType.CHARACTER);
         expectedHello.stream().forEach((token) -> token.setValid(false));
 
-        checkResults(results, helloWorld, hello, expectedHelloWorld, expectedHello);
+        checkResults(results, helloWorld, hello,
+                new PercentableTokenListDecorator(expectedHelloWorld),
+                new PercentableTokenListDecorator(expectedHello));
     }
 
     @Test
     public void TestDifferentSubmissionsSameSizeInterruptedOverlay() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(helloWorld, helloWerld);
+        AlgorithmResults results = runSmithWaterman(helloWorld, helloWerld, TokenType.CHARACTER, TokenType.CHARACTER);
 
-        TokenList expectedHelloWorld = TokenList.cloneTokenList(helloWorld.getContentAsTokens());
+        TokenList expectedHelloWorld = tokens(helloWorld, TokenType.CHARACTER);
         expectedHelloWorld.stream().forEach((token) -> token.setValid(false));
         expectedHelloWorld.get(7).setValid(true);
 
-        TokenList expectedHelloWerld = TokenList.cloneTokenList(helloWerld.getContentAsTokens());
+        TokenList expectedHelloWerld = tokens(helloWerld, TokenType.CHARACTER);
         expectedHelloWerld.stream().forEach((token) -> token.setValid(false));
         expectedHelloWerld.get(7).setValid(true);
 
-        checkResults(results, helloWorld, helloWerld, expectedHelloWorld, expectedHelloWerld);
+        checkResults(results, helloWorld, helloWerld,
+                new PercentableTokenListDecorator(expectedHelloWorld),
+                new PercentableTokenListDecorator(expectedHelloWerld));
     }
 
     @Test
     public void TestDifferentSubmissionsTwoOverlays() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(helloLongPauseWorld, helloWorld);
+        AlgorithmResults results = runSmithWaterman(helloLongPauseWorld, helloWorld, TokenType.CHARACTER, TokenType.CHARACTER);
 
-        TokenList expectedHelloLongPauseWorld = TokenList.cloneTokenList(helloLongPauseWorld.getContentAsTokens());
+        TokenList expectedHelloLongPauseWorld = tokens(helloLongPauseWorld, TokenType.CHARACTER);
         for(int i = 0; i < 6; i++) {
             expectedHelloLongPauseWorld.get(i).setValid(false);
         }
@@ -167,17 +201,19 @@ public class SmithWatermanTest {
             expectedHelloLongPauseWorld.get(i).setValid(false);
         }
 
-        TokenList expectedHelloWorld = TokenList.cloneTokenList(helloWorld.getContentAsTokens());
+        TokenList expectedHelloWorld = tokens(helloWorld, TokenType.CHARACTER);
         expectedHelloWorld.stream().forEach((token) -> token.setValid(false));
 
-        checkResults(results, helloLongPauseWorld, helloWorld, expectedHelloLongPauseWorld, expectedHelloWorld);
+        checkResults(results, helloLongPauseWorld, helloWorld,
+                new PercentableTokenListDecorator(expectedHelloLongPauseWorld),
+                new PercentableTokenListDecorator(expectedHelloWorld));
     }
 
     @Test
     public void TestDifferentSubmissionsTwoOverlaysWrapped() throws Exception {
-        AlgorithmResults results = instance.detectSimilarity(helloLongPauseWorld, wrappedHelloPauseWorldIsWrapped);
+        AlgorithmResults results = runSmithWaterman(helloLongPauseWorld, wrappedHelloPauseWorldIsWrapped, TokenType.CHARACTER, TokenType.CHARACTER);
 
-        TokenList expectedHelloLongPauseWorld = TokenList.cloneTokenList(helloLongPauseWorld.getContentAsTokens());
+        TokenList expectedHelloLongPauseWorld = tokens(helloLongPauseWorld, TokenType.CHARACTER);
         for(int i = 0; i < 6; i++) {
             expectedHelloLongPauseWorld.get(i).setValid(false);
         }
@@ -185,7 +221,7 @@ public class SmithWatermanTest {
             expectedHelloLongPauseWorld.get(i).setValid(false);
         }
 
-        TokenList expectedWrappedHelloPauseWorldIsWrapped = TokenList.cloneTokenList(wrappedHelloPauseWorldIsWrapped.getContentAsTokens());
+        TokenList expectedWrappedHelloPauseWorldIsWrapped = tokens(wrappedHelloPauseWorldIsWrapped, TokenType.CHARACTER);
         for(int i = 8; i < 14; i++) {
             expectedWrappedHelloPauseWorldIsWrapped.get(i).setValid(false);
         }
@@ -193,6 +229,8 @@ public class SmithWatermanTest {
             expectedWrappedHelloPauseWorldIsWrapped.get(i).setValid(false);
         }
 
-        checkResults(results, helloLongPauseWorld, wrappedHelloPauseWorldIsWrapped, expectedHelloLongPauseWorld, expectedWrappedHelloPauseWorldIsWrapped);
+        checkResults(results, helloLongPauseWorld, wrappedHelloPauseWorldIsWrapped,
+                new PercentableTokenListDecorator(expectedHelloLongPauseWorld),
+                new PercentableTokenListDecorator(expectedWrappedHelloPauseWorldIsWrapped));
     }
 }

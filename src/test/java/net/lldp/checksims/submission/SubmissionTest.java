@@ -21,17 +21,19 @@
 
 package net.lldp.checksims.submission;
 
-import net.lldp.checksims.token.Token;
-import net.lldp.checksims.token.TokenList;
-import org.junit.Assert;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.Token;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Iterator;
 
-import static net.lldp.checksims.testutil.SubmissionUtils.charSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
 /**
  * Tests for Submissions
@@ -40,16 +42,12 @@ public class SubmissionTest {
     private Submission a;
     private Submission aTwo;
     private Submission aInval;
-    private Submission abc;
 
     @Before
     public void setUp() {
-        a = charSubmissionFromString("a", "a");
-        aTwo = charSubmissionFromString("a", "a");
-        final TokenList aInvalList = TokenList.cloneTokenList(a.getContentAsTokens());
-        aInvalList.get(0).setValid(false);
-        aInval = new ConcreteSubmission("a", "a", aInvalList);
-        abc = charSubmissionFromString("abc", "abc");
+        a = submissionFromString("a", "a");
+        aTwo = submissionFromString("a", "a");
+        aInval = new ConcreteSubmission("a", "a");
     }
 
     @Test
@@ -59,44 +57,29 @@ public class SubmissionTest {
 
     @Test
     public void TestBasicSubmissionOperations() {
-        Assert.assertEquals(a.getContentAsString(), a.getContentAsTokens().join(false));
-        Assert.assertEquals(a.getNumTokens(), a.getContentAsTokens().size());
-        Assert.assertEquals(a.getTokenType(), a.getContentAsTokens().type);
         assertEquals("a", a.getName());
-
-        assertEquals(3, abc.getNumTokens());
-    }
-
-    @Test
-    public void TestSubmissionEqualityIsValiditySensitive() {
-        assertNotEquals(a, aInval);
     }
 
     @Test
     public void TestValidityIgnoringSubmissionEquality() {
-        Submission aIgnoring = new ValidityIgnoringSubmission(a);
+        Submission aIgnoring = new ValidityIgnoringSubmission(a, Tokenizer.getTokenizer(TokenType.CHARACTER));
 
         assertEquals(aIgnoring, aInval);
         assertEquals(aIgnoring, a);
     }
-
-    @Test
-    public void TestValidityEnforcingSubmissionEquality() {
-        Submission aEnforcing = new ValidityEnsuringSubmission(a);
-        Submission aInvalEnforcing = new ValidityEnsuringSubmission(aInval);
-
-        assertEquals(aEnforcing, a);
-        assertNotEquals(aEnforcing, aInval);
-        assertNotEquals(aInvalEnforcing, a);
-        assertNotEquals(aInvalEnforcing, aInval);
-    }
+    
     @Test(expected=UnsupportedOperationException.class)
     public void testTokenListIsImmutable() {
-        Submission s1 = charSubmissionFromString("s1", "testtest");
-        Submission s2 = charSubmissionFromString("s2", "test");
-        final TokenList aTokens = s1.getContentAsTokens();
-        final TokenList bTokens = s2.getContentAsTokens();
+        Submission s1 = submissionFromString("s1", "testtest");
+        Submission s2 = submissionFromString("s2", "test");
+        
+        SubmissionTokenizer st = new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER));
+        
+        final TokenList aTokens = st.fromSubmission(s1).getImmutableDataCopy();
+        final TokenList bTokens = st.fromSubmission(s2).getImmutableDataCopy();
 
+        
+        
         final Iterator<Token> aIt = aTokens.iterator();
         final Iterator<Token> bIt = bTokens.iterator();
 
@@ -109,7 +92,7 @@ public class SubmissionTest {
             }
         }
 
-        assertEquals(8, s1.getContentAsTokens().numValid());
-        assertEquals(4, s2.getContentAsTokens().numValid());
+        assertEquals(8, aTokens.numValid());
+        assertEquals(4, bTokens.numValid());
     }
 }

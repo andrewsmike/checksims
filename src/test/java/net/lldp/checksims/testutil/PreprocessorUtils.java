@@ -40,21 +40,7 @@ public class PreprocessorUtils {
      * @param preprocessor Preprocessor to apply
      */
     public static void checkPreprocessSubmission(Submission toTest, String expected, SubmissionPreprocessor preprocessor) throws Exception {
-        Submission expectedSub;
-        switch(toTest.getTokenType()) {
-            case CHARACTER:
-                expectedSub = SubmissionUtils.charSubmissionFromString(toTest.getName(), expected);
-                break;
-            case WHITESPACE:
-                expectedSub = SubmissionUtils.whitespaceSubmissionFromString(toTest.getName(), expected);
-                break;
-            case LINE:
-                expectedSub = SubmissionUtils.lineSubmissionFromString(toTest.getName(), expected);
-                break;
-            default:
-                throw new RuntimeException("Unrecognized tokenization!");
-        }
-
+        Submission expectedSub = SubmissionUtils.submissionFromString(toTest.getName(), expected);
         Submission result = preprocessor.process(toTest);
         assertEquals(expectedSub, result);
     }

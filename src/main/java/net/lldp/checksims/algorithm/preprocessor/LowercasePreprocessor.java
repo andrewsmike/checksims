@@ -23,9 +23,6 @@ package net.lldp.checksims.algorithm.preprocessor;
 
 import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.tokenizer.Tokenizer;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -56,13 +53,10 @@ public final class LowercasePreprocessor implements SubmissionPreprocessor {
     public Submission process(Submission submission) {
         checkNotNull(submission);
 
-        Tokenizer tokenizer = Tokenizer.getTokenizer(submission.getTokenType());
-
         // Lowercase the content of the submission, then retokenize
         String contentLower = submission.getContentAsString().toLowerCase();
-        TokenList tokenizedLower = tokenizer.splitString(contentLower);
 
-        return new ConcreteSubmission(submission.getName(), contentLower, tokenizedLower);
+        return new ConcreteSubmission(submission.getName(), contentLower);
     }
 
     @Override

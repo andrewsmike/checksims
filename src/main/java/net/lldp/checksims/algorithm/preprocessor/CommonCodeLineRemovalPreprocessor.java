@@ -25,13 +25,16 @@ import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.algorithm.linesimilarity.LineSimilarityChecker;
+import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.parse.Real;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.submission.ValidityIgnoringSubmission;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.TokenTypeMismatchException;
-import net.lldp.checksims.token.tokenizer.Tokenizer;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,15 +47,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class CommonCodeLineRemovalPreprocessor implements SubmissionPreprocessor {
     private final Submission common;
-    private static final SimilarityDetector algorithm = LineSimilarityChecker.getInstance();
+    private static final SimilarityDetector<?> algorithm = LineSimilarityChecker.getInstance();
     private static final Logger logs = LoggerFactory.getLogger(CommonCodeLineRemovalPreprocessor.class);
 
     /**
      * @return Dummy instance of CommonCodeLineRemovalPreprocessor with empty common code
      */
     public static CommonCodeLineRemovalPreprocessor getInstance() {
-        return new CommonCodeLineRemovalPreprocessor(new ConcreteSubmission("Empty", "",
-                new TokenList(TokenType.CHARACTER)));
+        return new CommonCodeLineRemovalPreprocessor(new ConcreteSubmission("Empty", ""));
     }
 
     /**
@@ -66,6 +68,15 @@ public class CommonCodeLineRemovalPreprocessor implements SubmissionPreprocessor
         this.common = common;
     }
 
+    private static <T extends Percentable> AlgorithmResults getResults(Submission rf, Submission com, SimilarityDetector<T> a)
+            throws TokenTypeMismatchException, InternalAlgorithmError
+    {
+        T rft = a.getPercentableCalculator().fromSubmission(rf);
+        T comt = a.getPercentableCalculator().fromSubmission(com);
+        
+        return a.detectSimilarity(Pair.of(rf, com), rft, comt);
+    }
+    
     /**
      * Perform common code removal using Line Comparison.
      *
@@ -77,58 +88,40 @@ public class CommonCodeLineRemovalPreprocessor implements SubmissionPreprocessor
     public Submission process(Submission removeFrom) throws InternalAlgorithmError {
         logs.debug("Performing common code removal on submission " + removeFrom.getName());
 
-        TokenType type = algorithm.getDefaultTokenType();
-        Tokenizer tokenizer = Tokenizer.getTokenizer(type);
-
-        // Re-tokenize input and common code using given token type
-        TokenList redoneIn = tokenizer.splitString(removeFrom.getContentAsString());
-        TokenList redoneCommon = tokenizer.splitString(common.getContentAsString());
-
-        // Create new submissions with retokenized input
-        Submission computeIn = new ConcreteSubmission(removeFrom.getName(), removeFrom.getContentAsString(), redoneIn);
-        Submission computeCommon = new ConcreteSubmission(common.getName(), common.getContentAsString(), redoneCommon);
-
         // Use the new submissions to compute this
         AlgorithmResults results;
+        Tokenizer tokenizer = Tokenizer.getTokenizer(TokenType.LINE);
 
         // This exception should never happen, but if it does, just rethrow as InternalAlgorithmException
         try {
-            results = algorithm.detectSimilarity(computeIn, computeCommon);
+            results = getResults(removeFrom, common, algorithm);
         } catch(TokenTypeMismatchException e) {
             throw new InternalAlgorithmError(e.getMessage());
         }
 
         // The results contains two TokenLists, representing the final state of the submissions after detection
         // All common code should be marked invalid for the input submission's final list
-        TokenList listWithCommonInvalid;
-        double percentMatched;
-        int identTokens;
-        if(new ValidityIgnoringSubmission(results.a).equals(computeIn)) {
-            listWithCommonInvalid = results.finalListA;
+        Percentable listWithCommonInvalid;
+        Real percentMatched;
+        if(new ValidityIgnoringSubmission(results.a, tokenizer).equals(removeFrom)) {
+            listWithCommonInvalid = results.getPercentableA();
             percentMatched = results.percentMatchedA();
-            identTokens = results.identicalTokensA;
-        } else if(new ValidityIgnoringSubmission(results.b).equals(computeIn)) {
-            listWithCommonInvalid = results.finalListB;
+        } else if(new ValidityIgnoringSubmission(results.b, tokenizer).equals(removeFrom)) {
+            listWithCommonInvalid = results.getPercentableB();
             percentMatched = results.percentMatchedB();
-            identTokens = results.identicalTokensB;
         } else {
             throw new RuntimeException("Unreachable code!");
         }
 
         // Recreate the string body of the submission from this new list
-        String newBody = listWithCommonInvalid.join(true);
-
-        // Retokenize the new body with the original tokenization
-        TokenType oldType = removeFrom.getTokenType();
-        Tokenizer oldTokenizer = Tokenizer.getTokenizer(oldType);
-        TokenList finalListGoodTokenization = oldTokenizer.splitString(newBody);
+        String newBody = listWithCommonInvalid.toString();
 
         DecimalFormat d = new DecimalFormat("###.00");
-        logs.trace("Submission " + removeFrom.getName() + " contained " + d.format(100 * percentMatched)
+        logs.trace("Submission " + removeFrom.getName() + " contained " + d.format(percentMatched.multiply(new Real(100)))
                 + "% common code");
-        logs.trace("Removed " + identTokens + " common tokens (of " + removeFrom.getNumTokens() + " total)");
+        logs.trace("Removed " + listWithCommonInvalid + " percent of submission");
 
-        return new ConcreteSubmission(removeFrom.getName(), newBody, finalListGoodTokenization);
+        return new ConcreteSubmission(removeFrom.getName(), newBody);
     }
 
     /**

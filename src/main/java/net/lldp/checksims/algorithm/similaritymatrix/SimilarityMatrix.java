@@ -24,10 +24,14 @@ package net.lldp.checksims.algorithm.similaritymatrix;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
+
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
+import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.submission.NoSuchSubmissionException;
 import net.lldp.checksims.submission.Submission;
+
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
@@ -41,7 +45,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * TODO consider offering Iterators for the entire similarity matrix, and for individual submissions on the X axis
  */
 public final class SimilarityMatrix {
-    private final MatrixEntry[][] entries;
+    private final AlgorithmResults[][] entries;
     private final ImmutableList<Submission> xSubmissions;
     private final ImmutableList<Submission> ySubmissions;
     private final ImmutableSet<AlgorithmResults> builtFrom;
@@ -57,7 +61,7 @@ public final class SimilarityMatrix {
      * @param ySubmissions Submissions on the Y axis
      * @param builtFrom    Set of Algorithm Results used to build the matrix
      */
-    protected SimilarityMatrix(MatrixEntry[][] entries, List<Submission> xSubmissions, List<Submission> ySubmissions,
+    protected SimilarityMatrix(AlgorithmResults[][] entries, List<Submission> xSubmissions, List<Submission> ySubmissions,
                                Set<AlgorithmResults> builtFrom) {
         checkNotNull(entries);
         checkNotNull(xSubmissions);
@@ -141,7 +145,7 @@ public final class SimilarityMatrix {
      * @param yIndex Index into similarity matrix on the Y axis
      * @return Matrix Entry for given X and Y index
      */
-    public MatrixEntry getEntryFor(int xIndex, int yIndex) {
+    public AlgorithmResults getEntryFor(int xIndex, int yIndex) {
         checkArgument(xIndex >= 0, "X index must be greater than 0!");
         checkArgument(xIndex < xSubmissions.size(), "X index must be less than X submissions size ("
                 + xSubmissions.size() + ")!");
@@ -160,7 +164,7 @@ public final class SimilarityMatrix {
      * @return Similarities of xSubmission to ySubmission
      * @throws NoSuchSubmissionException Thrown if either xSubmission or ySubmission are not present in the matrix
      */
-    public MatrixEntry getEntryFor(Submission xSubmission, Submission ySubmission) throws NoSuchSubmissionException {
+    public AlgorithmResults getEntryFor(Submission xSubmission, Submission ySubmission) throws NoSuchSubmissionException {
         checkNotNull(xSubmission);
         checkNotNull(ySubmission);
 
@@ -216,7 +220,7 @@ public final class SimilarityMatrix {
         checkArgument(!results.isEmpty(), "Must provide at least 1 AlgorithmResults to build matrix from!");
 
         // Generate the matrix we'll use
-        MatrixEntry[][] matrix = new MatrixEntry[inputSubmissions.size()][inputSubmissions.size()];
+        AlgorithmResults[][] matrix = new AlgorithmResults[inputSubmissions.size()][inputSubmissions.size()];
 
         // Order the submissions
         List<Submission> orderedSubmissions = Ordering.natural().immutableSortedCopy(inputSubmissions);
@@ -227,7 +231,7 @@ public final class SimilarityMatrix {
         for (int i = 0; i < orderedSubmissions.size(); i++) {
             Submission s = orderedSubmissions.get(i);
 
-            matrix[i][i] = new MatrixEntry(s, s, s.getNumTokens());
+            matrix[i][i] = new AlgorithmResults(Pair.of(s, s), Real.ONE, Real.ONE);
         }
 
         // Now go through all the results, and build appropriate two MatrixEntry objects for each
@@ -245,8 +249,8 @@ public final class SimilarityMatrix {
                         + result.b.getName() + "\"");
             }
 
-            matrix[aIndex][bIndex] = new MatrixEntry(result.a, result.b, result.identicalTokensA);
-            matrix[bIndex][aIndex] = new MatrixEntry(result.b, result.a, result.identicalTokensB);
+            matrix[aIndex][bIndex] = result.inverse();
+            matrix[bIndex][aIndex] = result;
         }
 
         // Verification pass: Go through and ensure that the entire array was populated
@@ -300,7 +304,7 @@ public final class SimilarityMatrix {
         ySubmissions.addAll(Ordering.natural().immutableSortedCopy(inputSubmissions));
         ySubmissions.addAll(Ordering.natural().immutableSortedCopy(archiveSubmissions));
 
-        MatrixEntry[][] matrix = new MatrixEntry[xSubmissions.size()][ySubmissions.size()];
+        AlgorithmResults[][] matrix = new AlgorithmResults[xSubmissions.size()][ySubmissions.size()];
 
         // Generate the matrix
 
@@ -310,7 +314,7 @@ public final class SimilarityMatrix {
             int xIndex = xSubmissions.indexOf(xSub);
             int yIndex = ySubmissions.indexOf(xSub);
 
-            matrix[xIndex][yIndex] = new MatrixEntry(xSub, xSub, xSub.getNumTokens());
+            matrix[xIndex][yIndex] = new AlgorithmResults(Pair.of(xSub, xSub), Real.ONE, Real.ONE);
         }
 
         // Now iterate through all given algorithm results
@@ -326,13 +330,13 @@ public final class SimilarityMatrix {
             if(aXCoord != -1) {
                 int bYCoord = ySubmissions.indexOf(result.b);
 
-                matrix[aXCoord][bYCoord] = new MatrixEntry(result.a, result.b, result.identicalTokensA);
+                matrix[aXCoord][bYCoord] = result.inverse();
             }
 
             if(bXCoord != -1) {
                 int aYCoord = ySubmissions.indexOf(result.a);
 
-                matrix[bXCoord][aYCoord] = new MatrixEntry(result.b, result.a, result.identicalTokensB);
+                matrix[bXCoord][aYCoord] = result;
             }
         }
 

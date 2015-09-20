@@ -22,11 +22,14 @@
 package net.lldp.checksims.util.threading;
 
 import com.google.common.collect.ImmutableSet;
+
 import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.algorithm.preprocessor.SubmissionPreprocessor;
+import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.submission.Submission;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,15 +88,15 @@ public final class ParallelAlgorithm {
      * @param pairs Pairs of submissions to perform detection on
      * @return Collection of results, one for each pair
      */
-    public static Set<AlgorithmResults> parallelSimilarityDetection(SimilarityDetector algorithm,
+    public static <T extends Percentable> Set<AlgorithmResults> parallelSimilarityDetection(SimilarityDetector<T> algorithm,
                                                                     Set<Pair<Submission, Submission>> pairs)
             throws ChecksimsException {
         checkNotNull(algorithm);
         checkNotNull(pairs);
 
         // Map the pairs to ChecksimsWorker instances
-        Collection<SimilarityDetectionWorker> workers = pairs.stream()
-                .map((pair) -> new SimilarityDetectionWorker(algorithm, pair))
+        Collection<SimilarityDetectionWorker<T>> workers = pairs.stream()
+                .map((pair) -> new SimilarityDetectionWorker<T>(algorithm, pair))
                 .collect(Collectors.toList());
 
         return ImmutableSet.copyOf(executeTasks(workers));

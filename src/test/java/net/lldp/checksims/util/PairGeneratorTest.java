@@ -31,7 +31,7 @@ import org.junit.rules.ExpectedException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static net.lldp.checksims.testutil.SubmissionUtils.charSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 import static net.lldp.checksims.testutil.SubmissionUtils.setFromElements;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
@@ -51,11 +51,11 @@ public class PairGeneratorTest {
 
     @Before
     public void setUp() {
-        a = charSubmissionFromString("A", "");
-        b = charSubmissionFromString("B", "");
-        c = charSubmissionFromString("C", "");
-        d = charSubmissionFromString("D", "");
-        e = charSubmissionFromString("E", "");
+        a = submissionFromString("A", "");
+        b = submissionFromString("B", "");
+        c = submissionFromString("C", "");
+        d = submissionFromString("D", "");
+        e = submissionFromString("E", "");
     }
 
     public static void checkPairsAreInSet(Set<Pair<Submission, Submission>> toCheck, Set<Pair<Submission, Submission>> expected) {

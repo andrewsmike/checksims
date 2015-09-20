@@ -21,15 +21,20 @@
 
 package net.lldp.checksims.algorithm;
 
+import net.lldp.checksims.parse.SubmissionPercentableCalculator;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static net.lldp.checksims.testutil.SubmissionUtils.charSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -41,138 +46,121 @@ public class AlgorithmResultsTest {
     private Submission b;
     private Submission abcd;
     private Submission empty;
+    
+    private final SubmissionPercentableCalculator<PercentableTokenListDecorator> SPC =
+            new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER));
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     public void setUp() {
-        a = charSubmissionFromString("A", "A");
-        b = charSubmissionFromString("B", "B");
-        abcd = charSubmissionFromString("ABCD", "ABCD");
-        empty = charSubmissionFromString("Empty", "");
+        a = submissionFromString("A", "A");
+        b = submissionFromString("B", "B");
+        abcd = submissionFromString("ABCD", "ABCD");
+        empty = submissionFromString("Empty", "");
     }
 
     @Test
     public void TestCreateAlgorithmResultsNullA() {
         expectedEx.expect(NullPointerException.class);
-
-        new AlgorithmResults(null, b, a.getContentAsTokens(), b.getContentAsTokens());
+        
+        new AlgorithmResults(null, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
     }
 
     @Test
     public void TestCreateAlgorithmResultsNullB() {
         expectedEx.expect(NullPointerException.class);
 
-        new AlgorithmResults(a, null, a.getContentAsTokens(), b.getContentAsTokens());
+        new AlgorithmResults(a, null, SPC.fromSubmission(a), SPC.fromSubmission(b));
     }
 
     @Test
     public void TestCreateAlgorithmResultsNullFinalA() {
         expectedEx.expect(NullPointerException.class);
 
-        new AlgorithmResults(a, b, null, b.getContentAsTokens());
+        new AlgorithmResults(a, b, null, SPC.fromSubmission(b));
     }
 
     @Test
     public void TestCreateAlgorithmResultsNullFinalB() {
         expectedEx.expect(NullPointerException.class);
 
-        new AlgorithmResults(a, b, a.getContentAsTokens(), null);
+        new AlgorithmResults(a, b, SPC.fromSubmission(a), null);
     }
-
-    @Test
-    public void TestCreateAlgorithmResultsSizeMismatchA() {
-        expectedEx.expect(IllegalArgumentException.class);
-
-        new AlgorithmResults(a, b, new TokenList(TokenType.CHARACTER), b.getContentAsTokens());
-    }
-
-    @Test
-    public void TestCreateAlgorithmResultsSizeMismatchB() {
-        expectedEx.expect(IllegalArgumentException.class);
-
-        new AlgorithmResults(a, b, a.getContentAsTokens(), new TokenList(TokenType.CHARACTER));
-    }
-
+    
     @Test
     public void TestAlgorithmResultsGetPercentSimilarA() {
-        AlgorithmResults test1 = new AlgorithmResults(a, b, a.getContentAsTokens(), b.getContentAsTokens());
+        AlgorithmResults test1 = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
 
-        assertEquals(0, test1.identicalTokensA);
-        assertEquals(0.0, test1.percentMatchedA(), 0.0);
+        assertEquals(0.0, test1.percentMatchedA().asDouble(), 0.0);
     }
 
     @Test
     public void TestAlgorithmResultsGetPercentSimilarB() {
-        AlgorithmResults test1 = new AlgorithmResults(a, b, a.getContentAsTokens(), b.getContentAsTokens());
+        AlgorithmResults test1 = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
 
-        assertEquals(0, test1.identicalTokensB);
-        assertEquals(0.0, test1.percentMatchedB(), 0.0);
+        assertEquals(0.0, test1.percentMatchedB().asDouble(), 0.0);
     }
 
     @Test
     public void TestAlgorithmResultsPercentSimilarAEmpty() {
-        AlgorithmResults test = new AlgorithmResults(empty, b, empty.getContentAsTokens(), b.getContentAsTokens());
+        AlgorithmResults test = new AlgorithmResults(empty, b, SPC.fromSubmission(empty), SPC.fromSubmission(b));
 
-        assertEquals(0.0, test.percentMatchedA(), 0.0);
+        assertEquals(0.0, test.percentMatchedA().asDouble(), 0.0);
     }
 
     @Test
     public void TestAlgorithmResultsGetPercentSimilarBEmpty() {
-        AlgorithmResults test = new AlgorithmResults(a, empty, a.getContentAsTokens(), empty.getContentAsTokens());
+        AlgorithmResults test = new AlgorithmResults(a, empty, SPC.fromSubmission(a), SPC.fromSubmission(empty));
 
-        assertEquals(0.0, test.percentMatchedB(), 0.0);
+        assertEquals(0.0, test.percentMatchedB().asDouble(), 0.0);
     }
 
     @Test
     public void TestAlgorithmResultsGetPercentSimilarANonzero() {
-        TokenList one = TokenList.cloneTokenList(abcd.getContentAsTokens());
+        TokenList one = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
         one.get(0).setValid(false);
-        TokenList two = TokenList.cloneTokenList(abcd.getContentAsTokens());
+        TokenList two = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
         for(int i = 0; i < 2; i++) {
             two.get(i).setValid(false);
         }
 
-        AlgorithmResults testOne = new AlgorithmResults(abcd, b, one, b.getContentAsTokens());
-        AlgorithmResults testTwo = new AlgorithmResults(abcd, b, two, b.getContentAsTokens());
+        AlgorithmResults testOne = new AlgorithmResults(abcd, b, new PercentableTokenListDecorator(one), SPC.fromSubmission(b));
+        AlgorithmResults testTwo = new AlgorithmResults(abcd, b, new PercentableTokenListDecorator(two), SPC.fromSubmission(b));
 
-        assertEquals(1, testOne.identicalTokensA);
-        assertEquals(2, testTwo.identicalTokensA);
-        assertEquals(0.25, testOne.percentMatchedA(), 0.0);
-        assertEquals(0.50, testTwo.percentMatchedA(), 0.0);
+        assertEquals(0.25, testOne.percentMatchedA().asDouble(), 0.0);
+        assertEquals(0.50, testTwo.percentMatchedA().asDouble(), 0.0);
     }
 
     @Test
     public void TestAlgorithmResultsGetPercentSimilarBNonzero() {
-        TokenList one = TokenList.cloneTokenList(abcd.getContentAsTokens());
+        TokenList one = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
         one.get(0).setValid(false);
-        TokenList two = TokenList.cloneTokenList(abcd.getContentAsTokens());
+        TokenList two = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
         for(int i = 0; i < 2; i++) {
             two.get(i).setValid(false);
         }
 
-        AlgorithmResults testOne = new AlgorithmResults(a, abcd, a.getContentAsTokens(), one);
-        AlgorithmResults testTwo = new AlgorithmResults(a, abcd, a.getContentAsTokens(), two);
+        AlgorithmResults testOne = new AlgorithmResults(a, abcd, SPC.fromSubmission(a), new PercentableTokenListDecorator(one));
+        AlgorithmResults testTwo = new AlgorithmResults(a, abcd, SPC.fromSubmission(a), new PercentableTokenListDecorator(two));
 
-        assertEquals(1, testOne.identicalTokensB);
-        assertEquals(2, testTwo.identicalTokensB);
-        assertEquals(0.25, testOne.percentMatchedB(), 0.0);
-        assertEquals(0.50, testTwo.percentMatchedB(), 0.0);
+        assertEquals(0.25, testOne.percentMatchedB().asDouble(), 0.0);
+        assertEquals(0.50, testTwo.percentMatchedB().asDouble(), 0.0);
     }
 
     @Test
     public void TestBasicEquality() {
-        AlgorithmResults one = new AlgorithmResults(a, b, a.getContentAsTokens(), b.getContentAsTokens());
-        AlgorithmResults two = new AlgorithmResults(a, b, a.getContentAsTokens(), b.getContentAsTokens());
+        AlgorithmResults one = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
+        AlgorithmResults two = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
 
         assertEquals(one, two);
     }
 
     @Test
     public void TestBasicInequality() {
-        AlgorithmResults one = new AlgorithmResults(a, b, a.getContentAsTokens(), b.getContentAsTokens());
-        AlgorithmResults two = new AlgorithmResults(a, abcd, a.getContentAsTokens(), abcd.getContentAsTokens());
+        AlgorithmResults one = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
+        AlgorithmResults two = new AlgorithmResults(a, abcd, SPC.fromSubmission(a), SPC.fromSubmission(abcd));
 
         assertNotEquals(one, two);
     }

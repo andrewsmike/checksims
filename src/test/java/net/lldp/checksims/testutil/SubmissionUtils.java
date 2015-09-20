@@ -23,8 +23,6 @@ package net.lldp.checksims.testutil;
 
 import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.tokenizer.Tokenizer;
 
 import java.io.File;
 import java.util.Arrays;
@@ -83,43 +81,8 @@ public class SubmissionUtils {
      * @param type Token type to use when building
      * @return Submission with given content
      */
-    public static Submission submissionFromString(String name, String content, TokenType type) {
-        Tokenizer tokenizer = Tokenizer.getTokenizer(type);
-
-        return new ConcreteSubmission(name, content, tokenizer.splitString(content));
-    }
-
-    /**
-     * Build a Character tokenized submission with given content
-     *
-     * @param name Name of submission
-     * @param content Content of submission
-     * @return Character tokenized submission with given name and content
-     */
-    public static Submission charSubmissionFromString(String name, String content) {
-        return submissionFromString(name, content, TokenType.CHARACTER);
-    }
-
-    /**
-     * Build a Whitespace tokenized submission with given content
-     *
-     * @param name Name of submission
-     * @param content Content of submission
-     * @return Whitespace tokenized submission with given name and content
-     */
-    public static Submission whitespaceSubmissionFromString(String name, String content) {
-        return submissionFromString(name, content, TokenType.WHITESPACE);
-    }
-
-    /**
-     * Build a Line tokenized submission with given content
-     *
-     * @param name Name of submission
-     * @param content Content of submission
-     * @return Line tokenized submission with given name and content
-     */
-    public static Submission lineSubmissionFromString(String name, String content) {
-        return submissionFromString(name, content, TokenType.LINE);
+    public static Submission submissionFromString(String name, String content) {
+        return new ConcreteSubmission(name, content);
     }
 
     /**

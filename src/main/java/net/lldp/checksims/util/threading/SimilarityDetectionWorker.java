@@ -23,7 +23,9 @@ package net.lldp.checksims.util.threading;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.submission.Submission;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +39,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * Takes two Submissions, applies an algorithm to them, returns results.
  */
-public class SimilarityDetectionWorker implements Callable<AlgorithmResults> {
-    private final SimilarityDetector algorithm;
+public class SimilarityDetectionWorker<T extends Percentable> implements Callable<AlgorithmResults> {
+    private final SimilarityDetector<T> algorithm;
     private final Pair<Submission, Submission> submissions;
 
     private static Logger logs = LoggerFactory.getLogger(SimilarityDetectionWorker.class);
@@ -49,7 +51,7 @@ public class SimilarityDetectionWorker implements Callable<AlgorithmResults> {
      * @param algorithm Algorithm to use
      * @param submissions Assignments to compare
      */
-    public SimilarityDetectionWorker(SimilarityDetector algorithm, Pair<Submission, Submission> submissions) {
+    public SimilarityDetectionWorker(SimilarityDetector<T> algorithm, Pair<Submission, Submission> submissions) {
         checkNotNull(algorithm);
         checkNotNull(submissions);
         checkNotNull(submissions.getLeft());
@@ -76,10 +78,12 @@ public class SimilarityDetectionWorker implements Callable<AlgorithmResults> {
     @Override
     public AlgorithmResults call() throws Exception {
         logs.debug("Running " + algorithm.getName() + " on submissions " + submissions.getLeft().getName() +
-                "(" + submissions.getLeft().getNumTokens() + " tokens) and " + submissions.getRight().getName() + " (" +
-                submissions.getRight().getNumTokens() + " tokens)");
+                "(" + submissions.getLeft().getContentAsString().length() + " bytes) and " + submissions.getRight().getName() + " (" +
+                submissions.getRight().getContentAsString().length() + " bytes)");
 
-        return algorithm.detectSimilarity(submissions.getLeft(), submissions.getRight());
+        return algorithm.detectSimilarity(submissions,
+                algorithm.getPercentableCalculator().fromSubmission(submissions.getLeft()),
+                algorithm.getPercentableCalculator().fromSubmission(submissions.getRight()));
     }
 
     @Override

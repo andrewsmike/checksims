@@ -22,15 +22,16 @@
 package net.lldp.checksims;
 
 import com.google.common.collect.ImmutableMap;
+
 import net.lldp.checksims.algorithm.AlgorithmRegistry;
 import net.lldp.checksims.algorithm.preprocessor.CommonCodeLineRemovalPreprocessor;
 import net.lldp.checksims.algorithm.preprocessor.PreprocessorRegistry;
 import net.lldp.checksims.algorithm.preprocessor.SubmissionPreprocessor;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinterRegistry;
+import net.lldp.checksims.parse.SubmissionPercentableCalculator;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.tokenizer.Tokenizer;
+
 import org.apache.commons.cli.*;
 import org.apache.commons.collections4.list.SetUniqueList;
 import org.apache.commons.io.FileUtils;
@@ -276,12 +277,12 @@ public final class ChecksimsCommandLine {
         if(cli.hasOption("a")) {
             config = config.setAlgorithm(
                     AlgorithmRegistry.getInstance().getImplementationInstance(cli.getOptionValue("a")));
-            config = config.setTokenization(config.getAlgorithm().getDefaultTokenType());
+            config = config.setTokenization(config.getAlgorithm().getPercentableCalculator());
         }
 
         // Parse tokenization
         if(cli.hasOption("t")) {
-            config = config.setTokenization(TokenType.fromString(cli.getOptionValue("t")));
+            config = config.setTokenization(SubmissionPercentableCalculator.fromString(cli.getOptionValue("t")));
         }
 
         // Parse number of threads to use
@@ -357,10 +358,7 @@ public final class ChecksimsCommandLine {
 
         // Check if we are retaining empty submissions
         boolean retainEmpty = cli.hasOption("e");
-
-        // Get the tokenizer specified by base config
-        Tokenizer tokenizer = Tokenizer.getTokenizer(baseConfig.getTokenization());
-
+        
         // Get submission directories
         if(!cli.hasOption("s")) {
             throw new ChecksimsException("Must provide at least one submission directory!");
@@ -380,7 +378,7 @@ public final class ChecksimsCommandLine {
         }
 
         // Generate submissions
-        Set<Submission> submissions = getSubmissions(submissionDirs, globPattern, tokenizer, recursive, retainEmpty);
+        Set<Submission> submissions = getSubmissions(submissionDirs, globPattern, recursive, retainEmpty);
 
         logs.debug("Generated " + submissions.size() + " submissions to process.");
 
@@ -406,7 +404,7 @@ public final class ChecksimsCommandLine {
             }
 
             // All right, parse common code
-            Submission commonCodeSubmission = Submission.submissionFromDir(commonCodeDir, globPattern, tokenizer,
+            Submission commonCodeSubmission = Submission.submissionFromDir(commonCodeDir, globPattern,
                     recursive);
 
             if(commonCodeSubmission.getContentAsString().isEmpty()) {
@@ -441,7 +439,7 @@ public final class ChecksimsCommandLine {
             }
 
             // Get set of archive submissions
-            Set<Submission> archiveSubmissions = getSubmissions(archiveDirs, globPattern, tokenizer, recursive,
+            Set<Submission> archiveSubmissions = getSubmissions(archiveDirs, globPattern, recursive,
                     retainEmpty);
 
             logs.debug("Generated " + archiveSubmissions.size() + " archive submissions to process");
@@ -468,19 +466,18 @@ public final class ChecksimsCommandLine {
      * @return Collection of submissions which will be used to run Checksims
      * @throws IOException Thrown on issue reading files or traversing directories to build submissions
      */
-    static Set<Submission> getSubmissions(Set<File> submissionDirs, String glob, Tokenizer tokenizer, boolean recursive,
+    static Set<Submission> getSubmissions(Set<File> submissionDirs, String glob, boolean recursive,
                                           boolean retainEmpty) throws IOException, ChecksimsException {
         checkNotNull(submissionDirs);
         checkArgument(!submissionDirs.isEmpty(), "Must provide at least one submission directory!");
         checkNotNull(glob);
-        checkNotNull(tokenizer);
 
         // Generate submissions to work on
         Set<Submission> submissions = new HashSet<>();
         for(File dir : submissionDirs) {
             logs.debug("Adding directory " + dir.getName());
 
-            submissions.addAll(Submission.submissionListFromDir(dir, glob, tokenizer, recursive));
+            submissions.addAll(Submission.submissionListFromDir(dir, glob, recursive));
         }
 
         // If not retaining empty submissions, filter the empty ones out

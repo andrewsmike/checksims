@@ -23,10 +23,12 @@ package net.lldp.checksims.algorithm.smithwaterman;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
+
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
-import net.lldp.checksims.token.Token;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.ValidityEnsuringToken;
+import net.lldp.checksims.parse.token.Token;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.ValidityEnsuringToken;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

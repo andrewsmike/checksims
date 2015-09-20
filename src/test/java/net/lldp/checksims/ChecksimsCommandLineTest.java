@@ -22,12 +22,16 @@
 package net.lldp.checksims;
 
 import com.google.common.collect.Iterables;
+
 import net.lldp.checksims.algorithm.AlgorithmRegistry;
 import net.lldp.checksims.algorithm.preprocessor.SubmissionPreprocessor;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinterRegistry;
-import net.lldp.checksims.token.TokenType;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.util.threading.ParallelAlgorithm;
+
 import org.apache.commons.cli.AlreadySelectedException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.MissingArgumentException;
@@ -122,42 +126,42 @@ public class ChecksimsCommandLineTest {
     public void TestParseTokenizationLine() throws Exception {
         ChecksimsConfig config = parseToConfig(new String[] { "-t", "line" });
 
-        assertEquals(TokenType.LINE, config.getTokenization());
+        assertEquals(new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.LINE)), config.getTokenization());
     }
 
     @Test
     public void TestParseTokenizationWhitespace() throws Exception {
         ChecksimsConfig config = parseToConfig(new String[] { "-t", "whitespace" });
 
-        assertEquals(TokenType.WHITESPACE, config.getTokenization());
+        assertEquals(new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.WHITESPACE)), config.getTokenization());
     }
 
     @Test
     public void TestParseTokenizationCharacter() throws Exception {
         ChecksimsConfig config = parseToConfig(new String[] { "-t", "character" });
 
-        assertEquals(TokenType.CHARACTER, config.getTokenization());
+        assertEquals(new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER)), config.getTokenization());
     }
 
     @Test
     public void TestParseTokenizationCaps() throws Exception {
         ChecksimsConfig config = parseToConfig(new String[] { "-t", "ChAraCTEr" });
 
-        assertEquals(TokenType.CHARACTER, config.getTokenization());
+        assertEquals(new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER)), config.getTokenization());
     }
 
     @Test
     public void TestParseTokenizationLongForm() throws Exception {
         ChecksimsConfig config = parseToConfig(new String[] { "--token", "character" });
 
-        assertEquals(TokenType.CHARACTER, config.getTokenization());
+        assertEquals(new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER)), config.getTokenization());
     }
 
     @Test
     public void TestParseTokenizationDefault() throws Exception {
         ChecksimsConfig config = parseToConfig(new String[] {});
 
-        assertEquals(AlgorithmRegistry.getInstance().getDefaultImplementation().getDefaultTokenType(), config.getTokenization());
+        assertEquals(AlgorithmRegistry.getInstance().getDefaultImplementation().getPercentableCalculator(), config.getTokenization());
     }
 
     @Test(expected = ChecksimsException.class)

@@ -21,10 +21,10 @@
 
 package net.lldp.checksims.testutil;
 
-import net.lldp.checksims.token.ConcreteToken;
-import net.lldp.checksims.token.Token;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
+import net.lldp.checksims.parse.token.ConcreteToken;
+import net.lldp.checksims.parse.token.Token;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
 
 import java.util.Collections;
 

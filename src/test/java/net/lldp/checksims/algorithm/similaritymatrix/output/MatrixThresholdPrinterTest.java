@@ -24,9 +24,15 @@ package net.lldp.checksims.algorithm.similaritymatrix.output;
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.similaritymatrix.SimilarityMatrix;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
 import net.lldp.checksims.testutil.SubmissionUtils;
+import net.lldp.checksims.util.AssertUtils;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,66 +50,80 @@ public class MatrixThresholdPrinterTest {
     private SimilarityMatrix oneSignificant;
     private SimilarityMatrix oneHalfSignificant;
     private SimilarityMatrix twoSignificant;
-
+    private SubmissionTokenizer st;
+    
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     public void setUp() throws InternalAlgorithmError {
-        Submission abcd = SubmissionUtils.charSubmissionFromString("ABCD", "ABCD");
-        Submission xyz = SubmissionUtils.charSubmissionFromString("XYZ", "XYZ");
-        Submission abcde = SubmissionUtils.charSubmissionFromString("ABCDE", "ABCDE");
-        Submission a = SubmissionUtils.charSubmissionFromString("A", "A");
+        Submission abcd = SubmissionUtils.submissionFromString("ABCD", "ABCD");
+        Submission xyz = SubmissionUtils.submissionFromString("XYZ", "XYZ");
+        Submission abcde = SubmissionUtils.submissionFromString("ABCDE", "ABCDE");
+        Submission a = SubmissionUtils.submissionFromString("A", "A");
 
+        st = new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER));
         instance = MatrixThresholdPrinter.getInstance();
 
-        AlgorithmResults abcdToXyz = new AlgorithmResults(abcd, xyz, abcd.getContentAsTokens(), xyz.getContentAsTokens());
+        AlgorithmResults abcdToXyz = new AlgorithmResults(abcd, xyz,
+                st.fromSubmission(abcd),
+                st.fromSubmission(xyz));
 
         noSignificant = SimilarityMatrix.generateMatrix(SubmissionUtils.setFromElements(abcd, xyz), singleton(abcdToXyz));
 
-        TokenList abcdInval = TokenList.cloneTokenList(abcd.getContentAsTokens());
+        TokenList abcdInval = st.fromSubmission(abcd).getDataCopy();
         abcdInval.stream().forEach((token) -> token.setValid(false));
-        TokenList abcdeInval = TokenList.cloneTokenList(abcde.getContentAsTokens());
+        TokenList abcdeInval = st.fromSubmission(abcde).getDataCopy();
         for(int i = 0; i < 4; i++) {
             abcdeInval.get(i).setValid(false);
         }
 
-        AlgorithmResults abcdToAbcde = new AlgorithmResults(abcd, abcde, abcdInval, abcdeInval);
+        AlgorithmResults abcdToAbcde = new AlgorithmResults(abcd, abcde, 
+                new PercentableTokenListDecorator(abcdInval),
+                new PercentableTokenListDecorator(abcdeInval));
 
         oneSignificant = SimilarityMatrix.generateMatrix(SubmissionUtils.setFromElements(abcd, abcde), singleton(abcdToAbcde));
 
-        TokenList abcdInval2 = TokenList.cloneTokenList(abcd.getContentAsTokens());
+        TokenList abcdInval2 = st.fromSubmission(abcd).getDataCopy();
         abcdInval2.get(0).setValid(false);
-        TokenList aInval = TokenList.cloneTokenList(a.getContentAsTokens());
+        TokenList aInval = st.fromSubmission(a).getDataCopy();
         aInval.get(0).setValid(false);
 
-        AlgorithmResults abcdToA = new AlgorithmResults(abcd, a, abcdInval2, aInval);
+        AlgorithmResults abcdToA = new AlgorithmResults(abcd, a,
+                new PercentableTokenListDecorator(abcdInval2),
+                new PercentableTokenListDecorator(aInval));
 
         oneHalfSignificant = SimilarityMatrix.generateMatrix(SubmissionUtils.setFromElements(abcd, a), singleton(abcdToA));
 
-        Submission efgh = SubmissionUtils.charSubmissionFromString("EFGH", "EFGH");
-        Submission fghijk = SubmissionUtils.charSubmissionFromString("FGHIJK", "FGHIJK");
-        Submission e = SubmissionUtils.charSubmissionFromString("E", "E");
+        Submission efgh = SubmissionUtils.submissionFromString("EFGH", "EFGH");
+        Submission fghijk = SubmissionUtils.submissionFromString("FGHIJK", "FGHIJK");
+        Submission e = SubmissionUtils.submissionFromString("E", "E");
 
-        TokenList efghInval1 = TokenList.cloneTokenList(efgh.getContentAsTokens());
+        TokenList efghInval1 = st.fromSubmission(efgh).getDataCopy();
         for(int i = 1; i < 4; i++) {
             efghInval1.get(i).setValid(false);
         }
-        TokenList fghijkInval = TokenList.cloneTokenList(fghijk.getContentAsTokens());
+        TokenList fghijkInval = st.fromSubmission(fghijk).getDataCopy();
         for(int i = 0; i < 3; i++) {
             fghijkInval.get(i).setValid(false);
         }
 
-        AlgorithmResults efghToF = new AlgorithmResults(efgh, fghijk, efghInval1, fghijkInval);
+        AlgorithmResults efghToF = new AlgorithmResults(efgh, fghijk,
+                new PercentableTokenListDecorator(efghInval1),
+                new PercentableTokenListDecorator(fghijkInval));
 
-        TokenList efghInval2 = TokenList.cloneTokenList(efgh.getContentAsTokens());
+        TokenList efghInval2 = st.fromSubmission(efgh).getDataCopy();
         efghInval2.get(0).setValid(false);
-        TokenList eInval = TokenList.cloneTokenList(e.getContentAsTokens());
+        TokenList eInval = st.fromSubmission(e).getDataCopy();
         eInval.get(0).setValid(false);
 
-        AlgorithmResults efghToE = new AlgorithmResults(efgh, e, efghInval2, eInval);
+        AlgorithmResults efghToE = new AlgorithmResults(efgh, e,
+                new PercentableTokenListDecorator(efghInval2),
+                new PercentableTokenListDecorator(eInval));
 
-        AlgorithmResults fToE = new AlgorithmResults(fghijk, e, fghijk.getContentAsTokens(), e.getContentAsTokens());
+        AlgorithmResults fToE = new AlgorithmResults(fghijk, e,
+                st.fromSubmission(fghijk),
+                st.fromSubmission(e));
 
         twoSignificant = SimilarityMatrix.generateMatrix(SubmissionUtils.setFromElements(efgh, fghijk), singleton(e), SubmissionUtils.setFromElements(efghToF, efghToE, fToE));
     }
@@ -131,14 +151,14 @@ public class MatrixThresholdPrinterTest {
     public void TestPrintOneSignificant() throws Exception {
         String expected = "Found match of 100% (inverse match 80%) between submissions \"ABCD\" and \"ABCDE\"\n";
 
-        assertEquals(expected, instance.printMatrix(oneSignificant));
+        AssertUtils.betterStringEQAssert(expected, instance.printMatrix(oneSignificant));
     }
 
     @Test
     public void TestPrintOneHalfSignificant() throws Exception {
         String expected = "Found match of 100% (inverse match 25%) between submissions \"A\" and \"ABCD\"\n";
 
-        assertEquals(expected, instance.printMatrix(oneHalfSignificant));
+        AssertUtils.betterStringEQAssert(expected, instance.printMatrix(oneHalfSignificant));
     }
 
     @Test
@@ -146,6 +166,6 @@ public class MatrixThresholdPrinterTest {
         String expected = "Found match of 100% (inverse match 25%) between submissions \"E\" and \"EFGH\"\n";
         expected += "Found match of 75% (inverse match 50%) between submissions \"EFGH\" and \"FGHIJK\"\n";
 
-        assertEquals(expected, instance.printMatrix(twoSignificant));
+        AssertUtils.betterStringEQAssert(expected, instance.printMatrix(twoSignificant));
     }
 }

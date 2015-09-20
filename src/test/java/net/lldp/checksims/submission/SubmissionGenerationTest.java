@@ -21,9 +21,8 @@
 
 package net.lldp.checksims.submission;
 
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.tokenizer.Tokenizer;
 import net.lldp.checksims.testutil.SubmissionUtils;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,7 +50,6 @@ public class SubmissionGenerationTest {
     private File testOneFile;
     private File testRecursive;
     private File testVariedExtensions;
-    private Tokenizer line;
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
@@ -67,8 +65,6 @@ public class SubmissionGenerationTest {
         testOneFile = new File(basePath + "/testOneFile");
         testRecursive = new File(basePath + "/testRecursive");
         testVariedExtensions = new File(basePath + "/testVariedExtensions");
-
-        line = Tokenizer.getTokenizer(TokenType.LINE);
     }
 
     public static List<File> namesToFiles(String prefix, List<String> names) {
@@ -164,23 +160,23 @@ public class SubmissionGenerationTest {
 
     @Test(expected = NoSuchFileException.class)
     public void TestGenerateSubmissionNonexistantDir() throws Exception {
-        Submission.submissionFromDir(new File("does_not_exist"), "*.txt", line, false);
+        Submission.submissionFromDir(new File("does_not_exist"), "*.txt", false);
     }
 
     @Test(expected = NotDirectoryException.class)
     public void TestGenerateSubmissionFromFileNotDir() throws Exception {
-        Submission.submissionFromDir(new File(testEmptyFile.getAbsolutePath() + "/empty.txt"), "*.txt", line, false);
+        Submission.submissionFromDir(new File(testEmptyFile.getAbsolutePath() + "/empty.txt"), "*.txt", false);
     }
 
     @Test(expected = NoMatchingFilesException.class)
     public void TestGenerateEmptySubmission() throws Exception {
-        Submission.submissionFromDir(testEmpty, "*.txt", line, false);
+        Submission.submissionFromDir(testEmpty, "*.txt", false);
     }
 
     @Test
     public void TestGenerateEmptySubmissionOneFile() throws Exception {
-        Submission empty = Submission.submissionFromDir(testEmptyFile, "*.txt", line, false);
-        Submission expected = SubmissionUtils.lineSubmissionFromString(testEmptyFile.getName(), "");
+        Submission empty = Submission.submissionFromDir(testEmptyFile, "*.txt", false);
+        Submission expected = SubmissionUtils.submissionFromString(testEmptyFile.getName(), "");
 
         assertNotNull(empty);
         assertEquals(expected, empty);
@@ -188,8 +184,8 @@ public class SubmissionGenerationTest {
 
     @Test
     public void TestGenerateEmptySubmissionMultiFile() throws Exception {
-        Submission emptyMulti = Submission.submissionFromDir(test2, "*.txt", line, false);
-        Submission expected = SubmissionUtils.lineSubmissionFromString(test2.getName(), "");
+        Submission emptyMulti = Submission.submissionFromDir(test2, "*.txt", false);
+        Submission expected = SubmissionUtils.submissionFromString(test2.getName(), "");
 
         assertNotNull(emptyMulti);
         assertEquals(expected, emptyMulti);
@@ -197,8 +193,8 @@ public class SubmissionGenerationTest {
 
     @Test
     public void TestGenerateSingleFileSubmissionNonEmpty() throws Exception {
-        Submission oneFile = Submission.submissionFromDir(testOneFile, "*.txt", line, false);
-        Submission expected = SubmissionUtils.lineSubmissionFromString(testOneFile.getName(), "Hello world.\n");
+        Submission oneFile = Submission.submissionFromDir(testOneFile, "*.txt", false);
+        Submission expected = SubmissionUtils.submissionFromString(testOneFile.getName(), "Hello world.\n");
 
         assertNotNull(oneFile);
         assertEquals(expected, oneFile);
@@ -206,8 +202,8 @@ public class SubmissionGenerationTest {
 
     @Test
     public void TestGenerateMultiFileSubmissionNonEmpty() throws Exception {
-        Submission test = Submission.submissionFromDir(test1, "*.txt", line, false);
-        Submission expected = SubmissionUtils.lineSubmissionFromString(test1.getName(), "Test 1\nTest 2\nTest 3\n");
+        Submission test = Submission.submissionFromDir(test1, "*.txt", false);
+        Submission expected = SubmissionUtils.submissionFromString(test1.getName(), "Test 1\nTest 2\nTest 3\n");
 
         assertNotNull(test);
         assertEquals(expected, test);
@@ -215,24 +211,24 @@ public class SubmissionGenerationTest {
 
     @Test(expected = NoSuchFileException.class)
     public void TestGenerateListOfSubmissionFromNonexistantFile() throws Exception {
-        Submission.submissionListFromDir(new File("does_not_exist"), "*.txt", line, false);
+        Submission.submissionListFromDir(new File("does_not_exist"), "*.txt", false);
     }
 
     @Test(expected = NotDirectoryException.class)
     public void TestGenerateListOfSubmissionFromFile() throws Exception {
-        Submission.submissionListFromDir(new File(testEmptyFile.getAbsolutePath() + "/empty.txt"), "*.txt", line, false);
+        Submission.submissionListFromDir(new File(testEmptyFile.getAbsolutePath() + "/empty.txt"), "*.txt", false);
     }
 
     @Test
     public void TestGenerateListOfSubmissionFromDir() throws Exception {
-        Set<Submission> submissionList = Submission.submissionListFromDir(new File(basePath), "*.txt", line, true);
+        Set<Submission> submissionList = Submission.submissionListFromDir(new File(basePath), "*.txt", true);
 
-        Submission sub1 = Submission.submissionFromDir(test1, "*.txt", line, true);
-        Submission sub2 = Submission.submissionFromDir(test2, "*.txt", line, true);
-        Submission subEmptyFile = Submission.submissionFromDir(testEmptyFile, "*.txt", line, true);
-        Submission subOneFile = Submission.submissionFromDir(testOneFile, "*.txt", line, true);
-        Submission subRecursive = Submission.submissionFromDir(testRecursive, "*.txt", line, true);
-        Submission subVariedExtensions = Submission.submissionFromDir(testVariedExtensions, "*.txt", line, true);
+        Submission sub1 = Submission.submissionFromDir(test1, "*.txt", true);
+        Submission sub2 = Submission.submissionFromDir(test2, "*.txt", true);
+        Submission subEmptyFile = Submission.submissionFromDir(testEmptyFile, "*.txt", true);
+        Submission subOneFile = Submission.submissionFromDir(testOneFile, "*.txt", true);
+        Submission subRecursive = Submission.submissionFromDir(testRecursive, "*.txt", true);
+        Submission subVariedExtensions = Submission.submissionFromDir(testVariedExtensions, "*.txt", true);
 
         List<Submission> expected = Arrays.asList(sub1, sub2, subEmptyFile, subOneFile, subRecursive, subVariedExtensions);
 

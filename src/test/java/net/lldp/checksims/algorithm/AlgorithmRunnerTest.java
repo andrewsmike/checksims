@@ -22,9 +22,15 @@
 package net.lldp.checksims.algorithm;
 
 import net.lldp.checksims.ChecksimsException;
+import net.lldp.checksims.parse.SubmissionPercentableCalculator;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.testutil.AlgorithmUtils;
-import net.lldp.checksims.token.TokenType;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,7 +41,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import static net.lldp.checksims.testutil.SubmissionUtils.charSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 import static net.lldp.checksims.testutil.SubmissionUtils.setFromElements;
 import static java.util.Collections.singleton;
 
@@ -48,34 +54,39 @@ public class AlgorithmRunnerTest {
     private Submission c;
     private Submission d;
 
-    private SimilarityDetector detectNothing;
+    private SimilarityDetector<PercentableTokenListDecorator> detectNothing;
 
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     public void setUp() {
-        detectNothing = new SimilarityDetector() {
-            @Override
-            public TokenType getDefaultTokenType() {
-                return TokenType.CHARACTER;
-            }
-
-            @Override
-            public AlgorithmResults detectSimilarity(Submission a, Submission b) {
-                return new AlgorithmResults(a, b, a.getContentAsTokens(), b.getContentAsTokens());
-            }
+        detectNothing = new SimilarityDetector<PercentableTokenListDecorator>() {
 
             @Override
             public String getName() {
                 return "nothing";
             }
+
+            @Override
+            public SubmissionPercentableCalculator<PercentableTokenListDecorator> getPercentableCalculator()
+            {
+                return new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER));
+            }
+
+            @Override
+            public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab,
+                    PercentableTokenListDecorator rft, PercentableTokenListDecorator comt)
+                    throws TokenTypeMismatchException, InternalAlgorithmError
+            {
+                return new AlgorithmResults(ab, rft, comt);
+            }
         };
 
-        a = charSubmissionFromString("A", "A");
-        b = charSubmissionFromString("B", "B");
-        c = charSubmissionFromString("C", "C");
-        d = charSubmissionFromString("D", "D");
+        a = submissionFromString("A", "A");
+        b = submissionFromString("B", "B");
+        c = submissionFromString("C", "C");
+        d = submissionFromString("D", "D");
     }
 
     @Test

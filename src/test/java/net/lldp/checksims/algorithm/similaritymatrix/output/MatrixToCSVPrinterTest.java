@@ -24,17 +24,23 @@ package net.lldp.checksims.algorithm.similaritymatrix.output;
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.similaritymatrix.SimilarityMatrix;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
+import net.lldp.checksims.util.AssertUtils;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static net.lldp.checksims.testutil.SubmissionUtils.charSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 import static net.lldp.checksims.testutil.SubmissionUtils.setFromElements;
 import static java.util.Collections.singleton;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 /**
  * Tests for MatrixToCSVPrinter
@@ -43,44 +49,50 @@ public class MatrixToCSVPrinterTest {
     private MatrixToCSVPrinter instance;
     private SimilarityMatrix twoByTwo;
     private SimilarityMatrix twoByThree;
-
+    private SubmissionTokenizer st;
+    
     @Rule
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
     public void setUp() throws InternalAlgorithmError {
         instance = MatrixToCSVPrinter.getInstance();
+        st = new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER));
 
-        Submission abcd = charSubmissionFromString("ABCD", "ABCD");
-        Submission abcdefgh =charSubmissionFromString("ABCDEFGH", "ABCDEFGH");
+        Submission abcd = submissionFromString("ABCD", "ABCD");
+        Submission abcdefgh = submissionFromString("ABCDEFGH", "ABCDEFGH");
 
-        TokenList abcdInval = TokenList.cloneTokenList(abcd.getContentAsTokens());
+        TokenList abcdInval = TokenList.cloneTokenList(st.fromSubmission(abcd).getDataCopy());
         abcdInval.stream().forEach((token) -> token.setValid(false));
-        TokenList abcdefghInval = TokenList.cloneTokenList(abcdefgh.getContentAsTokens());
+        TokenList abcdefghInval = TokenList.cloneTokenList(st.fromSubmission(abcdefgh).getDataCopy());
         for(int i = 0; i < 4; i++) {
             abcdefghInval.get(i).setValid(false);
         }
 
-        AlgorithmResults abcdToAbcdefgh = new AlgorithmResults(abcd, abcdefgh, abcdInval, abcdefghInval);
+        AlgorithmResults abcdToAbcdefgh = new AlgorithmResults(abcd, abcdefgh,
+                new PercentableTokenListDecorator(abcdInval),
+                new PercentableTokenListDecorator(abcdefghInval));
 
         twoByTwo = SimilarityMatrix.generateMatrix(setFromElements(abcd, abcdefgh), singleton(abcdToAbcdefgh));
 
-        Submission abxy = charSubmissionFromString("ABXY", "ABXY");
-        Submission xyz = charSubmissionFromString("XYZ", "XYZ");
-        Submission www = charSubmissionFromString("WWW", "WWW");
+        Submission abxy = submissionFromString("ABXY", "ABXY");
+        Submission xyz = submissionFromString("XYZ", "XYZ");
+        Submission www = submissionFromString("WWW", "WWW");
 
-        TokenList abxyInval = TokenList.cloneTokenList(abxy.getContentAsTokens());
+        TokenList abxyInval = TokenList.cloneTokenList(st.fromSubmission(abxy).getDataCopy());
         for(int i = 2; i < 4; i++) {
             abxyInval.get(i).setValid(false);
         }
-        TokenList xyzInval = TokenList.cloneTokenList(xyz.getContentAsTokens());
+        TokenList xyzInval = TokenList.cloneTokenList(st.fromSubmission(xyz).getDataCopy());
         for(int i = 0; i < 2; i++) {
             xyzInval.get(i).setValid(false);
         }
 
-        AlgorithmResults abxyToXyz = new AlgorithmResults(abxy, xyz, abxyInval, xyzInval);
-        AlgorithmResults abxyToWww = new AlgorithmResults(abxy, www, abxy.getContentAsTokens(), www.getContentAsTokens());
-        AlgorithmResults xyzToWww = new AlgorithmResults(xyz, www, xyz.getContentAsTokens(), www.getContentAsTokens());
+        AlgorithmResults abxyToXyz = new AlgorithmResults(abxy, xyz,
+                new PercentableTokenListDecorator(abxyInval),
+                new PercentableTokenListDecorator(xyzInval));
+        AlgorithmResults abxyToWww = new AlgorithmResults(abxy, www, st.fromSubmission(abxy), st.fromSubmission(www));
+        AlgorithmResults xyzToWww = new AlgorithmResults(xyz, www, st.fromSubmission(xyz), st.fromSubmission(www));
 
         twoByThree = SimilarityMatrix.generateMatrix(setFromElements(abxy, xyz), setFromElements(www), setFromElements(abxyToXyz, abxyToWww, xyzToWww));
     }
@@ -100,14 +112,15 @@ public class MatrixToCSVPrinterTest {
     @Test
     public void TestPrinterOnTwoByTwo() throws Exception {
         String expected = "NULL,\"ABCD\",\"ABCDEFGH\"\n\"ABCD\",1.00,1.00\n\"ABCDEFGH\",0.50,1.00\n";
-
-        assertEquals(expected, instance.printMatrix(twoByTwo));
+        String actual = instance.printMatrix(twoByTwo);
+        
+        AssertUtils.betterStringEQAssert(expected, actual);
     }
 
     @Test
     public void TestPrinterOnThreeByTwo() throws Exception {
         String expected = "NULL,\"ABXY\",\"XYZ\",\"WWW\"\n\"ABXY\",1.00,0.50,0.00\n\"XYZ\",0.67,1.00,0.00\n";
 
-        assertEquals(expected, instance.printMatrix(twoByThree));
+        AssertUtils.betterStringEQAssert(expected, instance.printMatrix(twoByThree));
     }
 }

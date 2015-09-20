@@ -44,10 +44,10 @@ public class CommonCodeLineRemovalPreprocessorTest {
 
     @Before
     public void setUp() throws Exception {
-        empty = charSubmissionFromString("Empty", "");
-        abc = charSubmissionFromString("ABC", "A\nB\nC\n");
-        abcde = charSubmissionFromString("ABCDE", "A\nB\nC\nD\nE\n");
-        def = charSubmissionFromString("DEF", "D\nE\nF\n");
+        empty = submissionFromString("Empty", "");
+        abc = submissionFromString("ABC", "A\nB\nC\n");
+        abcde = submissionFromString("ABCDE", "A\nB\nC\nD\nE\n");
+        def = submissionFromString("DEF", "D\nE\nF\n");
     }
 
     @Test
@@ -64,7 +64,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
     public void TestRemoveIdenticalCommonCodeReturnsEmpty() throws Exception {
         SubmissionPreprocessor handler = new CommonCodeLineRemovalPreprocessor(abc);
         Set<Submission> removeFrom = singleton(abc);
-        Submission expected = charSubmissionFromString(abc.getName(), empty.getContentAsString());
+        Submission expected = submissionFromString(abc.getName(), empty.getContentAsString());
 
         Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
 
@@ -85,7 +85,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
     public void TestRemoveCommonCodePartialOverlap() throws Exception {
         SubmissionPreprocessor handler = new CommonCodeLineRemovalPreprocessor(abc);
         Set<Submission> removeFrom = singleton(abcde);
-        Submission expected = charSubmissionFromString(abcde.getName(), "D\nE\n");
+        Submission expected = submissionFromString(abcde.getName(), "D\nE\n");
 
         Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
 
@@ -96,7 +96,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
     public void TestRemoveCommonCodeSubsetOfCommon() throws Exception {
         SubmissionPreprocessor handler = new CommonCodeLineRemovalPreprocessor(abcde);
         Set<Submission> removeFrom = singleton(abc);
-        Submission expected = charSubmissionFromString(abc.getName(), empty.getContentAsString());
+        Submission expected = submissionFromString(abc.getName(), empty.getContentAsString());
 
         Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
 
@@ -107,8 +107,8 @@ public class CommonCodeLineRemovalPreprocessorTest {
     public void TestRemoveCommonCodeMultipleSubmissions() throws Exception {
         SubmissionPreprocessor handler = new CommonCodeLineRemovalPreprocessor(abc);
         Set<Submission> removeFrom = setFromElements(abc, abcde, def);
-        Submission expected1 = charSubmissionFromString(abc.getName(), empty.getContentAsString());
-        Submission expected2 = charSubmissionFromString(abcde.getName(), "D\nE\n");
+        Submission expected1 = submissionFromString(abc.getName(), empty.getContentAsString());
+        Submission expected2 = submissionFromString(abcde.getName(), "D\nE\n");
         Submission expected3 = def;
         Collection<Submission> expected = Arrays.asList(expected1, expected2, expected3);
 

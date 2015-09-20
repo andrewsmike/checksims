@@ -24,12 +24,18 @@ package net.lldp.checksims.algorithm.linesimilarity;
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.parse.SubmissionPercentableCalculator;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.SubmissionTokenizer;
+import net.lldp.checksims.parse.token.Token;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.Token;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.TokenTypeMismatchException;
+
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -40,7 +46,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Implements a line-by-line similarity checker.
  */
-public final class LineSimilarityChecker implements SimilarityDetector {
+public final class LineSimilarityChecker implements SimilarityDetector<PercentableTokenListDecorator> { // TODO LINE
     private static LineSimilarityChecker instance;
 
     /**
@@ -78,8 +84,8 @@ public final class LineSimilarityChecker implements SimilarityDetector {
     }
 
     @Override
-    public TokenType getDefaultTokenType() {
-        return TokenType.LINE;
+    public SubmissionPercentableCalculator<PercentableTokenListDecorator> getPercentableCalculator() {
+        return new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.LINE));
     }
 
     /**
@@ -92,24 +98,30 @@ public final class LineSimilarityChecker implements SimilarityDetector {
      * @throws InternalAlgorithmError Thrown on error obtaining a hash algorithm instance
      */
     @Override
-    public AlgorithmResults detectSimilarity(Submission a, Submission b)
+    public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab,
+            PercentableTokenListDecorator a,
+            PercentableTokenListDecorator b)
             throws TokenTypeMismatchException, InternalAlgorithmError {
         checkNotNull(a);
         checkNotNull(b);
 
-        TokenList linesA = a.getContentAsTokens();
-        TokenList linesB = b.getContentAsTokens();
-        TokenList finalA = TokenList.cloneTokenList(linesA);
-        TokenList finalB = TokenList.cloneTokenList(linesB);
+        //TokenList linesA = a.getContentAsTokens();
+        //TokenList linesB = b.getContentAsTokens();
+        //TokenList finalA = TokenList.cloneTokenList(linesA);
+        //TokenList finalB = TokenList.cloneTokenList(linesB);
 
+        /*
         if(!a.getTokenType().equals(b.getTokenType())) {
             throw new TokenTypeMismatchException("Token list type mismatch: submission " + a.getName() + " has type " +
                     linesA.type.toString() + ", while submission " + b.getName() + " has type "
                     + linesB.type.toString());
-        } else if(a.equals(b)) {
-            finalA.stream().forEach((token) -> token.setValid(false));
-            finalB.stream().forEach((token) -> token.setValid(false));
-            return new AlgorithmResults(a, b, finalA, finalB);
+        } else
+            */
+        
+        if(a.equals(b)) {
+            a.getDataCopy().stream().forEach((token) -> token.setValid(false));
+            b.getDataCopy().stream().forEach((token) -> token.setValid(false));
+            return new AlgorithmResults(ab, a, b);
         }
 
         MessageDigest hasher;
@@ -126,10 +138,10 @@ public final class LineSimilarityChecker implements SimilarityDetector {
         Map<String, List<SubmissionLine>> lineDatabase = new HashMap<>();
 
         // Hash all lines in A, and put them in the lines database
-        addLinesToMap(linesA, lineDatabase, a, hasher);
+        addLinesToMap(a.getDataCopy(), lineDatabase, ab.getLeft(), hasher);
 
         // Hash all lines in B, and put them in the lines database
-        addLinesToMap(linesB, lineDatabase, b, hasher);
+        addLinesToMap(b.getDataCopy(), lineDatabase, ab.getRight(), hasher);
 
         // Number of matched lines contained in both
         int identicalLinesA = 0;
@@ -145,9 +157,9 @@ public final class LineSimilarityChecker implements SimilarityDetector {
 
                 // Count the number of that line in each submission
                 for(SubmissionLine s : lineDatabase.get(key)) {
-                    if(s.submission.equals(a)) {
+                    if(s.submission.equals(ab.getLeft())) {
                         numLinesA++;
-                    } else if(s.submission.equals(b)) {
+                    } else if(s.submission.equals(ab.getRight())) {
                         numLinesB++;
                     } else {
                         throw new RuntimeException("Unreachable code!");
@@ -161,10 +173,10 @@ public final class LineSimilarityChecker implements SimilarityDetector {
 
                 // Set matches invalid
                 for(SubmissionLine s : lineDatabase.get(key)) {
-                    if(s.submission.equals(a)) {
-                        finalA.get(s.lineNum).setValid(false);
-                    } else if(s.submission.equals(b)) {
-                        finalB.get(s.lineNum).setValid(false);
+                    if(s.submission.equals(ab.getLeft())) {
+                        a.getDataCopy().get(s.lineNum).setValid(false);
+                    } else if(s.submission.equals(ab.getRight())) {
+                        b.getDataCopy().get(s.lineNum).setValid(false);
                     } else {
                         throw new RuntimeException("Unreachable code!");
                     }
@@ -175,8 +187,8 @@ public final class LineSimilarityChecker implements SimilarityDetector {
             }
         }
 
-        int invalTokensA = (int)finalA.stream().filter((token) -> !token.isValid()).count();
-        int invalTokensB = (int)finalB.stream().filter((token) -> !token.isValid()).count();
+        int invalTokensA = (int)a.getDataCopy().stream().filter((token) -> !token.isValid()).count();
+        int invalTokensB = (int)b.getDataCopy().stream().filter((token) -> !token.isValid()).count();
 
         if(invalTokensA != identicalLinesA) {
             throw new InternalAlgorithmError("Internal error: number of identical tokens (" + identicalLinesA
@@ -186,7 +198,7 @@ public final class LineSimilarityChecker implements SimilarityDetector {
                     + ") does not match number of invalid tokens (" + invalTokensB + ")");
         }
 
-        return new AlgorithmResults(a, b, finalA, finalB);
+        return new AlgorithmResults(ab, a, b);
     }
 
     void addLinesToMap(TokenList lines, Map<String, List<SubmissionLine>> lineDatabase, Submission submitter,

@@ -21,9 +21,10 @@
 
 package net.lldp.checksims.algorithm.smithwaterman;
 
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.testutil.TokenUtils;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +33,6 @@ import org.junit.rules.ExpectedException;
 import java.util.*;
 
 import static net.lldp.checksims.testutil.SubmissionUtils.setFromElements;
-import static net.lldp.checksims.testutil.TokenUtils.makeTokenListCharacter;
 import static org.junit.Assert.*;
 
 /**

@@ -23,9 +23,6 @@ package net.lldp.checksims.algorithm.preprocessor;
 
 import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.tokenizer.Tokenizer;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -61,11 +58,7 @@ public final class WhitespaceDeduplicationPreprocessor implements SubmissionPrep
         String unixNewlineDedup = tabsAndSpacesDedup.replaceAll("\n+", "\n");
         String windowsNewlineDedup = unixNewlineDedup.replaceAll("(\r\n)+", "\r\n");
 
-        Tokenizer tokenizer = Tokenizer.getTokenizer(submission.getTokenType());
-
-        TokenList finalList = tokenizer.splitString(windowsNewlineDedup);
-
-        return new ConcreteSubmission(submission.getName(), windowsNewlineDedup, finalList);
+        return new ConcreteSubmission(submission.getName(), windowsNewlineDedup);
     }
 
     /**

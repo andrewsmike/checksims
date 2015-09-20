@@ -23,9 +23,11 @@ package net.lldp.checksims.algorithm.similaritymatrix.output;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.similaritymatrix.SimilarityMatrix;
+import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.submission.Submission;
 
 import java.text.DecimalFormat;
@@ -73,7 +75,7 @@ public final class MatrixThresholdPrinter implements MatrixPrinter {
         ImmutableSet<AlgorithmResults> results = matrix.getBaseResults();
 
         Set<AlgorithmResults> filteredBelowThreshold = results.stream()
-                .filter((result) -> result.percentMatchedA() >= threshold || result.percentMatchedB() >= threshold)
+                .filter((result) -> result.percentMatchedA().gtEQ(threshold) || result.percentMatchedB().gtEQ(threshold))
                 .collect(Collectors.toCollection(HashSet::new));
 
         if(filteredBelowThreshold.isEmpty()) {
@@ -83,41 +85,41 @@ public final class MatrixThresholdPrinter implements MatrixPrinter {
         // Loop until all results over threshold consumed
         while(!filteredBelowThreshold.isEmpty()) {
             // Find the largest single result
-            double largest = 0.00;
+            Real largest = Real.ZERO;
             AlgorithmResults largestResult = Iterables.get(filteredBelowThreshold, 0);
             for(AlgorithmResults result : filteredBelowThreshold) {
-                if(result.percentMatchedA() > largest) {
+                if(result.percentMatchedA().greaterThan(largest)) {
                     largest = result.percentMatchedA();
                     largestResult = result;
                 }
-                if(result.percentMatchedB() > largest) {
+                if(result.percentMatchedB().greaterThan(largest)) {
                     largest = result.percentMatchedB();
                     largestResult = result;
                 }
             }
 
-            double largerOfTwo;
-            double smallerOfTwo;
+            Real largerOfTwo;
+            Real smallerOfTwo;
             Submission largerSubmission;
             Submission smallerSubmission;
 
-            if(largestResult.percentMatchedA() >= largestResult.percentMatchedB()) {
-                largerOfTwo = largestResult.percentMatchedA() * 100;
-                smallerOfTwo = largestResult.percentMatchedB() * 100;
+            if(largestResult.percentMatchedA().greaterThanEqualTo(largestResult.percentMatchedB())) {
+                largerOfTwo = largestResult.percentMatchedA().multiply(new Real(100));
+                smallerOfTwo = largestResult.percentMatchedB().multiply(new Real(100));
                 largerSubmission = largestResult.a;
                 smallerSubmission = largestResult.b;
             } else {
-                largerOfTwo = largestResult.percentMatchedB() * 100;
-                smallerOfTwo = largestResult.percentMatchedA() * 100;
+                largerOfTwo = largestResult.percentMatchedB().multiply(new Real(100));
+                smallerOfTwo = largestResult.percentMatchedA().multiply(new Real(100));
                 largerSubmission = largestResult.b;
                 smallerSubmission = largestResult.a;
             }
 
             // We have the largest single result, print it
             builder.append("Found match of ");
-            builder.append(formatter.format(largerOfTwo));
+            builder.append(formatter.format(largerOfTwo.asDouble()));
             builder.append("% (inverse match ");
-            builder.append(formatter.format(smallerOfTwo));
+            builder.append(formatter.format(smallerOfTwo.asDouble()));
             builder.append("%) between submissions \"");
             builder.append(largerSubmission.getName());
             builder.append("\" and \"");

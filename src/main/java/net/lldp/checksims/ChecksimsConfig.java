@@ -23,13 +23,14 @@ package net.lldp.checksims;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import net.lldp.checksims.algorithm.AlgorithmRegistry;
 import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.algorithm.preprocessor.SubmissionPreprocessor;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinterRegistry;
+import net.lldp.checksims.parse.SubmissionPercentableCalculator;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenType;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -48,8 +49,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * TODO: add a setImmutable method (or an immutable wrapper?) so ChecksimsRunner cannot alter a running config
  */
 public final class ChecksimsConfig {
-    private SimilarityDetector algorithm;
-    private TokenType tokenization;
+    private SimilarityDetector<?> algorithm;
+    private SubmissionPercentableCalculator<?> tokenization;
     private ImmutableList<SubmissionPreprocessor> preprocessors;
     private ImmutableSet<Submission> submissions;
     private ImmutableSet<Submission> archiveSubmissions;
@@ -65,7 +66,7 @@ public final class ChecksimsConfig {
      */
     public ChecksimsConfig() {
         this.algorithm = AlgorithmRegistry.getInstance().getDefaultImplementation();
-        this.tokenization = this.algorithm.getDefaultTokenType();
+        this.tokenization = this.algorithm.getPercentableCalculator();
         this.submissions = ImmutableSet.copyOf(new HashSet<>());
         this.archiveSubmissions = ImmutableSet.copyOf(new HashSet<>());
         this.preprocessors = ImmutableList.copyOf(new ArrayList<>());
@@ -93,7 +94,7 @@ public final class ChecksimsConfig {
      * @param newAlgorithm New similarity detection algorithm to use
      * @return This configuration
      */
-    public ChecksimsConfig setAlgorithm(SimilarityDetector newAlgorithm) {
+    public ChecksimsConfig setAlgorithm(SimilarityDetector<?> newAlgorithm) {
         checkNotNull(newAlgorithm);
 
         algorithm = newAlgorithm;
@@ -105,7 +106,7 @@ public final class ChecksimsConfig {
      * @param newTokenization New tokenization algorithm to use
      * @return This configuration
      */
-    public ChecksimsConfig setTokenization(TokenType newTokenization) {
+    public ChecksimsConfig setTokenization(SubmissionPercentableCalculator<?> newTokenization) {
         checkNotNull(newTokenization);
 
         tokenization = newTokenization;
@@ -186,14 +187,14 @@ public final class ChecksimsConfig {
     /**
      * @return Similarity detection algorithm to use
      */
-    public SimilarityDetector getAlgorithm() {
+    public SimilarityDetector<?> getAlgorithm() {
         return algorithm;
     }
 
     /**
      * @return Tokenization algorithm to use
      */
-    public TokenType getTokenization() {
+    public SubmissionPercentableCalculator<?> getTokenization() {
         return tokenization;
     }
 

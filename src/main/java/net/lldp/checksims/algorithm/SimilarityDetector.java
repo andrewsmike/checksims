@@ -21,9 +21,12 @@
 
 package net.lldp.checksims.algorithm;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.parse.SubmissionPercentableCalculator;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.TokenTypeMismatchException;
 import net.lldp.checksims.util.reflection.NamedInstantiable;
 
 /**
@@ -35,23 +38,23 @@ import net.lldp.checksims.util.reflection.NamedInstantiable;
  * This is required as reflection is used to automatically detect and instantiate all similarity detection algorithms
  * present at runtime.
  */
-public interface SimilarityDetector extends NamedInstantiable {
+public interface SimilarityDetector<T extends Percentable> extends NamedInstantiable {
     /**
      * @return Default token type to be used for this similarity detector
      */
-    TokenType getDefaultTokenType();
+    SubmissionPercentableCalculator<T> getPercentableCalculator();
 
     /**
      * Apply a pairwise similarity detection algorithm.
      *
      * Token list types of A and B must match
      *
-     * @param a First submission to apply to
-     * @param b Second submission to apply to
+     * @param rft First submission to apply to
+     * @param comt Second submission to apply to
      * @return Similarity results of comparing submissions A and B
      * @throws TokenTypeMismatchException Thrown on comparing two submissions with different token types
      * @throws InternalAlgorithmError Thrown on error detecting similarities
      */
-    AlgorithmResults detectSimilarity(Submission a, Submission b)
+    AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, T rft, T comt)
             throws TokenTypeMismatchException, InternalAlgorithmError;
 }

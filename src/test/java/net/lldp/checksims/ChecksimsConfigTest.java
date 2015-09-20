@@ -22,6 +22,7 @@
 package net.lldp.checksims;
 
 import net.lldp.checksims.algorithm.preprocessor.LowercasePreprocessor;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -29,8 +30,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 /**
  * Tests of validity checking on ChecksimsConfig
@@ -131,7 +131,7 @@ public class ChecksimsConfigTest {
 
     @Test
     public void TestBaseConfigEquality() {
-        assertEquals(new ChecksimsConfig(), new ChecksimsConfig());
+        assertTrue(new ChecksimsConfig().equals(new ChecksimsConfig()));
     }
 
     @Test

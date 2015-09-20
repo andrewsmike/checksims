@@ -30,7 +30,7 @@ import org.junit.Test;
 import java.util.*;
 
 import static net.lldp.checksims.testutil.SubmissionUtils.checkSubmissionCollections;
-import static net.lldp.checksims.testutil.SubmissionUtils.lineSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 import static net.lldp.checksims.testutil.SubmissionUtils.setFromElements;
 import static java.util.Collections.*;
 import static org.junit.Assert.*;
@@ -49,8 +49,8 @@ public class PreprocessSubmissionsTest {
 
     @Before
     public void setUp() {
-        a = lineSubmissionFromString("Submission A", "A");
-        b = lineSubmissionFromString("Submission B", "B");
+        a = submissionFromString("Submission A", "A");
+        b = submissionFromString("Submission B", "B");
 
         empty = new HashSet<>();
         oneSubmission = singleton(a);
@@ -71,7 +71,7 @@ public class PreprocessSubmissionsTest {
         renamer = new SubmissionPreprocessor() {
             @Override
             public Submission process(Submission submission) {
-                return new ConcreteSubmission("renamed " + submission.getName(), submission.getContentAsString(), submission.getContentAsTokens());
+                return new ConcreteSubmission("renamed " + submission.getName(), submission.getContentAsString());
             }
 
             @Override
@@ -100,7 +100,7 @@ public class PreprocessSubmissionsTest {
     @Test
     public void testOneSubmissionRename() throws ChecksimsException {
         Collection<Submission> results = PreprocessSubmissions.process(renamer, oneSubmission);
-        Submission expected = lineSubmissionFromString("renamed " + a.getName(), a.getContentAsString());
+        Submission expected = submissionFromString("renamed " + a.getName(), a.getContentAsString());
 
         checkSubmissionCollections(singleton(expected), results);
     }
@@ -115,8 +115,8 @@ public class PreprocessSubmissionsTest {
     @Test
     public void testTwoSubmissionRename() throws ChecksimsException {
         Collection<Submission> results = PreprocessSubmissions.process(renamer, twoSubmissions);
-        Submission expectedA = lineSubmissionFromString("renamed " + a.getName(), a.getContentAsString());
-        Submission expectedB = lineSubmissionFromString("renamed " + b.getName(), b.getContentAsString());
+        Submission expectedA = submissionFromString("renamed " + a.getName(), a.getContentAsString());
+        Submission expectedB = submissionFromString("renamed " + b.getName(), b.getContentAsString());
         List<Submission> expected = Arrays.asList(expectedA, expectedB);
 
         checkSubmissionCollections(expected, results);

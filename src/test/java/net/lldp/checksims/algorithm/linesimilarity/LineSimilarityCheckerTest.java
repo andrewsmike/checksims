@@ -23,18 +23,22 @@ package net.lldp.checksims.algorithm.linesimilarity;
 
 import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.algorithm.AlgorithmResults;
+import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.parse.token.PercentableTokenListDecorator;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
 import static net.lldp.checksims.testutil.AlgorithmUtils.checkResults;
 import static net.lldp.checksims.testutil.AlgorithmUtils.checkResultsIdenticalSubmissions;
 import static net.lldp.checksims.testutil.AlgorithmUtils.checkResultsNoMatch;
-import static net.lldp.checksims.testutil.SubmissionUtils.lineSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 
 /**
  * Tests for the Line Comparison algorithm
@@ -45,97 +49,105 @@ public class LineSimilarityCheckerTest {
     private Submission aabc;
     private Submission abcde;
     private Submission def;
-    private SimilarityDetector lineCompare;
+    private SimilarityDetector<PercentableTokenListDecorator> lineCompare;
 
     @Before
     public void setUp() throws Exception {
-        empty = lineSubmissionFromString("Empty", "");
-        abc = lineSubmissionFromString("ABC", "A\nB\nC\n");
-        aabc = lineSubmissionFromString("AABC", "A\nA\nB\nC\n");
-        abcde = lineSubmissionFromString("ABCDE", "A\nB\nC\nD\nE\n");
-        def = lineSubmissionFromString("DEF", "D\nE\nF\n");
+        empty = submissionFromString("Empty", "");
+        abc = submissionFromString("ABC", "A\nB\nC\n");
+        aabc = submissionFromString("AABC", "A\nA\nB\nC\n");
+        abcde = submissionFromString("ABCDE", "A\nB\nC\nD\nE\n");
+        def = submissionFromString("DEF", "D\nE\nF\n");
 
-        lineCompare = LineSimilarityChecker.getInstance();
+        lineCompare = LineSimilarityChecker.getInstance(); // TODO: change
     }
-
-    @Test(expected = ChecksimsException.class)
-    public void TestErrorOnTokenTypeMismatch() throws ChecksimsException {
-        lineCompare.detectSimilarity(empty, new ConcreteSubmission("Error", "", new TokenList(TokenType.CHARACTER)));
+    
+    public AlgorithmResults cmp(Submission a, Submission b) throws TokenTypeMismatchException, InternalAlgorithmError
+    {
+        return lineCompare.detectSimilarity(Pair.of(a, b),
+                lineCompare.getPercentableCalculator().fromSubmission(a),
+                lineCompare.getPercentableCalculator().fromSubmission(b));
     }
-
+    
     @Test
     public void TestEmptySubmissionIsZeroPercentSimilar() throws ChecksimsException {
-        AlgorithmResults results = lineCompare.detectSimilarity(empty, empty);
+        AlgorithmResults results = cmp(empty, empty);
 
-        checkResultsIdenticalSubmissions(results, empty);
+        checkResultsIdenticalSubmissions(results);
     }
 
     @Test
     public void TestEmptySubmissionAndNonemptySubmission() throws ChecksimsException {
-        AlgorithmResults results = lineCompare.detectSimilarity(empty, abc);
+        AlgorithmResults results = cmp(empty, abc);
 
         checkResultsNoMatch(results, empty, abc);
     }
 
     @Test
     public void TestIdenticalSubmissions() throws Exception {
-        AlgorithmResults results = lineCompare.detectSimilarity(abc, abc);
+        AlgorithmResults results = cmp(abc, abc);
 
-        checkResultsIdenticalSubmissions(results, abc);
+        checkResultsIdenticalSubmissions(results);
     }
 
     @Test
     public void TestSubmissionStrictSubset() throws ChecksimsException {
-        AlgorithmResults results = lineCompare.detectSimilarity(abc, abcde);
+        AlgorithmResults results = cmp(abc, abcde);
 
-        TokenList expectedAbc = TokenList.cloneTokenList(abc.getContentAsTokens());
+        TokenList expectedAbc = TokenList.cloneTokenList(lineCompare.getPercentableCalculator().fromSubmission(abc).getDataCopy());
         expectedAbc.stream().forEach((token) -> token.setValid(false));
-        TokenList expectedAbcde = TokenList.cloneTokenList(abcde.getContentAsTokens());
+        TokenList expectedAbcde = TokenList.cloneTokenList(lineCompare.getPercentableCalculator().fromSubmission(abcde).getDataCopy());
         for(int i = 0; i <= 2; i++) {
             expectedAbcde.get(i).setValid(false);
         }
 
-        checkResults(results, abc, abcde, expectedAbc, expectedAbcde);
+        checkResults(results, abc, abcde,
+                new PercentableTokenListDecorator(expectedAbc),
+                new PercentableTokenListDecorator(expectedAbcde));
     }
 
     @Test
     public void TestSubmissionsNoOverlap() throws ChecksimsException {
-        AlgorithmResults results = lineCompare.detectSimilarity(abc, def);
+        AlgorithmResults results = cmp(abc, def);
 
         checkResultsNoMatch(results, abc, def);
     }
 
     @Test
     public void TestSubmissionsSomeOverlap() throws ChecksimsException {
-        AlgorithmResults results = lineCompare.detectSimilarity(abcde, def);
+        AlgorithmResults results = cmp(abcde, def);
 
-        TokenList expectedAbcde = TokenList.cloneTokenList(abcde.getContentAsTokens());
+        TokenList expectedAbcde = TokenList.cloneTokenList(lineCompare.getPercentableCalculator().fromSubmission(abcde).getDataCopy());
         expectedAbcde.get(3).setValid(false);
         expectedAbcde.get(4).setValid(false);
 
-        TokenList expectedDef = TokenList.cloneTokenList(def.getContentAsTokens());
+        TokenList expectedDef = TokenList.cloneTokenList(lineCompare.getPercentableCalculator().fromSubmission(def).getDataCopy());
         expectedDef.get(0).setValid(false);
         expectedDef.get(1).setValid(false);
 
-        checkResults(results, abcde, def, expectedAbcde, expectedDef);
+        checkResults(results, abcde, def,
+                new PercentableTokenListDecorator(expectedAbcde),
+                new PercentableTokenListDecorator(expectedDef));
     }
 
     @Test
     public void TestSubmissionsDuplicatedToken() throws ChecksimsException {
-        AlgorithmResults results = lineCompare.detectSimilarity(aabc, abc);
+        AlgorithmResults results = cmp(aabc, abc);
 
-        TokenList expectedAbc = TokenList.cloneTokenList(abc.getContentAsTokens());
+        TokenList expectedAbc = TokenList.cloneTokenList(lineCompare.getPercentableCalculator().fromSubmission(abc).getDataCopy());
         expectedAbc.stream().forEach((token) -> token.setValid(false));
 
-        TokenList expectedAabc = TokenList.cloneTokenList(aabc.getContentAsTokens());
+        TokenList expectedAabc = TokenList.cloneTokenList(lineCompare.getPercentableCalculator().fromSubmission(aabc).getDataCopy());
         expectedAabc.stream().forEach((token) -> token.setValid(false));
 
-        checkResults(results, aabc, abc, expectedAabc, expectedAbc);
+        checkResults(results, aabc, abc,
+                new PercentableTokenListDecorator(expectedAabc),
+                new PercentableTokenListDecorator(expectedAbc));
     }
 
     @Test
     public void TestSubmissionDuplicatedTokenNotInOtherSubmission() throws ChecksimsException {
-        AlgorithmResults results = lineCompare.detectSimilarity(aabc, def);
+        AlgorithmResults results = cmp(aabc, def);
 
         checkResultsNoMatch(results, aabc, def);
     }

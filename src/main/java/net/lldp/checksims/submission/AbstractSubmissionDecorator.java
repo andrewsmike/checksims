@@ -21,9 +21,9 @@
 
 package net.lldp.checksims.submission;
 
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
-
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -31,16 +31,23 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class AbstractSubmissionDecorator implements Submission {
     private final Submission wrappedSubmission;
-
-    public AbstractSubmissionDecorator(Submission wrappedSubmission) {
+    private final TokenList tokens;
+    private final TokenType tokenType;
+    private final Tokenizer tokenizer;
+    
+    
+    public AbstractSubmissionDecorator(Submission wrappedSubmission, Tokenizer tokenizer) {
         checkNotNull(wrappedSubmission);
+        checkNotNull(tokenizer);
 
         this.wrappedSubmission = wrappedSubmission;
+        this.tokens = tokenizer.splitString(wrappedSubmission.getContentAsString());
+        this.tokenType = tokenizer.getType();
+        this.tokenizer = tokenizer;
     }
 
-    @Override
     public TokenList getContentAsTokens() {
-        return wrappedSubmission.getContentAsTokens();
+        return tokens;
     }
 
     @Override
@@ -53,14 +60,12 @@ public abstract class AbstractSubmissionDecorator implements Submission {
         return wrappedSubmission.getName();
     }
 
-    @Override
     public int getNumTokens() {
-        return wrappedSubmission.getNumTokens();
+        return tokens.size();
     }
 
-    @Override
     public TokenType getTokenType() {
-        return wrappedSubmission.getTokenType();
+        return tokenType;
     }
 
     @Override
@@ -81,5 +86,10 @@ public abstract class AbstractSubmissionDecorator implements Submission {
     @Override
     public int compareTo(Submission other) {
         return wrappedSubmission.compareTo(other);
+    }
+
+    public Tokenizer getTokenizer()
+    {
+        return tokenizer;
     }
 }

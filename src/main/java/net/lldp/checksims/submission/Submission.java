@@ -22,9 +22,7 @@
 package net.lldp.checksims.submission;
 
 import com.google.common.collect.Ordering;
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.TokenType;
-import net.lldp.checksims.token.tokenizer.Tokenizer;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,11 +49,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public interface Submission extends Comparable<Submission> {
     /**
-     * @return List of tokens forming the body of this submission
-     */
-    TokenList getContentAsTokens();
-
-    /**
      * @return String consisting of the body of the submission
      */
     String getContentAsString();
@@ -64,16 +57,6 @@ public interface Submission extends Comparable<Submission> {
      * @return Name of this submission
      */
     String getName();
-
-    /**
-     * @return Number of tokens in this submission's token list
-     */
-    int getNumTokens();
-
-    /**
-     * @return Type of token contained in this submission
-     */
-    TokenType getTokenType();
 
     /**
      * Generate a list of all student submissions from a directory.
@@ -87,12 +70,11 @@ public interface Submission extends Comparable<Submission> {
      * @return Set of submissions including all unique nonempty submissions in the given directory
      * @throws java.io.IOException Thrown on error interacting with file or filesystem
      */
-    static Set<Submission> submissionListFromDir(File directory, String glob, Tokenizer splitter, boolean recursive)
+    static Set<Submission> submissionListFromDir(File directory, String glob, boolean recursive)
             throws IOException {
         checkNotNull(directory);
         checkNotNull(glob);
         checkArgument(!glob.isEmpty(), "Glob pattern cannot be empty!");
-        checkNotNull(splitter);
 
         Set<Submission> submissions = new HashSet<>();
         Logger local = LoggerFactory.getLogger(Submission.class);
@@ -108,7 +90,7 @@ public interface Submission extends Comparable<Submission> {
 
         for(File f : contents) {
             try {
-                Submission s = submissionFromDir(f, glob, splitter, recursive);
+                Submission s = submissionFromDir(f, glob, recursive);
                 submissions.add(s);
                 if(s.getContentAsString().isEmpty()) {
                     local.warn("Warning: Submission " + s.getName() + " is empty!");
@@ -133,12 +115,11 @@ public interface Submission extends Comparable<Submission> {
      * @return Single submission from all files matching the glob in given directory
      * @throws IOException Thrown on error interacting with file
      */
-    static Submission submissionFromDir(File directory, String glob, Tokenizer splitter, boolean recursive)
+    static Submission submissionFromDir(File directory, String glob, boolean recursive)
             throws IOException, NoMatchingFilesException {
         checkNotNull(directory);
         checkNotNull(glob);
         checkArgument(!glob.isEmpty(), "Glob pattern cannot be empty!");
-        checkNotNull(splitter);
 
         if(!directory.exists()) {
             throw new NoSuchFileException("Does not exist: " + directory.getAbsolutePath());
@@ -150,7 +131,7 @@ public interface Submission extends Comparable<Submission> {
 
         Set<File> files = getAllMatchingFiles(directory, glob, recursive);
 
-        return submissionFromFiles(directory.getName(), files, splitter);
+        return submissionFromFiles(directory.getName(), files);
     }
 
     /**
@@ -215,12 +196,11 @@ public interface Submission extends Comparable<Submission> {
      * @throws IOException Thrown on error reading from file
      * @throws NoMatchingFilesException Thrown if no files are given
      */
-    static Submission submissionFromFiles(String name, Set<File> files, Tokenizer splitter)
+    static Submission submissionFromFiles(String name, Set<File> files)
             throws IOException, NoMatchingFilesException {
         checkNotNull(name);
         checkArgument(!name.isEmpty(), "Submission name cannot be empty");
         checkNotNull(files);
-        checkNotNull(splitter);
 
         Logger logs = LoggerFactory.getLogger(Submission.class);
 
@@ -232,8 +212,6 @@ public interface Submission extends Comparable<Submission> {
         // To ensure submission generation is deterministic, sort files by name, and read them in that order
         List<File> orderedFiles = Ordering.from((File file1, File file2) -> file1.getName().compareTo(file2.getName()))
                 .immutableSortedCopy(files);
-
-        TokenList tokenList = new TokenList(splitter.getType());
 
         StringBuilder fileContent = new StringBuilder();
 
@@ -250,13 +228,10 @@ public interface Submission extends Comparable<Submission> {
 
         String contentString = fileContent.toString();
 
-        // Split the content
-        tokenList.addAll(splitter.splitString(contentString));
-
-        if(tokenList.size() > 7500) {
-            logs.warn("Warning: Submission " + name + " has very large token count (" + tokenList.size() + ")");
+        if(contentString.length() > 7500 * 4) { // large number of tokens * average token length
+            logs.warn("Warning: Submission " + name + " has very large source size (" + contentString.length() + ")");
         }
 
-        return new ConcreteSubmission(name, contentString, tokenList);
+        return new ConcreteSubmission(name, contentString);
     }
 }

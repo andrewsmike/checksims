@@ -27,9 +27,7 @@ import org.junit.Test;
 
 import static net.lldp.checksims.testutil.PreprocessorUtils.checkPreprocessSubmission;
 import static net.lldp.checksims.testutil.PreprocessorUtils.checkPreprocessSubmissionIdentity;
-import static net.lldp.checksims.testutil.SubmissionUtils.charSubmissionFromString;
-import static net.lldp.checksims.testutil.SubmissionUtils.lineSubmissionFromString;
-import static net.lldp.checksims.testutil.SubmissionUtils.whitespaceSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 
 /**
  * Tests for the LowercasePreprocessor
@@ -48,15 +46,20 @@ public class LowercasePreprocessorTest {
 
     @Before
     public void setUp() {
-        emptyListCharacter = charSubmissionFromString("Empty Character submission", "");
-        oneElementListCharacter = charSubmissionFromString("One element character submission", "A");
-        oneElementListCharacterIsLowerCase = charSubmissionFromString("One element lowercase character submission", "a");
-        oneElementListWhitespace = whitespaceSubmissionFromString("One element whitespace submission", "HELLO");
-        oneElementListWhitespaceIsLowerCase = whitespaceSubmissionFromString("One element lowercase whitespace submission", "hello");
-        oneElementListLine = lineSubmissionFromString("One element line submission", "HELLO WORLD");
-        oneElementListLineIsLowerCase = lineSubmissionFromString("One element lowercase line submission", "hello world");
-        twoElementListCharacter = charSubmissionFromString("Two element character list", "He");
-        threeElementListCharacter = charSubmissionFromString("Three element character list", "HeL");
+        //char
+        emptyListCharacter = submissionFromString("Empty Character submission", "");
+        oneElementListCharacter = submissionFromString("One element character submission", "A");
+        oneElementListCharacterIsLowerCase = submissionFromString("One element lowercase character submission", "a");
+        twoElementListCharacter = submissionFromString("Two element character list", "He");
+        threeElementListCharacter = submissionFromString("Three element character list", "HeL");
+        
+        //whitespace
+        oneElementListWhitespace = submissionFromString("One element whitespace submission", "HELLO");
+        oneElementListWhitespaceIsLowerCase = submissionFromString("One element lowercase whitespace submission", "hello");
+        
+        //line
+        oneElementListLine = submissionFromString("One element line submission", "HELLO WORLD");
+        oneElementListLineIsLowerCase = submissionFromString("One element lowercase line submission", "hello world");
 
         instance = LowercasePreprocessor.getInstance();
     }

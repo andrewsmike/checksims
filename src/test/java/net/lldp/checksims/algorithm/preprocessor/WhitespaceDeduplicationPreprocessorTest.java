@@ -27,9 +27,7 @@ import org.junit.Test;
 
 import static net.lldp.checksims.testutil.PreprocessorUtils.checkPreprocessSubmission;
 import static net.lldp.checksims.testutil.PreprocessorUtils.checkPreprocessSubmissionIdentity;
-import static net.lldp.checksims.testutil.SubmissionUtils.charSubmissionFromString;
-import static net.lldp.checksims.testutil.SubmissionUtils.lineSubmissionFromString;
-import static net.lldp.checksims.testutil.SubmissionUtils.whitespaceSubmissionFromString;
+import static net.lldp.checksims.testutil.SubmissionUtils.submissionFromString;
 
 /**
  * Tests for the Whitespace Deduplication preprocessor
@@ -57,17 +55,17 @@ public class WhitespaceDeduplicationPreprocessorTest {
 
         preprocessor = WhitespaceDeduplicationPreprocessor.getInstance();
 
-        abcCharacter = charSubmissionFromString(abc, abc);
-        abcWhitespace = whitespaceSubmissionFromString(abc, abc);
-        abcLine = lineSubmissionFromString(abc, abc);
+        abcCharacter = submissionFromString(abc, abc);
+        abcWhitespace = submissionFromString(abc, abc);
+        abcLine = submissionFromString(abc, abc);
 
-        characterWhitespaceNonDuplicated = charSubmissionFromString(abcNoDup, abcNoDup);
-        whitespaceWhitespaceNonDuplicated = whitespaceSubmissionFromString(abcNoDup, abcNoDup);
-        lineWhitespaceNonDuplicated = lineSubmissionFromString(abcNoDup, abcNoDup);
+        characterWhitespaceNonDuplicated = submissionFromString(abcNoDup, abcNoDup);
+        whitespaceWhitespaceNonDuplicated = submissionFromString(abcNoDup, abcNoDup);
+        lineWhitespaceNonDuplicated = submissionFromString(abcNoDup, abcNoDup);
 
-        characterWhitespaceDuplicated = charSubmissionFromString(abcDup, abcDup);
-        whitespaceWhitespaceDuplicated = whitespaceSubmissionFromString(abcDup, abcDup);
-        lineWhitespaceDuplicated = lineSubmissionFromString(abcDup, abcDup);
+        characterWhitespaceDuplicated = submissionFromString(abcDup, abcDup);
+        whitespaceWhitespaceDuplicated = submissionFromString(abcDup, abcDup);
+        lineWhitespaceDuplicated = submissionFromString(abcDup, abcDup);
     }
 
     @Test

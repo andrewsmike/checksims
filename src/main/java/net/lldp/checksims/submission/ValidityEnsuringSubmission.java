@@ -21,8 +21,9 @@
 
 package net.lldp.checksims.submission;
 
-import net.lldp.checksims.token.TokenList;
-import net.lldp.checksims.token.ValidityEnsuringToken;
+import net.lldp.checksims.parse.token.TokenList;
+import net.lldp.checksims.parse.token.ValidityEnsuringToken;
+import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -33,8 +34,8 @@ import java.util.stream.Collectors;
  * Decorates another submission and overrides equals()
  */
 public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorator {
-    public ValidityEnsuringSubmission(Submission wrappedSubmission) {
-        super(wrappedSubmission);
+    public ValidityEnsuringSubmission(Submission wrappedSubmission, Tokenizer tokenizer) {
+        super(wrappedSubmission, tokenizer);
     }
 
     @Override
@@ -43,7 +44,8 @@ public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorato
             return false;
         }
 
-        Submission otherSubmission = (Submission)other;
+        AbstractSubmissionDecorator otherSubmission =
+                new ValidityEnsuringSubmission((Submission) other, getTokenizer());
 
         if(!otherSubmission.getTokenType().equals(this.getTokenType())
                 || !otherSubmission.getName().equals(this.getName())

@@ -21,10 +21,11 @@
 
 package net.lldp.checksims.algorithm;
 
-import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.token.TokenList;
+import org.apache.commons.lang3.tuple.Pair;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.parse.Real;
+import net.lldp.checksims.submission.Submission;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -34,65 +35,52 @@ public final class AlgorithmResults {
     // TODO consider making these private and adding getters
     public final Submission a;
     public final Submission b;
-    public final int identicalTokensA;
-    public final int identicalTokensB;
-    public final TokenList finalListA;
-    public final TokenList finalListB;
-    private final double percentMatchedA;
-    private final double percentMatchedB;
+    public final Percentable percentableA;
+    public final Percentable percentableB;
+    private final Real percentMatchedA;
+    private final Real percentMatchedB;
 
     /**
      * Construct results for a pairwise similarity detection algorithm.
      *
      * @param a First submission compared
      * @param b Second submission compared
-     * @param finalListA Token list from submission A, with matched tokens set invalid
-     * @param finalListB Token list from submission B, with matched tokens set invalid
+     * @param percentableA Token list from submission A, with matched tokens set invalid
+     * @param percentableB Token list from submission B, with matched tokens set invalid
      */
-    public AlgorithmResults(Submission a, Submission b, TokenList finalListA, TokenList finalListB) {
+    public AlgorithmResults(Submission a, Submission b, Percentable percentableA, Percentable percentableB) {
         checkNotNull(a);
         checkNotNull(b);
-        checkNotNull(finalListA);
-        checkNotNull(finalListB);
-        checkArgument(a.getNumTokens() == finalListA.size(),
-                "Token size mismatch when creating algorithm results for submission \"" + a.getName()
-                        + "\" --- expected " + a.getNumTokens() + ", got " + finalListA.size());
-        checkArgument(b.getNumTokens() == finalListB.size(),
-                "Token size mismatch when creating algorithm results for submission \"" + b.getName()
-                        + "\" --- expected " + b.getNumTokens() + ", got " + finalListB.size());
-
+        checkNotNull(percentableA);
+        checkNotNull(percentableB);
+        
         this.a = a;
         this.b = b;
-        this.finalListA = TokenList.immutableCopy(finalListA);
-        this.finalListB = TokenList.immutableCopy(finalListB);
+        
+        this.percentableA = percentableA;
+        this.percentableB = percentableB;
 
-        this.identicalTokensA = (int)finalListA.stream().filter((token) -> !token.isValid()).count();
-        this.identicalTokensB = (int)finalListB.stream().filter((token) -> !token.isValid()).count();
+        this.percentMatchedA = percentableA.getPercentageMatched();
+        this.percentMatchedB = percentableB.getPercentageMatched();
+        
+    }
 
-        if(a.getNumTokens() == 0) {
-            percentMatchedA = 0.0;
-        } else {
-            percentMatchedA = ((double)identicalTokensA) / (double)a.getNumTokens();
-        }
-
-        if(b.getNumTokens() == 0) {
-            percentMatchedB = 0.0;
-        } else {
-            percentMatchedB = ((double)identicalTokensB) / (double)b.getNumTokens();
-        }
+    public AlgorithmResults(Pair<Submission, Submission> ab, Percentable a, Percentable b)
+    {
+        this(ab.getLeft(), ab.getRight(), a, b);
     }
 
     /**
      * @return Percentage similarity of submission A to submission B. Represented as a double from 0.0 to 1.0 inclusive
      */
-    public double percentMatchedA() {
+    public Real percentMatchedA() {
         return percentMatchedA;
     }
 
     /**
      * @return Percentage similarity of submission B to submission A. Represented as a double from 0.0 to 1.0 inclusive
      */
-    public double percentMatchedB() {
+    public Real percentMatchedB() {
         return percentMatchedB;
     }
 
@@ -111,12 +99,40 @@ public final class AlgorithmResults {
 
         return this.a.equals(otherResults.a)
                 && this.b.equals(otherResults.b)
-                && this.finalListA.equals(otherResults.finalListA)
-                && this.finalListB.equals(otherResults.finalListB);
+                && this.percentableA.equals(otherResults.percentableA)
+                && this.percentableB.equals(otherResults.percentableB);
     }
 
     @Override
     public int hashCode() {
         return a.hashCode() ^ b.hashCode();
+    }
+
+    public double getSimilarityPercent()
+    {
+        return percentMatchedB.asDouble();
+    }
+
+    public Percentable getPercentableA()
+    {
+        return percentableB;
+    }
+    
+    public Percentable getPercentableB()
+    {
+        return percentableB;
+    }
+
+    public boolean identicalSubmissions()
+    {
+        checkNotNull(a);
+        checkNotNull(b);
+        
+        return a.equals(b);
+    }
+
+    public AlgorithmResults inverse()
+    {
+        return new AlgorithmResults(b, a, percentableB, percentableA);
     }
 }
