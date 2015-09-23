@@ -23,6 +23,8 @@ package net.lldp.checksims.submission;
 
 import com.google.common.collect.Ordering;
 
+import net.lldp.checksims.parse.Percentable;
+
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +34,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -52,6 +56,34 @@ public interface Submission extends Comparable<Submission> {
      * @return String consisting of the body of the submission
      */
     String getContentAsString();
+    
+    /**
+     * An internal map of percentable values
+     */
+    Map<Class<? extends Percentable>, Percentable> parsedTypes = new HashMap<>();
+    
+    /**
+     * 
+     * @param clazz the class type of the percentable
+     * @param percentable the percentable
+     */
+    default <T extends Percentable> void addType(Class<T> clazz, T percentable) {
+        parsedTypes.put(clazz, percentable);
+    }
+    
+    /**
+     * 
+     * @param clazz the class type of the percentable
+     * @return whether this Submission has a percentable of the given type
+     */
+    default boolean contains(Class<? extends Percentable> clazz) {
+        return parsedTypes.containsKey(clazz);
+    }
+    
+    @SuppressWarnings("unchecked")
+    default <T extends Percentable> T get(Class<T> clazz) {
+        return (T) parsedTypes.get(clazz);
+    }
 
     /**
      * @return Name of this submission

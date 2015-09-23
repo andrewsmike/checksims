@@ -136,4 +136,31 @@ public class Real implements Percentable
     }
 
     
+    
+    
+
+    public Real simpleAverage(Real r)
+    {
+        return new Real(numerator+r.numerator, denominator+r.denominator);
+    }
+
+    public Real squareNumerator()
+    {
+        return new Real(numerator*numerator, denominator);
+    }
+
+    public Real divideDenominator(int i)
+    {
+        return new Real(numerator, denominator/i);
+    }
+
+    public Real sqrtNumerator()
+    {
+        return new Real((int) Math.sqrt(numerator), denominator);
+    }
+
+    public Real divideNumerator(int size)
+    {
+        return new Real(numerator/size, denominator);
+    }
 }

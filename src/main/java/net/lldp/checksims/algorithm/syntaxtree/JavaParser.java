@@ -28,7 +28,7 @@ public class JavaParser implements SimilarityDetector<PercentableAST>
     @Override
     public SubmissionPercentableCalculator<PercentableAST> getPercentableCalculator()
     {
-        return new SubmissionParser();
+        return new SubmissionParser(new JavaSyntaxParser());
     }
 
     @Override
@@ -36,8 +36,8 @@ public class JavaParser implements SimilarityDetector<PercentableAST>
             throws TokenTypeMismatchException, InternalAlgorithmError
     {
         
-        Real atb = rft.generatePercent(comt);
-        Real bta = comt.generatePercent(rft);
+        Real atb = rft.getPercent(comt);
+        Real bta = comt.getPercent(rft);
         
         return new AlgorithmResults(ab, atb, bta);
     }

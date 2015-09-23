@@ -5,17 +5,22 @@ import net.lldp.checksims.parse.Real;
 
 public class PercentableAST implements Percentable
 {
+    private final AST original;
+    
+    public PercentableAST(AST past)
+    {
+        original = past;
+    }
 
     @Override
     public Real getPercentageMatched()
     {
-        return null;
+        throw new RuntimeException("can't evaluate getPercentageMatched()");
     }
 
-    public Real generatePercent(PercentableAST comt)
+    public Real getPercent(PercentableAST comt)
     {
-        // TODO Auto-generated method stub
-        return Real.ZERO;
+        return original.compareToAST(comt.original);
     }
     
 }

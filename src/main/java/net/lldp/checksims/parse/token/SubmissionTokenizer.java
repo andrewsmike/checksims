@@ -14,7 +14,7 @@ public class SubmissionTokenizer implements SubmissionPercentableCalculator<Perc
     }
     
     @Override
-    public PercentableTokenListDecorator fromSubmission(Submission s)
+    public PercentableTokenListDecorator generateFromSubmission(Submission s)
     {
         return new PercentableTokenListDecorator(tokenizer.splitString(s.getContentAsString()));
     }
@@ -35,6 +35,12 @@ public class SubmissionTokenizer implements SubmissionPercentableCalculator<Perc
             return false;
         }
         return ((SubmissionTokenizer)other).tokenizer.equals(this.tokenizer);
+    }
+
+    @Override
+    public Class<PercentableTokenListDecorator> getTypeClass()
+    {
+        return PercentableTokenListDecorator.class;
     }
 
 }
