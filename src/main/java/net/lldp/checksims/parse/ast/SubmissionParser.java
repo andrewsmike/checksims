@@ -17,7 +17,7 @@ public class SubmissionParser implements SubmissionPercentableCalculator<Percent
     @Override
     public PercentableAST generateFromSubmission(Submission s)
     {
-        ParserRuleContext prc = ldsp.sourceToDefaultcontext(s.getContentAsString());
+        ParserRuleContext prc = ldsp.sourceToDefaultcontext(s, s.getContentAsString());
         AST past = prc.accept(ldsp.getTreeWalker());
         return new PercentableAST(past);
     }

@@ -144,8 +144,8 @@ public final class LineSimilarityChecker implements SimilarityDetector<Percentab
         addLinesToMap(b.getDataCopy(), lineDatabase, ab.getRight(), hasher);
 
         // Number of matched lines contained in both
-        int identicalLinesA = 0;
-        int identicalLinesB = 0;
+        //int identicalLinesA = 0;
+        //int identicalLinesB = 0;
 
         // Check all the keys
         for(String key : lineDatabase.keySet()) {
@@ -182,13 +182,13 @@ public final class LineSimilarityChecker implements SimilarityDetector<Percentab
                     }
                 }
 
-                identicalLinesA += numLinesA;
-                identicalLinesB += numLinesB;
+                //identicalLinesA += numLinesA;
+                //identicalLinesB += numLinesB;
             }
         }
 
-        int invalTokensA = (int)a.getDataCopy().stream().filter((token) -> !token.isValid()).count();
-        int invalTokensB = (int)b.getDataCopy().stream().filter((token) -> !token.isValid()).count();
+        //int invalTokensA = (int)a.getDataCopy().stream().filter((token) -> !token.isValid()).count();
+        //int invalTokensB = (int)b.getDataCopy().stream().filter((token) -> !token.isValid()).count();
 
         /*
         if(invalTokensA != identicalLinesA) {

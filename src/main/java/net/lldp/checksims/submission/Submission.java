@@ -34,10 +34,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -71,7 +69,6 @@ public interface Submission extends Comparable<Submission> {
      */
     boolean contains(Class<? extends Percentable> clazz);
     
-    @SuppressWarnings("unchecked")
     <T extends Percentable> T get(Class<T> clazz);
 
     /**
