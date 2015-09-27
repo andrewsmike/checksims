@@ -150,10 +150,6 @@ public interface AST
         public UnorderedAST(Stream<AST> sub)
         {
             sub.forEach(AST -> add(AST));
-            if (Null)
-            {
-                System.out.println(contains);
-            }
         }
         
         private void add(AST t)

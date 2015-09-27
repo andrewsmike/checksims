@@ -190,6 +190,7 @@ public final class LineSimilarityChecker implements SimilarityDetector<Percentab
         int invalTokensA = (int)a.getDataCopy().stream().filter((token) -> !token.isValid()).count();
         int invalTokensB = (int)b.getDataCopy().stream().filter((token) -> !token.isValid()).count();
 
+        /*
         if(invalTokensA != identicalLinesA) {
             throw new InternalAlgorithmError("Internal error: number of identical tokens (" + identicalLinesA
                     + ") does not match number of invalid tokens (" + invalTokensA + ")");
@@ -197,6 +198,7 @@ public final class LineSimilarityChecker implements SimilarityDetector<Percentab
             throw new InternalAlgorithmError("Internal error: number of identical tokens (" + identicalLinesB
                     + ") does not match number of invalid tokens (" + invalTokensB + ")");
         }
+        */
 
         return new AlgorithmResults(ab, a, b);
     }

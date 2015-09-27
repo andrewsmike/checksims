@@ -21,10 +21,13 @@
 
 package net.lldp.checksims.submission;
 
+import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.ValidityIgnoringToken;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -34,6 +37,9 @@ import java.util.stream.Collectors;
  * Decorates another submission and overrides equals()
  */
 public final class ValidityIgnoringSubmission extends AbstractSubmissionDecorator {
+
+    private final Map<Class<? extends Percentable>, Percentable> parsedTypes = new HashMap<>();
+    
     public ValidityIgnoringSubmission(Submission wrappedSubmission, Tokenizer tokenizer) {
         super(wrappedSubmission, tokenizer);
     }
@@ -68,5 +74,24 @@ public final class ValidityIgnoringSubmission extends AbstractSubmissionDecorato
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+    
+    @Override
+    public <T extends Percentable> void addType(Class<T> clazz, T percentable)
+    {
+        parsedTypes.put(clazz, percentable);
+    }
+
+    @Override
+    public boolean contains(Class<? extends Percentable> clazz)
+    {
+        return parsedTypes.containsKey(clazz);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends Percentable> T get(Class<T> clazz)
+    {
+        return (T) parsedTypes.get(clazz);
     }
 }

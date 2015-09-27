@@ -1,5 +1,9 @@
 package net.lldp.checksims.algorithm.syntaxtree;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
+
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -22,8 +26,13 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
     @Override
     public ParserRuleContext sourceToDefaultcontext(String contentAsString)
     {
-        Java8Parser j8p = ASTFactory.makeParser(new ANTLRInputStream(contentAsString), Java8Parser.class, Java8Lexer.class);
-        return j8p.classDeclaration();
+        String in = Arrays.asList(contentAsString.split("\n"))
+            .stream()
+            .filter(A -> !(A.contains("import")||A.contains("package")))
+            .collect(Collectors.joining("\n"));
+        
+        Java8Parser j8p = ASTFactory.makeParser(new ANTLRInputStream(in), Java8Parser.class, Java8Lexer.class);
+        return j8p.typeDeclaration();
     }
 
 }

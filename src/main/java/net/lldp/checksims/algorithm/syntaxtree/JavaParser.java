@@ -22,7 +22,7 @@ public class JavaParser implements SimilarityDetector<PercentableAST>
     @Override
     public String getName()
     {
-        return "Java Specific Syntax Tree Builder";
+        return "javaparser";
     }
 
     @Override

@@ -151,6 +151,10 @@ public class Real implements Percentable
 
     public Real divideDenominator(int i)
     {
+        if (i == 0)
+        {
+            return this;
+        }
         return new Real(numerator, denominator/i);
     }
 

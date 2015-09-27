@@ -58,32 +58,21 @@ public interface Submission extends Comparable<Submission> {
     String getContentAsString();
     
     /**
-     * An internal map of percentable values
-     */
-    Map<Class<? extends Percentable>, Percentable> parsedTypes = new HashMap<>();
-    
-    /**
      * 
      * @param clazz the class type of the percentable
      * @param percentable the percentable
      */
-    default <T extends Percentable> void addType(Class<T> clazz, T percentable) {
-        parsedTypes.put(clazz, percentable);
-    }
+    <T extends Percentable> void addType(Class<T> clazz, T percentable);
     
     /**
      * 
      * @param clazz the class type of the percentable
      * @return whether this Submission has a percentable of the given type
      */
-    default boolean contains(Class<? extends Percentable> clazz) {
-        return parsedTypes.containsKey(clazz);
-    }
+    boolean contains(Class<? extends Percentable> clazz);
     
     @SuppressWarnings("unchecked")
-    default <T extends Percentable> T get(Class<T> clazz) {
-        return (T) parsedTypes.get(clazz);
-    }
+    <T extends Percentable> T get(Class<T> clazz);
 
     /**
      * @return Name of this submission

@@ -24,6 +24,11 @@ package net.lldp.checksims.submission;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import net.lldp.checksims.parse.Percentable;
+
 /**
  * Concrete implementation of the Submission interface.
  *
@@ -32,7 +37,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class ConcreteSubmission implements Submission {
     private final String content;
     private final String name;
-
+    private final Map<Class<? extends Percentable>, Percentable> parsedTypes = new HashMap<>();
+    
+    
     /**
      * Construct a new Concrete Submission with given name and contents.
      *
@@ -106,5 +113,24 @@ public final class ConcreteSubmission implements Submission {
     @Override
     public int compareTo(Submission other) {
         return this.name.compareTo(other.getName());
+    }
+
+    @Override
+    public <T extends Percentable> void addType(Class<T> clazz, T percentable)
+    {
+        parsedTypes.put(clazz, percentable);
+    }
+
+    @Override
+    public boolean contains(Class<? extends Percentable> clazz)
+    {
+        return parsedTypes.containsKey(clazz);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends Percentable> T get(Class<T> clazz)
+    {
+        return (T) parsedTypes.get(clazz);
     }
 }

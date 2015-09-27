@@ -2,14 +2,20 @@ package net.lldp.checksims.algorithm.syntaxtree;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import net.lldp.checksims.parse.ast.AST;
+import net.lldp.checksims.parse.ast.AST.NodeAST;
+import net.lldp.checksims.parse.ast.AST.OrderedAST;
 import net.lldp.checksims.parse.ast.java.Java8BaseVisitor;
 import net.lldp.checksims.parse.ast.java.Java8Parser.*;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 
@@ -35,6 +41,290 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     }
     
     @Override
+    public AST visitTypeDeclaration(TypeDeclarationContext ctx)
+    {
+        return ctx.getChild(0).accept(this);
+    }
+    
+    @Override
+    public AST visitInterfaceDeclaration(InterfaceDeclarationContext ctx)
+    {
+        for(ParseTree pt : ctx.children)
+        {
+            switch (pt.getClass().getSimpleName())
+            {
+                case "NormalInterfaceDeclaration":
+                    return pt.accept(this);
+            }
+        }
+        
+        throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
+    }
+    
+    @Override
+    public AST visitClassInstanceCreationExpression_lfno_primary(ClassInstanceCreationExpression_lfno_primaryContext ctx)
+    {
+        String lastID = null;
+        List<AST> d = new LinkedList<AST>();
+        
+        for(ParseTree pt : ctx.children)
+        {
+            switch (pt.getClass().getSimpleName())
+            {
+                case "TerminalNodeImpl":
+                    if (pt.getText().equals("("))
+                    {
+                        d.add(new AST.NodeAST(lastID));
+                    }
+                    lastID = pt.getText();
+                    break;
+                case "ArgumentList":
+                case "ClassBody":
+                    d.add(pt.accept(this));
+                    break;
+            }
+        }
+        
+        return new AST.OrderedAST(d.stream());
+    }
+    
+    @Override
+    public AST visitConstructorDeclaration(ConstructorDeclarationContext ctx)
+    {
+        for(ParseTree pt : ctx.children)
+        {
+            if (pt.getClass().getSimpleName().equals("ConstructorBody"))
+            {
+                return pt.accept(this);
+            }
+        }
+        return null;
+    }
+    
+    private AST parseOn(ParserRuleContext prc, boolean ordered, String ... on)
+    {
+        Set<String> match = new HashSet<>();
+        List<AST> t = new LinkedList<AST>();
+        for(String o : on) match.add(o);
+        
+        for(ParseTree pt : prc.children)
+        {
+            if (match.contains(pt.getClass().getSimpleName()))
+            {
+                t.add(pt.accept(this));
+            }
+        }
+        
+        if (ordered)
+        {
+            return new AST.OrderedAST(t.stream());
+        }
+        else
+        {
+            return new AST.UnorderedAST(t.stream());
+        }
+    }
+    
+    
+    @Override
+    public AST visitIfThenElseStatement(IfThenElseStatementContext ctx)
+    {
+        return parseOn(ctx, true, "ExpressionContext", "StatementNoShortIfContext");
+    }
+
+    @Override
+    public AST visitPrimaryNoNewArray_lf_primary(PrimaryNoNewArray_lf_primaryContext ctx)
+    {
+        return ctx.getChild(0).accept(this);
+    }
+    
+    @Override
+    public AST visitFieldAccess_lf_primary(FieldAccess_lf_primaryContext ctx)
+    {
+        return ctx.getChild(1).accept(this);
+    }
+    
+    @Override
+    public AST visitReturnStatement(ReturnStatementContext ctx)
+    {
+        if (ctx.getChildCount() == 3)
+        {
+            return ctx.getChild(1).accept(this);
+        }
+        return null;
+    }
+    
+    @Override
+    public AST visitMethodInvocation_lf_primary(MethodInvocation_lf_primaryContext ctx)
+    {
+        String lastID = null;
+        List<AST> d = new LinkedList<AST>();
+        
+        for(ParseTree pt : ctx.children)
+        {
+            switch (pt.getClass().getSimpleName())
+            {
+                case "TerminalNodeImpl":
+                    if (pt.getText().equals("("))
+                    {
+                        d.add(new AST.NodeAST(lastID));
+                    }
+                    lastID = pt.getText();
+                    break;
+                case "ArgumentList":
+                    d.add(pt.accept(this));
+                    break;
+            }
+        }
+        
+        return new AST.OrderedAST(d.stream());
+    }
+    
+    @Override
+    public AST visitStatementNoShortIf(StatementNoShortIfContext ctx)
+    {
+        return ctx.getChild(0).accept(this);
+    }
+    
+    @Override
+    public AST visitMethodInvocation_lfno_primary(MethodInvocation_lfno_primaryContext ctx)
+    {
+        //TODO: see java8.g4 1117
+        List<AST> t = new LinkedList<>();
+        t.add(ctx.getChild(0).accept(this));
+        t.add(ctx.getChild(2).accept(this));
+        if (!ctx.getChild(4).getText().equals(")"))
+        {
+            t.add(ctx.getChild(4).accept(this));
+        }
+        
+        return new AST.OrderedAST(t.stream());
+    }
+    
+    @Override
+    public AST visitTypeName(TypeNameContext ctx)
+    {
+        if (ctx.getChildCount() == 1)
+        {
+            return new AST.NodeAST(ctx.getText());
+        }
+        
+        //packageOrTypeName '.' Identifier
+        AST.OrderedAST t = (OrderedAST) ctx.getChild(0).accept(this);
+        List<AST> body = t.getBody();
+        body.add(ctx.getChild(2).accept(this));
+        return new AST.OrderedAST(body.stream());
+    }
+    
+    @Override
+    public AST visitPackageOrTypeName(PackageOrTypeNameContext ctx)
+    {
+        if (ctx.getChildCount() == 1)
+        {
+            return new AST.NodeAST(ctx.getText());
+        }
+        
+        //packageOrTypeName '.' Identifier
+        AST.OrderedAST t = (OrderedAST) ctx.getChild(0).accept(this);
+        List<AST> body = t.getBody();
+        body.add(ctx.getChild(2).accept(this));
+        return new AST.OrderedAST(body.stream());
+    }
+    
+    @Override
+    public AST visitIfThenStatement(IfThenStatementContext ctx)
+    {
+        return parseOn(ctx, true, "ExpressionContext", "StatementContext");
+    }
+    
+    @Override
+    public AST visitMethodName(MethodNameContext ctx)
+    {
+        return new AST.NodeAST(ctx.getText());
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Override
+    public AST visitAssignment(AssignmentContext ctx)
+    {
+        return new AST.OrderedAST(ctx.getChild(1).accept(this)
+                , ctx.getChild(0).accept(this)
+                , ctx.getChild(2).accept(this));
+    }
+    
+    @Override
+    public AST visitLeftHandSide(LeftHandSideContext ctx)
+    {
+        return ctx.getChild(0).accept(this);
+    }
+    
+    @Override
+    public AST visitAssignmentOperator(AssignmentOperatorContext ctx)
+    {
+        return new AST.NodeAST(ctx.getText());
+    }
+    
+    @Override
+    public AST visitIfThenElseStatementNoShortIf(IfThenElseStatementNoShortIfContext ctx)
+    {
+        return parseOn(ctx, true, "ExpressionContext", "StatementNoShortIf");
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Override
     public AST visitClassDeclaration(ClassDeclarationContext ctx)
     {
         for(ParseTree pt : ctx.children)
@@ -46,7 +336,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
             }
         }
         
-        throw new RuntimeException("NULL");
+        throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
     }
     
     @Override
@@ -104,7 +394,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
                     return pt.accept(this);
             }
             
-            System.out.println(pt.getClass().getSimpleName());
+            //System.out.println(pt.getClass().getSimpleName());
         }
         
         return null;
@@ -189,10 +479,11 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     public AST visitFormalParameters(FormalParametersContext ctx)
     {
         List<AST> t = new LinkedList<>();
-        
-        t.add(ctx.children.get(0).accept(this));
-        t.add(ctx.children.get(2).accept(this));
-        
+        int count = ctx.getChildCount();
+        for(int i=0; i<count; i++)
+        {
+            t.add(ctx.children.get(i).accept(this));
+        }
         return new AST.OrderedAST(t.stream());
     }
     
@@ -311,7 +602,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         else
         {
             //TODO ternary expression
-            throw new RuntimeException("NULL");
+            throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
     }
     
@@ -513,7 +804,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
         else
         {
-            throw new RuntimeException("NULL");
+            throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
     }
     
@@ -526,8 +817,10 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
         else
         {
+            return new AST.OrderedAST(new AST.NodeAST(ctx.getChild(0).getText()), ctx.getChild(1).accept(this));
+            
             //TODO + - expression
-            throw new RuntimeException("NULL");
+            //throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
     }
     
@@ -541,7 +834,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         else
         {
             //TODO not sure?
-            throw new RuntimeException("NULL");
+            throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
     }
     
@@ -554,8 +847,10 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
         else
         {
+            return new AST.UnorderedAST(ctx.children.stream().map(A -> A.accept(this)));
+            
             //TODO primaryNoNewArray_lf_primary / arrayCreationExpression
-            throw new RuntimeException("NULL");
+            //throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
     }
     
@@ -568,8 +863,18 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
         else
         {
+            if (ctx.children.size() == 3)
+            {
+                String s1 = ctx.getChild(0).getText();
+                String s2 = ctx.getChild(2).getText();
+                if ("(".equals(s1) && ")".equals(s2))
+                {
+                    return ctx.getChild(1).accept(this);
+                }
+            }
+            
             //TODO see java8.g4 line 1013
-            throw new RuntimeException("NULL");
+            throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
     }
     
@@ -586,8 +891,19 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         {
             return new AST.NodeAST(ctx.getText());
         }
-
-        throw new RuntimeException("NULL");
+        
+        return new AST.OrderedAST(ctx.getChild(0).accept(this), new AST.NodeAST(ctx.getChild(2).getText()));
+    }
+    
+    @Override
+    public AST visitAmbiguousName(AmbiguousNameContext ctx)
+    {
+        if (ctx.getChild(0).getClass().getSimpleName().equals("TerminalNodeImpl"))
+        {
+            return new AST.NodeAST(ctx.getText());
+        }
+        
+        return new AST.OrderedAST(ctx.getChild(0).accept(this), new AST.NodeAST(ctx.getChild(2).getText()));
     }
     
     public AST visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatementContext ctx)
@@ -632,7 +948,11 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     @Override
     public AST visitVariableDeclarator(VariableDeclaratorContext ctx)
     {
-        return ctx.getChild(2).accept(this);
+        if (ctx.getChildCount() > 1)
+        {
+            return ctx.getChild(2).accept(this);
+        }
+        return null;
     }
     
     @Override

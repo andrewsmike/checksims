@@ -1,5 +1,6 @@
 package net.lldp.checksims.parse.ast;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import org.antlr.v4.runtime.*;
@@ -21,7 +22,7 @@ public class ASTFactory
         Lexer lexer;
         try
         {
-            lexer = clazz.getConstructor(ANTLRInputStream.class).newInstance(inputText);
+            lexer = clazz.getConstructor(CharStream.class).newInstance(inputText);
             lexer.addErrorListener(
                     new BaseErrorListener() {
                         @Override
@@ -53,7 +54,7 @@ public class ASTFactory
         {
             final Lexer lexer = makeLexer(inputText, lclazz);
             final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-            T parser = pclazz.getConstructor(CommonTokenStream.class).newInstance(tokenStream);
+            T parser = pclazz.getConstructor(TokenStream.class).newInstance(tokenStream);
             parser.addErrorListener(
                     new BaseErrorListener() {
                         @Override
