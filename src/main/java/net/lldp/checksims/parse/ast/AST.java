@@ -67,13 +67,17 @@ public interface AST
             {
                 contains.add(t);
             }
+            else
+            {
+                throw new RuntimeException("null");
+            }
         }
         
         public OrderedAST(AST ... asts)
         {
             for(AST t : asts)
             {
-                contains.add(t);
+                add(t);
             }
         }
         
@@ -146,7 +150,6 @@ public interface AST
     public static class UnorderedAST implements AST
     {
         private final Set<AST> contains = new HashSet<>();
-        boolean Null = false;
         public UnorderedAST(Stream<AST> sub)
         {
             sub.forEach(AST -> add(AST));
@@ -154,18 +157,21 @@ public interface AST
         
         private void add(AST t)
         {
-            if (t == null)
+            if (t != null)
             {
-                Null = true; return;
+                contains.add(t);
             }
-            contains.add(t);
+            else
+            {
+                throw new RuntimeException("null");
+            }
         }
         
         public UnorderedAST(AST ... asts)
         {
             for(AST t : asts)
             {
-                contains.add(t);
+                add(t);
             }
         }
 

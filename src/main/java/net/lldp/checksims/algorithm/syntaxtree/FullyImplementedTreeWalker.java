@@ -31,6 +31,43 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
     }
     
+    
+    private AST parseOn(ParserRuleContext prc, boolean ordered, String ... on)
+    {
+        Set<String> match = new HashSet<>();
+        List<AST> t = new LinkedList<AST>();
+        for(String o : on) match.add(o);
+        
+        for(ParseTree pt : prc.children)
+        {
+            if (match.contains(pt.getClass().getSimpleName()))
+            {
+                AST a = pt.accept(this);
+                if (a != null)
+                {
+                    t.add(a);
+                }
+                else
+                {
+                    throw new RuntimeException("parsing:: "+prc.getText()+"\n"+pt.getText()+"("+pt.getClass().getSimpleName()+") parsed as null");
+                }
+            }
+        }
+        
+        if (ordered)
+        {
+            return new AST.OrderedAST(t.stream());
+        }
+        else
+        {
+            return new AST.UnorderedAST(t.stream());
+        }
+    }
+    
+    
+    
+    
+    
     @Override
     public AST visitChildren(RuleNode rn)
     {
@@ -53,8 +90,10 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         {
             switch (pt.getClass().getSimpleName())
             {
-                case "NormalInterfaceDeclaration":
+                case "NormalInterfaceDeclarationContext":
                     return pt.accept(this);
+                default:
+                    System.out.println(pt.getClass().getSimpleName());
             }
         }
         
@@ -100,31 +139,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
         return null;
     }
-    
-    private AST parseOn(ParserRuleContext prc, boolean ordered, String ... on)
-    {
-        Set<String> match = new HashSet<>();
-        List<AST> t = new LinkedList<AST>();
-        for(String o : on) match.add(o);
-        
-        for(ParseTree pt : prc.children)
-        {
-            if (match.contains(pt.getClass().getSimpleName()))
-            {
-                t.add(pt.accept(this));
-            }
-        }
-        
-        if (ordered)
-        {
-            return new AST.OrderedAST(t.stream());
-        }
-        else
-        {
-            return new AST.UnorderedAST(t.stream());
-        }
-    }
-    
     
     @Override
     public AST visitIfThenElseStatement(IfThenElseStatementContext ctx)
@@ -189,16 +203,27 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     @Override
     public AST visitMethodInvocation_lfno_primary(MethodInvocation_lfno_primaryContext ctx)
     {
-        //TODO: see java8.g4 1117
-        List<AST> t = new LinkedList<>();
-        t.add(ctx.getChild(0).accept(this));
-        t.add(ctx.getChild(2).accept(this));
-        if (!ctx.getChild(4).getText().equals(")"))
+        switch(ctx.getChild(0).getClass().getSimpleName())
         {
-            t.add(ctx.getChild(4).accept(this));
+            case "MethodNameContext":
+                return new AST.OrderedAST(ctx.getChild(0).accept(this), ctx.getChild(2).accept(this));
+            case "typeName":
+            case "expressionName":
+                
         }
         
-        return new AST.OrderedAST(t.stream());
+        int children = ctx.getChildCount();
+        if (ctx.getChild(children-2).getText().equals("("))
+        {
+            // no args!
+            return new AST.OrderedAST(
+                    new AST.NodeAST(ctx.getChild(children-3).getText()),
+                    new AST.OrderedAST());
+        }
+        
+        return new AST.OrderedAST(
+                new AST.NodeAST(ctx.getChild(children-4).getText()),
+                ctx.getChild(children-2).accept(this));
     }
     
     @Override
@@ -210,9 +235,15 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
         
         //packageOrTypeName '.' Identifier
-        AST.OrderedAST t = (OrderedAST) ctx.getChild(0).accept(this);
+        AST tt = ctx.getChild(0).accept(this);
+        if (tt instanceof AST.NodeAST)
+        {
+            return new AST.OrderedAST(tt, new AST.NodeAST(ctx.getChild(2).getText()));
+        }
+        
+        AST.OrderedAST t = (OrderedAST) tt;
         List<AST> body = t.getBody();
-        body.add(ctx.getChild(2).accept(this));
+        body.add(new AST.NodeAST(ctx.getChild(2).getText()));
         return new AST.OrderedAST(body.stream());
     }
     
@@ -224,10 +255,16 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
             return new AST.NodeAST(ctx.getText());
         }
         
-        //packageOrTypeName '.' Identifier
-        AST.OrderedAST t = (OrderedAST) ctx.getChild(0).accept(this);
+      //packageOrTypeName '.' Identifier
+        AST tt = ctx.getChild(0).accept(this);
+        if (tt instanceof AST.NodeAST)
+        {
+            return new AST.OrderedAST(tt, new AST.NodeAST(ctx.getChild(2).getText()));
+        }
+        
+        AST.OrderedAST t = (OrderedAST) tt;
         List<AST> body = t.getBody();
-        body.add(ctx.getChild(2).accept(this));
+        body.add(new AST.NodeAST(ctx.getChild(2).getText()));
         return new AST.OrderedAST(body.stream());
     }
     
@@ -242,35 +279,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     {
         return new AST.NodeAST(ctx.getText());
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     @Override
     public AST visitAssignment(AssignmentContext ctx)
@@ -297,6 +305,88 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     {
         return parseOn(ctx, true, "ExpressionContext", "StatementNoShortIf");
     }
+    
+    @Override
+    public AST visitFieldAccess(FieldAccessContext ctx)
+    {
+        if (ctx.getChildCount() == 5)
+        {
+            return new AST.OrderedAST(ctx.getChild(0).accept(this), new AST.NodeAST("super"), new NodeAST(ctx.getChild(4).getText()));
+        }
+        
+        if (ctx.getChild(0).getText().equals("super"))
+        {
+            return new AST.OrderedAST(new AST.NodeAST("super"), new NodeAST(ctx.getChild(2).getText()));
+        }
+        
+        return new AST.OrderedAST(ctx.getChild(0).accept(this), new NodeAST(ctx.getChild(2).getText()));
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Override
+    public AST visitNormalInterfaceDeclaration(NormalInterfaceDeclarationContext ctx)
+    {
+        int TOC = ctx.getChildCount() - 2;
+        
+        String name = ctx.children.get(TOC).getText(); // name
+        AST t = ctx.children.get(TOC+1).accept(this); // body
+        
+        names.put(name, t);
+        return t;
+    }
+    
+    @Override
+    public AST visitInterfaceBody(InterfaceBodyContext ctx)
+    {
+        return parseOn(ctx, false, "InterfaceMemberDeclarationContext");
+    }
+    
+    @Override
+    public AST visitInterfaceMemberDeclaration(InterfaceMemberDeclarationContext ctx)
+    {
+        ParseTree pt = ctx.getChild(0);
+        if (pt.getText().equals(";"))
+        {
+            return null;
+        }
+        return pt.accept(this);
+    }
+    
+    @Override
+    public AST visitInterfaceMethodDeclaration(InterfaceMethodDeclarationContext ctx)
+    {
+        return parseOn(ctx, false, "MethodHeaderContext", "MethodBodyContext");
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
@@ -442,8 +532,10 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         List<AST> t = new LinkedList<>();
         
         t.add(new AST.NodeAST(ctx.children.get(0).getText()));
-        t.add(ctx.children.get(2).accept(this));
-        
+        if (!ctx.getChild(2).getText().equals(")"))
+        {
+            t.add(ctx.children.get(2).accept(this));
+        }
         return new AST.OrderedAST(t.stream());
     }
     
@@ -841,6 +933,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     @Override
     public AST visitPrimary(PrimaryContext ctx)
     {
+        /*
         if (ctx.children.size() == 1)
         {
             return ctx.children.get(0).accept(this);
@@ -852,6 +945,9 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
             //TODO primaryNoNewArray_lf_primary / arrayCreationExpression
             //throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
+        */
+        
+        return parseOn(ctx, true, "PrimaryNoNewArray_lfno_primaryContext", "ArrayCreationExpressionContext");
     }
     
     @Override
@@ -914,15 +1010,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     @Override
     public AST visitVariableDeclaratorList(VariableDeclaratorListContext ctx)
     {
-        List<AST> result = new LinkedList<AST>();
-        for(ParseTree pt : ctx.children)
-        {
-            if (pt.getClass().getSimpleName().equals("VariableDeclaratorContext"))
-            {
-                result.add(pt.accept(this));
-            }
-        }
-        return new AST.OrderedAST(result.stream());
+        return parseOn(ctx, true, "VariableDeclaratorContext");
     }
     
     @Override
@@ -952,7 +1040,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         {
             return ctx.getChild(2).accept(this);
         }
-        return null;
+        return new AST.OrderedAST();
     }
     
     @Override
