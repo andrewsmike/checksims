@@ -22,8 +22,12 @@
 package net.lldp.checksims.util.threading;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
+import net.lldp.checksims.algorithm.InternalAlgorithmError;
+import net.lldp.checksims.algorithm.InvalidAlgorithmResult;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.algorithm.Union;
 import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.submission.Submission;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -39,7 +43,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  *
  * Takes two Submissions, applies an algorithm to them, returns results.
  */
-public class SimilarityDetectionWorker<T extends Percentable> implements Callable<AlgorithmResults> {
+public class SimilarityDetectionWorker<T extends Percentable> implements Callable<Union<AlgorithmResults, InvalidAlgorithmResult>> {
     private final SimilarityDetector<T> algorithm;
     private final Pair<Submission, Submission> submissions;
 
@@ -73,17 +77,30 @@ public class SimilarityDetectionWorker<T extends Percentable> implements Callabl
      * TODO investigate this later
      *
      * @return Results of pairwise similarity detection
-     * @throws Exception Any exception thrown while executing the algorithm
+     * @throws InternalAlgorithmError 
+     * @throws TokenTypeMismatchException 
      */
     @Override
-    public AlgorithmResults call() throws Exception {
+    public Union<AlgorithmResults, InvalidAlgorithmResult> call() throws TokenTypeMismatchException, InternalAlgorithmError {
         logs.debug("Running " + algorithm.getName() + " on submissions " + submissions.getLeft().getName() +
                 "(" + submissions.getLeft().getContentAsString().length() + " bytes) and " + submissions.getRight().getName() + " (" +
                 submissions.getRight().getContentAsString().length() + " bytes)");
-
-        return algorithm.detectSimilarity(submissions,
-                algorithm.getPercentableCalculator().fromSubmission(submissions.getLeft()),
-                algorithm.getPercentableCalculator().fromSubmission(submissions.getRight()));
+        
+        T left;
+        T right;
+        try {
+            left = algorithm.getPercentableCalculator().fromSubmission(submissions.getLeft());
+        } catch (Exception see) {
+            return Union.unionB(new InvalidAlgorithmResult(submissions.getLeft()));
+        }
+        
+        try {
+            right = algorithm.getPercentableCalculator().fromSubmission(submissions.getRight());
+        } catch (Exception see) {
+            return Union.unionB(new InvalidAlgorithmResult(submissions.getRight()));
+        }
+        
+        return Union.unionA(algorithm.detectSimilarity(submissions, left, right));
     }
 
     @Override

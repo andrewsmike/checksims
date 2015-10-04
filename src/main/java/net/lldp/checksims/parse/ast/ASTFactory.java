@@ -1,8 +1,6 @@
 package net.lldp.checksims.parse.ast;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.*;
 
@@ -24,6 +22,7 @@ public class ASTFactory
         try
         {
             lexer = clazz.getConstructor(CharStream.class).newInstance(inputText);
+            lexer.removeErrorListeners();
             lexer.addErrorListener(
                     new BaseErrorListener() {
                         @Override
@@ -31,31 +30,7 @@ public class ASTFactory
                                 int line, int charPositionInLine, String msg,
                                 RecognitionException e)
                         {
-                            class MonadNum
-                            {
-                                private int i = 0;
-                                
-                                public String toString()
-                                {
-                                    return ++i+"";
-                                }
-                            }
-                            MonadNum i = new MonadNum();
-                            System.out.println("################################################################################");
-                            String s = Arrays.asList(inputText.toString().split("\n")).stream().map(A -> {
-                                return i+A;
-                            }).collect(Collectors.joining("\n"));
-                            System.out.println(s);
-                            System.out.println(line);
-                            System.out.println(charPositionInLine);
-                            System.out.println(sn);
-                            System.out.println("--------------------------------------------------------------------------------");
-                            System.out.println(offendingSymbol);
-                            System.out.println("--------------------------------------------------------------------------------");
-                            System.out.println(msg);
-                            System.out.println("################################################################################");
-                            System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
-                            //throw new RuntimeException(msg, e);
+                            throw new SyntaxErrorException(sn, msg);
                         }
                     }
             );
@@ -80,6 +55,7 @@ public class ASTFactory
             final Lexer lexer = makeLexer(sn, inputText, lclazz);
             final CommonTokenStream tokenStream = new CommonTokenStream(lexer);
             T parser = pclazz.getConstructor(TokenStream.class).newInstance(tokenStream);
+            parser.removeErrorListeners();
             parser.addErrorListener(
                     new BaseErrorListener() {
                         @Override
@@ -87,7 +63,12 @@ public class ASTFactory
                                 int line, int charPositionInLine, String msg,
                                 RecognitionException e)
                         {
-                            throw new RuntimeException(msg, e);
+                            CommonToken token = (CommonToken)offendingSymbol;
+                            if ("<EOF>".equals(token.getText()))
+                            {
+                                throw new EOFParsingException();
+                            }
+                            throw new SyntaxErrorException(sn, msg);
                         }
                     }
             );
@@ -100,5 +81,24 @@ public class ASTFactory
         }
         
         
+    }
+    
+    public static class EOFParsingException extends RuntimeException
+    {
+        
+    }
+    
+    public static class SyntaxErrorException extends RuntimeException
+    {
+        public SyntaxErrorException(String studentName, String message)
+        {
+            super(studentName + " :: " + message);
+        }
+        
+        @Override
+        public void printStackTrace()
+        {
+            super.printStackTrace();
+        }
     }
 }

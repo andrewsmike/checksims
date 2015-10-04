@@ -1,5 +1,8 @@
 package net.lldp.checksims.parse.ast;
 
+import java.util.Set;
+
+import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 
 import org.antlr.v4.runtime.*;
@@ -10,6 +13,6 @@ public interface LanguageDependantSyntaxParser
 
     ParseTreeVisitor<AST> getTreeWalker();
 
-    ParserRuleContext sourceToDefaultcontext(Submission sub, String contentAsString);
+    Set<ParserRuleContext> sourceToDefaultcontext(Submission sub, String contentAsString) throws InvalidSubmissionException;
 
 }

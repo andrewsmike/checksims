@@ -35,7 +35,6 @@ public class JavaParser implements SimilarityDetector<PercentableAST>
     public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, PercentableAST rft, PercentableAST comt)
             throws TokenTypeMismatchException, InternalAlgorithmError
     {
-        
         Real atb = rft.getPercent(comt);
         Real bta = comt.getPercent(rft);
         

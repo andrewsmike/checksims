@@ -31,7 +31,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
     }
     
-    
     private AST parseOn(ParserRuleContext prc, boolean ordered, String ... on)
     {
         Set<String> match = new HashSet<>();
@@ -66,10 +65,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
             return new AST.UnorderedAST(t.stream());
         }
     }
-    
-    
-    
-    
     
     @Override
     public AST visitChildren(RuleNode rn)
@@ -316,27 +311,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         return new AST.OrderedAST(ctx.getChild(0).accept(this), new NodeAST(ctx.getChild(2).getText()));
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
     @Override
     public AST visitNormalInterfaceDeclaration(NormalInterfaceDeclarationContext ctx)
     {
@@ -371,43 +345,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     {
         return parseOn(ctx, false, "MethodHeaderContext", "MethodBodyContext");
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+      
     @Override
     public AST visitClassDeclaration(ClassDeclarationContext ctx)
     {
@@ -466,9 +404,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     {
         for(ParseTree pt : ctx.children)
         {
-            //System.out.println(pt.getClass().getSimpleName());
-            //System.out.println(pt.getText());
-            //System.out.println();
             switch(pt.getClass().getSimpleName())
             {
                 case "FieldDeclarationContext":
@@ -477,8 +412,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
                 //case "InterfaceDeclarationContext":
                     return pt.accept(this);
             }
-            
-            //System.out.println(pt.getClass().getSimpleName());
         }
         
         return null;
@@ -897,9 +830,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         else
         {
             return new AST.OrderedAST(new AST.NodeAST(ctx.getChild(0).getText()), ctx.getChild(1).accept(this));
-            
-            //TODO + - expression
-            //throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
         }
     }
     
@@ -920,20 +850,6 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     @Override
     public AST visitPrimary(PrimaryContext ctx)
     {
-        /*
-        if (ctx.children.size() == 1)
-        {
-            return ctx.children.get(0).accept(this);
-        }
-        else
-        {
-            return new AST.UnorderedAST(ctx.children.stream().map(A -> A.accept(this)));
-            
-            //TODO primaryNoNewArray_lf_primary / arrayCreationExpression
-            //throw new RuntimeException(ctx.children.stream().map(ParseTree::getText).collect(Collectors.joining(" ")));
-        }
-        */
-        
         return parseOn(ctx, true, "PrimaryNoNewArray_lfno_primaryContext", "ArrayCreationExpressionContext");
     }
     
@@ -1059,6 +975,154 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         }
         return new AST.OrderedAST(result.stream());
     }
+    
+    
+    @Override
+    public AST visitEmptyStatement(EmptyStatementContext ctx)
+    {
+        return null;
+    }
+    
+    @Override
+    public AST visitWhileStatement(WhileStatementContext ctx)
+    {
+        List<AST> newAST = new LinkedList<>();
+        
+        newAST.add(new NodeAST(ctx.getChild(0).getText())); // "while"
+        newAST.add(ctx.getChild(2).accept(this)); // boolean condition :: ExpressionContext
+        newAST.add(ctx.getChild(4).accept(this)); // body block :: StatementContext
+        
+        return new OrderedAST(newAST.stream());
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    @Override
+    public AST visitReferenceType(ReferenceTypeContext ctx)
+    {
+        return ctx.getChild(0).accept(this);
+    }
+    
+    @Override
+    public AST visitClassOrInterfaceType(ClassOrInterfaceTypeContext ctx)
+    {
+        return parseOn(ctx, true, "ClassOrInterfaceTypeContext", "DimsContext", "DimExprsContext", "ArrayInitializerContext");
+    }
+    
+    @Override
+    public AST visitClassType_lfno_classOrInterfaceType(ClassType_lfno_classOrInterfaceTypeContext ctx)
+    {
+        for(ParseTree pt : ctx.children)
+        {
+            System.out.println(ctx.getClass().getSimpleName());
+            System.out.println(pt.getClass().getSimpleName());
+            System.out.println(pt.getText());
+            System.out.println();
+        }
+        return null;
+    }
+    
+    @Override
+    public AST visitArrayCreationExpression(ArrayCreationExpressionContext ctx)
+    {
+        for(ParseTree pt : ctx.children)
+        {
+            System.out.println(ctx.getClass().getSimpleName());
+            System.out.println(pt.getClass().getSimpleName());
+            System.out.println(pt.getText());
+            System.out.println();
+        }
+        return null;
+    }
+    
+    @Override
+    public AST visitDims(DimsContext ctx)
+    {
+        for(ParseTree pt : ctx.children)
+        {
+            System.out.println(ctx.getClass().getSimpleName());
+            System.out.println(pt.getClass().getSimpleName());
+            System.out.println(pt.getText());
+            System.out.println();
+        }
+        return null;
+    }
+    
+    @Override
+    public AST visitArrayInitializer(ArrayInitializerContext ctx)
+    {
+        for(ParseTree pt : ctx.children)
+        {
+            System.out.println(ctx.getClass().getSimpleName());
+            System.out.println(pt.getClass().getSimpleName());
+            System.out.println(pt.getText());
+            System.out.println();
+        }
+        return null;
+    }
+
+    @Override
+    public AST visitVariableInitializerList(VariableInitializerListContext ctx)
+    {
+        for(ParseTree pt : ctx.children)
+        {
+            System.out.println(ctx.getClass().getSimpleName());
+            System.out.println(pt.getClass().getSimpleName());
+            System.out.println(pt.getText());
+            System.out.println();
+        }
+        return null;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     

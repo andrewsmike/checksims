@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.algorithm.Union;
 import net.lldp.checksims.algorithm.preprocessor.SubmissionPreprocessor;
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.submission.Submission;
@@ -99,7 +100,8 @@ public final class ParallelAlgorithm {
                 .map((pair) -> new SimilarityDetectionWorker<T>(algorithm, pair))
                 .collect(Collectors.toList());
 
-        return ImmutableSet.copyOf(executeTasks(workers));
+        //TODO do something with the right side?
+        return ImmutableSet.copyOf(executeTasks(workers).getLeft());
     }
 
     public static Set<Submission> parallelSubmissionPreprocessing(SubmissionPreprocessor preprocessor,
@@ -113,7 +115,7 @@ public final class ParallelAlgorithm {
                 .map((submission) -> new PreprocessorWorker(submission, preprocessor))
                 .collect(Collectors.toList());
 
-        return ImmutableSet.copyOf(executeTasks(workers));
+        return ImmutableSet.copyOf(simpleExecuteTasks(workers));
     }
 
     /**
@@ -126,7 +128,73 @@ public final class ParallelAlgorithm {
      * @param <T> Type returned by the tasks
      * @return Collection of Ts
      */
-    private static <T, T2 extends Callable<T>> Collection<T> executeTasks(Collection<T2> tasks)
+    private static <X, Y, T2 extends Callable<Union<X, Y>>> Pair<Collection<X>, Collection<Y>> executeTasks(Collection<T2> tasks)
+            throws ChecksimsException {
+        checkNotNull(tasks);
+
+        if(tasks.size() == 0) {
+            logs.warn("Parallel execution called with no tasks - no work done!");
+            return Pair.of(new ArrayList<>(), new ArrayList<>());
+        }
+
+        if(executor.isShutdown()) {
+            throw new ChecksimsException("Attempted to call executeTasks while executor was shut down!");
+        }
+
+        logs.info("Starting work using " + threadCount + " threads.");
+
+        // Invoke the executor on all the worker instances
+        try {
+            // Create a monitoring thread to show progress
+            MonitorThread monitor = new MonitorThread(executor);
+            Thread monitorThread = new Thread(monitor);
+            monitorThread.start();
+
+            List<Future<Union<X, Y>>> results = executor.invokeAll(tasks);
+
+            // Stop the monitor
+            monitor.shutDown();
+
+            // Unpack the futures
+            ArrayList<X> successes = new ArrayList<>();
+            ArrayList<Y> failures = new ArrayList<>();
+
+            for(Future<Union<X, Y>> future : results) {
+                try {
+                    Union<X, Y> xy = future.get();
+                    if (xy.a == null) {
+                        failures.add(xy.b);
+                    } else {
+                        successes.add(xy.a);
+                    }
+                } catch(ExecutionException e) {
+                    executor.shutdownNow();
+                    logs.error("Fatal error in executed job!");
+                    throw new ChecksimsException("Error while executing worker for future", e.getCause());
+                }
+            }
+
+            return Pair.of(successes, failures);
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+            throw new ChecksimsException("Execution of Checksims was interrupted!", e);
+        } catch (RejectedExecutionException e) {
+            executor.shutdownNow();
+            throw new ChecksimsException("Could not schedule execution of all tasks!", e);
+        }
+    }
+    
+    /**
+     * Internal backend: Execute given tasks on a new thread pool.
+     *
+     * Expects Callable tasks, with non-void returns. If the need for void returning functions emerges, might need
+     * another version of this?
+     *
+     * @param tasks Tasks to execute
+     * @param <T> Type returned by the tasks
+     * @return Collection of Ts
+     */
+    private static <T, T2 extends Callable<T>> Collection<T> simpleExecuteTasks(Collection<T2> tasks)
             throws ChecksimsException {
         checkNotNull(tasks);
 

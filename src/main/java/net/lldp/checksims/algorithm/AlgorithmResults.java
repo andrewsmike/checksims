@@ -31,7 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Results for a pairwise comparison algorithm.
  */
-public final class AlgorithmResults {
+public class AlgorithmResults {
     // TODO consider making these private and adding getters
     public final Submission a;
     public final Submission b;

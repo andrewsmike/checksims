@@ -4,6 +4,7 @@ import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.parse.token.SubmissionTokenizer;
 import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
+import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 
 public interface SubmissionPercentableCalculator<T extends Percentable>
@@ -14,8 +15,9 @@ public interface SubmissionPercentableCalculator<T extends Percentable>
      * 
      * @param s the submission to be created from
      * @return a percentable type of the submission
+     * @throws InvalidSubmissionException if the submission is in any way invalid (generally used for parsing)
      */
-    default T fromSubmission(Submission s) {
+    default T fromSubmission(Submission s) throws InvalidSubmissionException {
         if (s.contains(getTypeClass())) {
             return s.get(getTypeClass());
         }
@@ -35,8 +37,9 @@ public interface SubmissionPercentableCalculator<T extends Percentable>
      * 
      * @param s the submission
      * @return a T generated from the submission
+     * @throws InvalidSubmissionException 
      */
-    T generateFromSubmission(Submission s);
+    T generateFromSubmission(Submission s) throws InvalidSubmissionException;
 
     /**
      * TODO: return types other than a tokenizer

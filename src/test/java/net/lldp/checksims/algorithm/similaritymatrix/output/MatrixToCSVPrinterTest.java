@@ -29,6 +29,7 @@ import net.lldp.checksims.parse.token.SubmissionTokenizer;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
+import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.util.AssertUtils;
 
@@ -55,7 +56,7 @@ public class MatrixToCSVPrinterTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
-    public void setUp() throws InternalAlgorithmError {
+    public void setUp() throws InternalAlgorithmError, InvalidSubmissionException {
         instance = MatrixToCSVPrinter.getInstance();
         st = new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER));
 

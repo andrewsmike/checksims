@@ -31,6 +31,7 @@ import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.ConcreteSubmission;
+import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.submission.ValidityIgnoringSubmission;
 
@@ -69,7 +70,7 @@ public class CommonCodeLineRemovalPreprocessor implements SubmissionPreprocessor
     }
 
     private static <T extends Percentable> AlgorithmResults getResults(Submission rf, Submission com, SimilarityDetector<T> a)
-            throws TokenTypeMismatchException, InternalAlgorithmError
+            throws TokenTypeMismatchException, InternalAlgorithmError, InvalidSubmissionException
     {
         T rft = a.getPercentableCalculator().fromSubmission(rf);
         T comt = a.getPercentableCalculator().fromSubmission(com);
@@ -83,9 +84,10 @@ public class CommonCodeLineRemovalPreprocessor implements SubmissionPreprocessor
      * @param removeFrom Submission to remove common code from
      * @return Input submission with common code removed
      * @throws InternalAlgorithmError Thrown on error removing common code
+     * @throws InvalidSubmissionException if the submission is in any way invalid
      */
     @Override
-    public Submission process(Submission removeFrom) throws InternalAlgorithmError {
+    public Submission process(Submission removeFrom) throws InternalAlgorithmError, InvalidSubmissionException {
         logs.debug("Performing common code removal on submission " + removeFrom.getName());
 
         // Use the new submissions to compute this
