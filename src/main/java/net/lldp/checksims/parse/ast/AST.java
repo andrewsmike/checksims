@@ -1,10 +1,12 @@
 package net.lldp.checksims.parse.ast;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -20,7 +22,7 @@ public class AST implements Percentable
     private final Set<AST> asts;
     private final Set<Integer> hashes;
     private final Integer hashCode;
-    private final Map<Integer, AST> fingerprints;
+    private final Map<Integer, List<AST>> fingerprints;
     
     // scoring heuristics?
     private final Integer size;
@@ -55,21 +57,28 @@ public class AST implements Percentable
         fingerprint(wrap(fingerprints));
     }
     
-    public Map<Integer, AST> getFingerprints()
+    public Map<Integer, List<AST>> getFingerprints()
     {
         return fingerprints; // Ideally should be immutable, but this kicks the GC in the ass
     }
     
-    public void fingerprint(final Monad<Map<Integer, AST>> fpdb)
+    public void fingerprint(final Monad<Map<Integer, List<AST>>> fpdb)
     {
-        unwrap(fpdb).put(hashCode(), this);
+        List<AST> val = unwrap(fpdb).get(hashCode());
+        if (val == null)
+        {
+            val = new ArrayList<>();
+        }
+        val.add(this);
+        unwrap(fpdb).put(hashCode(), val);
         asts.stream().forEach(A -> A.fingerprint(fpdb));
     }
     
-    public Real getPercentMatched(Map<Integer, AST> fpdb)
+    public Real getPercentMatched(Map<Integer, List<AST>> fpdb)
     {
         Real result = null;
-        if (equals(fpdb.get(hashCode())))
+        List<AST> val = fpdb.get(hashCode());
+        if (val != null && val.contains(this))
         {
             result = new Real(size, size);
         }
