@@ -69,7 +69,7 @@ public class SubmissionTest {
     }
     
     @Test(expected=UnsupportedOperationException.class)
-    public void testTokenListIsImmutable() throws InvalidSubmissionException {
+    public void testTokenListIsImmutable() {
         Submission s1 = submissionFromString("s1", "testtest");
         Submission s2 = submissionFromString("s2", "test");
         

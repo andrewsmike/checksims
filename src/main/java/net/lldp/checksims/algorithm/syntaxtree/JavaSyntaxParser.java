@@ -15,7 +15,6 @@ import net.lldp.checksims.parse.ast.ASTFactory;
 import net.lldp.checksims.parse.ast.LanguageDependantSyntaxParser;
 import net.lldp.checksims.parse.ast.java.Java8Lexer;
 import net.lldp.checksims.parse.ast.java.Java8Parser;
-import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 
 
@@ -25,11 +24,11 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
     @Override
     public ParseTreeVisitor<AST> getTreeWalker()
     {
-        return new FullyImplementedTreeWalker();
+        return new SuperQuickTreeWalker();
     }
 
     @Override
-    public Set<ParserRuleContext> sourceToDefaultcontext(Submission s, String contentAsString) throws InvalidSubmissionException
+    public Set<ParserRuleContext> sourceToDefaultcontext(Submission s, String contentAsString)
     {
         String in = Arrays.asList(contentAsString.split("\n"))
             .stream()
@@ -53,8 +52,7 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
         }
         catch(ASTFactory.SyntaxErrorException see)
         {
-            s.addType(InvalidSubmission.class, new InvalidSubmission());
-            throw new InvalidSubmissionException(see);
+            return new HashSet<>();
         }
         
         return result;

@@ -29,7 +29,6 @@ import net.lldp.checksims.parse.token.SubmissionTokenizer;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
-import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.testutil.SubmissionUtils;
 import net.lldp.checksims.util.AssertUtils;
@@ -57,7 +56,7 @@ public class MatrixThresholdPrinterTest {
     public ExpectedException expectedEx = ExpectedException.none();
 
     @Before
-    public void setUp() throws InternalAlgorithmError, InvalidSubmissionException {
+    public void setUp() throws InternalAlgorithmError {
         Submission abcd = SubmissionUtils.submissionFromString("ABCD", "ABCD");
         Submission xyz = SubmissionUtils.submissionFromString("XYZ", "XYZ");
         Submission abcde = SubmissionUtils.submissionFromString("ABCDE", "ABCDE");

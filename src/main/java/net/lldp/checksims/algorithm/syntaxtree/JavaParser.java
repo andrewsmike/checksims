@@ -7,12 +7,12 @@ import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.parse.SubmissionPercentableCalculator;
-import net.lldp.checksims.parse.ast.PercentableAST;
+import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.SubmissionParser;
 import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.submission.Submission;
 
-public class JavaParser implements SimilarityDetector<PercentableAST>
+public class JavaParser implements SimilarityDetector<AST>
 {
     public static JavaParser getInstance()
     {
@@ -26,17 +26,17 @@ public class JavaParser implements SimilarityDetector<PercentableAST>
     }
 
     @Override
-    public SubmissionPercentableCalculator<PercentableAST> getPercentableCalculator()
+    public SubmissionPercentableCalculator<AST> getPercentableCalculator()
     {
         return new SubmissionParser(new JavaSyntaxParser());
     }
 
     @Override
-    public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, PercentableAST rft, PercentableAST comt)
+    public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, AST rft, AST comt)
             throws TokenTypeMismatchException, InternalAlgorithmError
     {
-        Real atb = rft.getPercent(comt);
-        Real bta = comt.getPercent(rft);
+        Real atb = rft.getPercentMatched(comt.getFingerprints());
+        Real bta = comt.getPercentMatched(rft.getFingerprints());
         
         return new AlgorithmResults(ab, atb, bta);
     }
