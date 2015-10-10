@@ -43,7 +43,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class MatrixThresholdPrinter implements MatrixPrinter {
     private static MatrixThresholdPrinter instance;
 
-    private static final double threshold = 0.8;
+    private static final double threshold = 0.6;
 
     private MatrixThresholdPrinter() {}
 

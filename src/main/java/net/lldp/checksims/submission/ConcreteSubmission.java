@@ -133,4 +133,10 @@ public final class ConcreteSubmission implements Submission {
     {
         return (T) parsedTypes.get(clazz);
     }
+
+    @Override
+    public void invalidateCache()
+    {
+        parsedTypes.clear();
+    }
 }

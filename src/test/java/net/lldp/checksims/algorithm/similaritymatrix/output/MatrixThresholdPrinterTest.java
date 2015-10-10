@@ -85,6 +85,7 @@ public class MatrixThresholdPrinterTest {
 
         oneSignificant = SimilarityMatrix.generateMatrix(SubmissionUtils.setFromElements(abcd, abcde), singleton(abcdToAbcde));
 
+        abcd.invalidateCache();
         TokenList abcdInval2 = st.fromSubmission(abcd).getDataCopy();
         abcdInval2.get(0).setValid(false);
         TokenList aInval = st.fromSubmission(a).getDataCopy();
@@ -100,6 +101,8 @@ public class MatrixThresholdPrinterTest {
         Submission fghijk = SubmissionUtils.submissionFromString("FGHIJK", "FGHIJK");
         Submission e = SubmissionUtils.submissionFromString("E", "E");
 
+        efgh.invalidateCache();
+        fghijk.invalidateCache();
         TokenList efghInval1 = st.fromSubmission(efgh).getDataCopy();
         for(int i = 1; i < 4; i++) {
             efghInval1.get(i).setValid(false);
@@ -113,6 +116,8 @@ public class MatrixThresholdPrinterTest {
                 new PercentableTokenListDecorator(efghInval1),
                 new PercentableTokenListDecorator(fghijkInval));
 
+        efgh.invalidateCache();
+        e.invalidateCache();
         TokenList efghInval2 = st.fromSubmission(efgh).getDataCopy();
         efghInval2.get(0).setValid(false);
         TokenList eInval = st.fromSubmission(e).getDataCopy();
@@ -122,6 +127,9 @@ public class MatrixThresholdPrinterTest {
                 new PercentableTokenListDecorator(efghInval2),
                 new PercentableTokenListDecorator(eInval));
 
+        fghijk.invalidateCache();
+        e.invalidateCache();
+        
         AlgorithmResults fToE = new AlgorithmResults(fghijk, e,
                 st.fromSubmission(fghijk),
                 st.fromSubmission(e));

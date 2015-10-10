@@ -45,6 +45,12 @@ public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorato
     }
 
     @Override
+    public void invalidateCache()
+    {
+        parsedTypes.clear();
+    }
+    
+    @Override
     public boolean equals(Object other) {
         if(!(other instanceof Submission)) {
             return false;

@@ -43,6 +43,12 @@ public final class ValidityIgnoringSubmission extends AbstractSubmissionDecorato
     public ValidityIgnoringSubmission(Submission wrappedSubmission, Tokenizer tokenizer) {
         super(wrappedSubmission, tokenizer);
     }
+    
+    @Override
+    public void invalidateCache()
+    {
+        parsedTypes.clear();
+    }
 
     @Override
     public boolean equals(Object other) {

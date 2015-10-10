@@ -69,6 +69,16 @@ public interface Submission extends Comparable<Submission> {
      */
     boolean contains(Class<? extends Percentable> clazz);
     
+    /**
+     * Invalidate the Percentable cache
+     */
+    void invalidateCache();
+    
+    /**
+     * 
+     * @param clazz the class to get a percentable for
+     * @return a percentable of type T, or null
+     */
     <T extends Percentable> T get(Class<T> clazz);
 
     /**
