@@ -1,12 +1,10 @@
 package net.lldp.checksims.parse.ast;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -22,7 +20,7 @@ public class AST implements Percentable
     private final Set<AST> asts;
     private final Set<Integer> hashes;
     private final Integer hashCode;
-    private final Map<Integer, List<AST>> fingerprints;
+    private final Map<Integer, AST> fingerprints;
     
     // scoring heuristics?
     private final Integer size;
@@ -57,28 +55,29 @@ public class AST implements Percentable
         fingerprint(wrap(fingerprints));
     }
     
-    public Map<Integer, List<AST>> getFingerprints()
+    public Map<Integer, AST> getFingerprints()
     {
-        return fingerprints; // Ideally should be immutable, but this kicks the GC in the ass
+        return Collections.unmodifiableMap(fingerprints);
     }
     
-    public void fingerprint(final Monad<Map<Integer, List<AST>>> fpdb)
+    public void fingerprint(final Monad<Map<Integer, AST>> fpdb)
     {
-        List<AST> val = unwrap(fpdb).get(hashCode());
-        if (val == null)
+        AST t = 
+        unwrap(fpdb).put(hashCode(), this); // yes this may overwrite collisions
+                                            // no we do not care
+        
+        if (t != null && !equals(t)) // OK maybe we do care...
         {
-            val = new ArrayList<>();
+            System.out.println("HASH COLLISION!!!  mapsize("+unwrap(fpdb).size()+")");
         }
-        val.add(this);
-        unwrap(fpdb).put(hashCode(), val);
+        
         asts.stream().forEach(A -> A.fingerprint(fpdb));
     }
     
-    public Real getPercentMatched(Map<Integer, List<AST>> fpdb)
+    public Real getPercentMatched(Map<Integer, AST> fpdb)
     {
         Real result = null;
-        List<AST> val = fpdb.get(hashCode());
-        if (val != null && val.contains(this))
+        if (equals(fpdb.get(hashCode())))
         {
             result = new Real(size, size);
         }
