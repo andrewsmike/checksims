@@ -24,7 +24,7 @@ public class SuperQuickTreeWalker extends Java8BaseVisitor<AST>
             
             AST t = pt.accept(this);
             if (t == null) {
-                t = new AST(pt.getText());
+                t = new AST(name);
             }
             asts.add(t);
         }
