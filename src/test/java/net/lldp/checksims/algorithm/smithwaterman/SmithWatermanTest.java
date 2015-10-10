@@ -29,7 +29,6 @@ import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
-import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -84,7 +83,7 @@ public class SmithWatermanTest {
     }
 
     private AlgorithmResults runSmithWaterman(Submission a, Submission b, TokenType at, TokenType bt)
-            throws TokenTypeMismatchException, InternalAlgorithmError, InvalidSubmissionException 
+            throws TokenTypeMismatchException, InternalAlgorithmError 
     {
         if (bt != at)
         {
@@ -95,7 +94,7 @@ public class SmithWatermanTest {
                 new SubmissionTokenizer(Tokenizer.getTokenizer(bt)).fromSubmission(b));
     }
     
-    private TokenList tokens(Submission s, TokenType tt) throws InvalidSubmissionException 
+    private TokenList tokens(Submission s, TokenType tt) 
     {
         return new SubmissionTokenizer(Tokenizer.getTokenizer(tt)).fromSubmission(s).getDataCopy();
     }

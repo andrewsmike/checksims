@@ -10,8 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.lldp.checksims.parse.ast.AST;
-import net.lldp.checksims.parse.ast.AST.NodeAST;
-import net.lldp.checksims.parse.ast.AST.OrderedAST;
 import net.lldp.checksims.parse.ast.java.Java8BaseVisitor;
 import net.lldp.checksims.parse.ast.java.Java8Parser.*;
 
@@ -884,7 +882,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     @Override
     public AST visitLiteral(LiteralContext ctx)
     {
-        return new AST.NodeAST(ctx.getText());
+        return new AST(ctx.getText());
     }
     
     @Override
@@ -892,10 +890,10 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     {
         if (ctx.getChild(0).getClass().getSimpleName().equals("TerminalNodeImpl"))
         {
-            return new AST.NodeAST(ctx.getText());
+            return new AST(ctx.getText());
         }
         
-        return new AST.OrderedAST(ctx.getChild(0).accept(this), new AST.NodeAST(ctx.getChild(2).getText()));
+        return new AST("#EXPRESSION_NAME", ctx.getChild(0).accept(this), new AST.NodeAST(ctx.getChild(2).getText()));
     }
     
     @Override
@@ -903,10 +901,10 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     {
         if (ctx.getChild(0).getClass().getSimpleName().equals("TerminalNodeImpl"))
         {
-            return new AST.NodeAST(ctx.getText());
+            return new AST(ctx.getText());
         }
         
-        return new AST.OrderedAST(ctx.getChild(0).accept(this), new AST.NodeAST(ctx.getChild(2).getText()));
+        return new AST("#AMBIGUOUS", ctx.getChild(0).accept(this), new AST(ctx.getChild(2).getText()));
     }
     
     public AST visitLocalVariableDeclarationStatement(LocalVariableDeclarationStatementContext ctx)
@@ -930,14 +928,14 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
             switch(pt.getClass().getSimpleName())
             {
                 case "UnannTypeContext":
-                    result.add(new AST.NodeAST(pt.getText()));
+                    result.add(new AST(pt.getText()));
                     break;
                 case "VariableDeclaratorListContext":
-                    result.addAll(((AST.OrderedAST)pt.accept(this)).getBody());
+                    result.addAll(pt.accept(this).getASTs());
                     break;
             }
         }
-        return new AST.OrderedAST(result.stream());
+        return new AST("#DECLARE", result.stream());
     }
     
     @Override
@@ -947,7 +945,7 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
         {
             return ctx.getChild(2).accept(this);
         }
-        return new AST.OrderedAST();
+        return new AST("#");
     }
     
     @Override
@@ -966,14 +964,14 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
             switch(pt.getClass().getSimpleName())
             {
                 case "UnannTypeContext":
-                    result.add(new AST.NodeAST(pt.getText()));
+                    result.add(new AST(pt.getText()));
                     break;
                 case "VariableDeclaratorListContext":
-                    result.addAll(((AST.OrderedAST)pt.accept(this)).getBody());
+                    result.addAll((pt.accept(this)).getASTs());
                     break;
             }
         }
-        return new AST.OrderedAST(result.stream());
+        return new AST("#DECLARE", result.stream());
     }
     
     
@@ -988,11 +986,11 @@ public class FullyImplementedTreeWalker extends Java8BaseVisitor<AST>
     {
         List<AST> newAST = new LinkedList<>();
         
-        newAST.add(new NodeAST(ctx.getChild(0).getText())); // "while"
+        newAST.add(new AST(ctx.getChild(0).getText())); // "while"
         newAST.add(ctx.getChild(2).accept(this)); // boolean condition :: ExpressionContext
         newAST.add(ctx.getChild(4).accept(this)); // body block :: StatementContext
         
-        return new OrderedAST(newAST.stream());
+        return new AST("#while", newAST.stream());
     }
     
     

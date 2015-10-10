@@ -15,7 +15,6 @@ import net.lldp.checksims.parse.ast.ASTFactory;
 import net.lldp.checksims.parse.ast.LanguageDependantSyntaxParser;
 import net.lldp.checksims.parse.ast.java.Java8Lexer;
 import net.lldp.checksims.parse.ast.java.Java8Parser;
-import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 
 
@@ -25,11 +24,11 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
     @Override
     public ParseTreeVisitor<AST> getTreeWalker()
     {
-        return new FullyImplementedTreeWalker();
+        return new SuperQuickTreeWalker();
     }
 
     @Override
-    public Set<ParserRuleContext> sourceToDefaultcontext(Submission s, String contentAsString) throws InvalidSubmissionException
+    public Set<ParserRuleContext> sourceToDefaultcontext(Submission s, String contentAsString)
     {
         String in = Arrays.asList(contentAsString.split("\n"))
             .stream()
@@ -39,22 +38,22 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
         Java8Parser j8p = ASTFactory.makeParser(s.getName(), new ANTLRInputStream(in), Java8Parser.class, Java8Lexer.class);
         
         Set<ParserRuleContext> result = new HashSet<>();
-        
-        try
+        boolean endOfFile = true;
+        while(endOfFile)
         {
-            while(true)
+            try
             {
                 result.add(j8p.typeDeclaration());
             }
-        }
-        catch(ASTFactory.EOFParsingException epe)
-        {
-            
-        }
-        catch(ASTFactory.SyntaxErrorException see)
-        {
-            s.addType(InvalidSubmission.class, new InvalidSubmission());
-            throw new InvalidSubmissionException(see);
+            catch(ASTFactory.EOFParsingException epe)
+            {
+                endOfFile = false;
+            }
+            catch(ASTFactory.SyntaxErrorException see)
+            {
+                System.out.println("Syntax Error for assignment: " + s.getName());
+                return new HashSet<>();
+            }
         }
         
         return result;

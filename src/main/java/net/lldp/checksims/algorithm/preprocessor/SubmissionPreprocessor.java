@@ -22,7 +22,6 @@
 package net.lldp.checksims.algorithm.preprocessor;
 
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
-import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.util.reflection.NamedInstantiable;
 
@@ -38,5 +37,5 @@ public interface SubmissionPreprocessor extends NamedInstantiable {
      * @throws InternalAlgorithmError Thrown on internal error preprocessing submission
      * @throws InvalidSubmissionException 
      */
-    Submission process(Submission submission) throws InternalAlgorithmError, InvalidSubmissionException;
+    Submission process(Submission submission) throws InternalAlgorithmError;
 }

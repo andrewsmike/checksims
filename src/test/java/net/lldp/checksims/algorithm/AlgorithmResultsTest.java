@@ -27,7 +27,6 @@ import net.lldp.checksims.parse.token.SubmissionTokenizer;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
-import net.lldp.checksims.submission.InvalidSubmissionException;
 import net.lldp.checksims.submission.Submission;
 
 import org.junit.Before;
@@ -63,63 +62,63 @@ public class AlgorithmResultsTest {
     }
 
     @Test
-    public void TestCreateAlgorithmResultsNullA() throws InvalidSubmissionException {
+    public void TestCreateAlgorithmResultsNullA() {
         expectedEx.expect(NullPointerException.class);
         
         new AlgorithmResults(null, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
     }
 
     @Test
-    public void TestCreateAlgorithmResultsNullB() throws InvalidSubmissionException {
+    public void TestCreateAlgorithmResultsNullB() {
         expectedEx.expect(NullPointerException.class);
 
         new AlgorithmResults(a, null, SPC.fromSubmission(a), SPC.fromSubmission(b));
     }
 
     @Test
-    public void TestCreateAlgorithmResultsNullFinalA() throws InvalidSubmissionException {
+    public void TestCreateAlgorithmResultsNullFinalA() {
         expectedEx.expect(NullPointerException.class);
 
         new AlgorithmResults(a, b, null, SPC.fromSubmission(b));
     }
 
     @Test
-    public void TestCreateAlgorithmResultsNullFinalB() throws InvalidSubmissionException {
+    public void TestCreateAlgorithmResultsNullFinalB() {
         expectedEx.expect(NullPointerException.class);
 
         new AlgorithmResults(a, b, SPC.fromSubmission(a), null);
     }
     
     @Test
-    public void TestAlgorithmResultsGetPercentSimilarA() throws InvalidSubmissionException {
+    public void TestAlgorithmResultsGetPercentSimilarA() {
         AlgorithmResults test1 = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
 
         assertEquals(0.0, test1.percentMatchedA().asDouble(), 0.0);
     }
 
     @Test
-    public void TestAlgorithmResultsGetPercentSimilarB() throws InvalidSubmissionException {
+    public void TestAlgorithmResultsGetPercentSimilarB() {
         AlgorithmResults test1 = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
 
         assertEquals(0.0, test1.percentMatchedB().asDouble(), 0.0);
     }
 
     @Test
-    public void TestAlgorithmResultsPercentSimilarAEmpty() throws InvalidSubmissionException {
+    public void TestAlgorithmResultsPercentSimilarAEmpty() {
         AlgorithmResults test = new AlgorithmResults(empty, b, SPC.fromSubmission(empty), SPC.fromSubmission(b));
 
         assertEquals(0.0, test.percentMatchedA().asDouble(), 0.0);
     }
 
     @Test
-    public void TestAlgorithmResultsGetPercentSimilarBEmpty() throws InvalidSubmissionException {
+    public void TestAlgorithmResultsGetPercentSimilarBEmpty() {
         AlgorithmResults test = new AlgorithmResults(a, empty, SPC.fromSubmission(a), SPC.fromSubmission(empty));
 
         assertEquals(0.0, test.percentMatchedB().asDouble(), 0.0);
     }
 
     @Test
-    public void TestAlgorithmResultsGetPercentSimilarANonzero() throws InvalidSubmissionException {
+    public void TestAlgorithmResultsGetPercentSimilarANonzero() {
         TokenList one = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
         one.get(0).setValid(false);
         TokenList two = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
@@ -135,7 +134,7 @@ public class AlgorithmResultsTest {
     }
 
     @Test
-    public void TestAlgorithmResultsGetPercentSimilarBNonzero() throws InvalidSubmissionException {
+    public void TestAlgorithmResultsGetPercentSimilarBNonzero() {
         TokenList one = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
         one.get(0).setValid(false);
         TokenList two = TokenList.cloneTokenList(SPC.fromSubmission(abcd).getDataCopy());
@@ -151,7 +150,7 @@ public class AlgorithmResultsTest {
     }
 
     @Test
-    public void TestBasicEquality() throws InvalidSubmissionException {
+    public void TestBasicEquality() {
         AlgorithmResults one = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
         AlgorithmResults two = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
 
@@ -159,7 +158,7 @@ public class AlgorithmResultsTest {
     }
 
     @Test
-    public void TestBasicInequality() throws InvalidSubmissionException {
+    public void TestBasicInequality() {
         AlgorithmResults one = new AlgorithmResults(a, b, SPC.fromSubmission(a), SPC.fromSubmission(b));
         AlgorithmResults two = new AlgorithmResults(a, abcd, SPC.fromSubmission(a), SPC.fromSubmission(abcd));
 

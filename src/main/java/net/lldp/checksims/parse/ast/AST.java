@@ -1,287 +1,152 @@
 package net.lldp.checksims.parse.ast;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.parse.Real;
+import static net.lldp.checksims.parse.ast.Monad.unwrap;
+import static net.lldp.checksims.parse.ast.Monad.wrap;
 
-public interface AST
+public class AST implements Percentable
 {
-    public Real compareToAST(AST t);
+    private final String tag;
+    private final Set<AST> asts;
+    private final Set<Integer> hashes;
+    private final Integer hashCode;
+    private final Map<Integer, AST> fingerprints;
     
-    static class BlankAST implements AST
+    // scoring heuristics?
+    private final Integer size;
+    private final Integer depth;
+    
+    public AST(String tag, AST ... children)
     {
-
-        @Override
-        public Real compareToAST(AST t)
-        {
-            return t.compareToAST(this);
-        }
-
-        @Override
-        public Real compareUnorderedAST(UnorderedAST unorderedAST)
-        {
-            Real r = new Real(0, 0);
-            for(AST t : unorderedAST.contains)
-            {
-                r = r.simpleAverage(t.compareToAST(this));
-            }
-            return r;
-        }
-
-        @Override
-        public Real compareOrderedAST(OrderedAST orderedAST)
-        {
-            Real r = new Real(1, 0);
-            for(AST t : orderedAST.contains)
-            {
-                r = r.simpleAverage(t.compareToAST(this));
-            }
-            return r;
-        }
-
-        @Override
-        public Real compareNodeAST(NodeAST nodeAST)
-        {
-            return new Real(0, 1);
-        }
-        
+        this(tag, Arrays.asList(children).stream());
     }
     
-    public static class OrderedAST implements AST
+    public AST(String tag, Stream<AST> children)
     {
-        public List<AST> contains = new LinkedList<>();
-        public OrderedAST(Stream<AST> sub)
-        {
-            sub.forEach(AST -> add(AST));
-        }
+        this.tag = tag;
+        this.asts = new HashSet<>();
+        this.hashes = new HashSet<>();
+        this.fingerprints = new HashMap<>();
         
-        private void add(AST t)
-        {
-            if (t != null)
-            {
-                contains.add(t);
-            }
-            else
-            {
-                throw new RuntimeException("null");
-            }
-        }
+        Monad<Integer> size = wrap(0);
+        Monad<Integer> depth = wrap(0);
         
-        public OrderedAST(AST ... asts)
-        {
-            for(AST t : asts)
-            {
-                add(t);
-            }
-        }
+        children.forEach(A -> {
+            asts.add(A);
+            hashes.add(A.hashCode());
+            size.set(unwrap(size) + A.size);
+            depth.set(A.depth > unwrap(depth) ? A.depth: unwrap(depth));
+        });
         
-        public List<AST> getBody()
-        {
-            return contains;
-        }
+        this.size = unwrap(size)+1;
+        this.depth = unwrap(depth)+1;
+        hashCode = _hashCode();
         
-        public String toString()
-        {
-            return "("+contains.stream().map(I -> I+"").collect(Collectors.joining(" "))+")";
-        }
-
-        @Override
-        public Real compareToAST(AST t)
-        {
-            return t.compareOrderedAST(this);
-        }
-
-        @Override
-        public Real compareNodeAST(NodeAST nodeAST)
-        {
-            return nodeAST.compareOrderedAST(this);
-        }
-
-        @Override
-        public Real compareUnorderedAST(UnorderedAST unorderedAST)
-        {
-            Real r = new Real(0, 0);
-            Iterator<AST> a = this.contains.iterator();
-            Iterator<AST> b = unorderedAST.contains.iterator();
-            while(a.hasNext() || b.hasNext())
-            {
-                AST R = new BlankAST();
-                if (a.hasNext())
-                {
-                    r = r.simpleAverage(R.compareToAST(a.next()));
-                }
-                if (b.hasNext())
-                {
-                    r = r.simpleAverage(R.compareToAST(b.next()));
-                }
-            }
-            return r;
-        }
-
-        @Override
-        public Real compareOrderedAST(OrderedAST orderedAST)
-        {
-            Real r = new Real(0, 0);
-            Iterator<AST> a = this.contains.iterator();
-            Iterator<AST> b = orderedAST.contains.iterator();
-            while(a.hasNext() || b.hasNext())
-            {
-                AST A = new BlankAST(), B = new BlankAST();
-                if (a.hasNext())
-                {
-                    A = a.next();
-                }
-                if (b.hasNext())
-                {
-                    B = b.next();
-                }
-                r = r.simpleAverage(A.compareToAST(B));
-            }
-            return r;
-        }
+        fingerprint(wrap(fingerprints));
     }
     
-    public static class UnorderedAST implements AST
+    public Map<Integer, AST> getFingerprints()
     {
-        private final Set<AST> contains = new HashSet<>();
-        public UnorderedAST(Stream<AST> sub)
-        {
-            sub.forEach(AST -> add(AST));
-        }
-        
-        private void add(AST t)
-        {
-            if (t != null)
-            {
-                contains.add(t);
-            }
-            else
-            {
-                throw new RuntimeException("null");
-            }
-        }
-        
-        public UnorderedAST(AST ... asts)
-        {
-            for(AST t : asts)
-            {
-                add(t);
-            }
-        }
-
-        public String toString()
-        {
-            return "("+contains.stream().map(I -> ""+I).collect(Collectors.joining(" "))+")";
-        }
-
-        @Override
-        public Real compareToAST(AST t)
-        {
-            return t.compareUnorderedAST(this);
-        }
-
-        @Override
-        public Real compareNodeAST(NodeAST nodeAST)
-        {
-            return nodeAST.compareUnorderedAST(this);
-        }
-
-        @Override
-        public Real compareUnorderedAST(UnorderedAST unorderedAST)
-        {
-            Real r = new Real(0, 0);
-            for(AST aa : contains)
-            {
-                Real row = new Real(0, 0);
-                for(AST bb : unorderedAST.contains)
-                {
-                    row = row.simpleAverage(aa.compareToAST(bb).squareNumerator().squareNumerator());
-                }
-                r = r.simpleAverage(row.sqrtNumerator().sqrtNumerator());
-            }
-            
-            return r.divideDenominator((contains.size()+unorderedAST.contains.size())/2);
-        }
-
-        @Override
-        public Real compareOrderedAST(OrderedAST orderedAST)
-        {
-            Real r = new Real(0, 0);
-            Iterator<AST> a = this.contains.iterator();
-            Iterator<AST> b = orderedAST.contains.iterator();
-            while(a.hasNext() || b.hasNext())
-            {
-                AST R = new BlankAST();
-                if (a.hasNext())
-                {
-                    r = r.simpleAverage(R.compareToAST(a.next()));
-                }
-                if (b.hasNext())
-                {
-                    r = r.simpleAverage(R.compareToAST(b.next()));
-                }
-            }
-            return r;
-        }
+        return fingerprints; // Ideally should be immutable, but this kicks the GC in the ass
     }
     
-    public static class NodeAST implements AST
+    public void fingerprint(final Monad<Map<Integer, AST>> fpdb)
     {
-        private final String val;
-        
-        public NodeAST(String text)
-        {
-            val = text;
-        }
-        
-        public String toString()
-        {
-            return val;
-        }
-
-        @Override
-        public Real compareToAST(AST t)
-        {
-            return t.compareNodeAST(this);
-        }
-
-        @Override
-        public Real compareNodeAST(NodeAST nodeAST)
-        {
-            return val.equals(nodeAST.val) ? new Real(1, 1) : new Real(0, 1);
-        }
-
-        @Override
-        public Real compareUnorderedAST(UnorderedAST unorderedAST)
-        {
-            return new Real(0, 1);
-        }
-
-        @Override
-        public Real compareOrderedAST(OrderedAST orderedAST)
-        {
-            return new Real(0, 1);
-        } 
+        unwrap(fpdb).put(hashCode(), this);
+        asts.stream().forEach(A -> A.fingerprint(fpdb));
     }
     
-    
-    public static Real compareAST(AST a, AST b)
+    public Real getPercentMatched(Map<Integer, AST> fpdb)
     {
-        return a.compareToAST(b);
+        Real result = null;
+        if (equals(fpdb.get(hashCode())))
+        {
+            result = new Real(size, size);
+        }
+        else
+        {
+            result = new Real(0, size);
+        }
+        
+        for(AST t : asts)
+        {
+            result = result.scoreSummation(t.getPercentMatched(fpdb));
+        }
+        
+        return result;
     }
 
 
-    public Real compareUnorderedAST(UnorderedAST unorderedAST);
 
+    /*
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        return hashCode;
+    }
+    
+    /*
+     * AUTO GENERATED BY ECLIPSE
+     * @see java.lang.Object#hashCode()
+     */
+    private int _hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((hashes == null) ? 0 : hashes.hashCode());
+        result = prime * result + ((tag == null) ? 0 : tag.hashCode());
+        return result;
+    }
 
-    public Real compareOrderedAST(OrderedAST orderedAST);
+    /*
+     * AUTO GENERATED BY ECLIPSE
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AST other = (AST) obj;
+        if (hashes == null)
+        {
+            if (other.hashes != null)
+                return false;
+        } else if (!hashes.equals(other.hashes))
+            return false;
+        if (tag == null)
+        {
+            if (other.tag != null)
+                return false;
+        } else if (!tag.equals(other.tag))
+            return false;
+        return true;
+    }
 
+    @Override
+    public Real getPercentageMatched()
+    {
+        throw new RuntimeException("cannot evaluate getPercentMatched()");
+    }
 
-    public Real compareNodeAST(NodeAST nodeAST);
+    public Collection<? extends AST> getASTs()
+    {
+        return Collections.unmodifiableSet(asts);
+    }
 }
