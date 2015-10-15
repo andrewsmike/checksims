@@ -18,7 +18,7 @@
  *
  * Copyright (c) 2015 Ted Meyer and Michael Andrews
  */
-package net.lldp.checksims.parse.ast;
+package net.lldp.checksims.util.data;
 
 /**
  * 

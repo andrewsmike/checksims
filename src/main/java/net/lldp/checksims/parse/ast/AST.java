@@ -30,8 +30,9 @@ import java.util.stream.Stream;
 
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.parse.Real;
-import static net.lldp.checksims.parse.ast.Monad.unwrap;
-import static net.lldp.checksims.parse.ast.Monad.wrap;
+import net.lldp.checksims.util.data.Monad;
+import static net.lldp.checksims.util.data.Monad.unwrap;
+import static net.lldp.checksims.util.data.Monad.wrap;
 
 /**
  * This is where the magic happens
