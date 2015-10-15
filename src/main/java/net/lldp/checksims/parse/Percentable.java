@@ -20,6 +20,8 @@
  */
 package net.lldp.checksims.parse;
 
+import net.lldp.checksims.util.data.Real;
+
 /**
  * 
  * @author ted

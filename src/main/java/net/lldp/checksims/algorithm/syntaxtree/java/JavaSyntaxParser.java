@@ -29,13 +29,13 @@ import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.ASTFactory;
 import net.lldp.checksims.parse.ast.LanguageDependantSyntaxParser;
 import net.lldp.checksims.parse.ast.java.Java8Lexer;
 import net.lldp.checksims.parse.ast.java.Java8Parser;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.data.Real;
 
 /**
  * 

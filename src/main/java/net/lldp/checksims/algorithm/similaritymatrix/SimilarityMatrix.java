@@ -27,9 +27,9 @@ import com.google.common.collect.Ordering;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.submission.NoSuchSubmissionException;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.data.Real;
 
 import org.apache.commons.lang3.tuple.Pair;
 

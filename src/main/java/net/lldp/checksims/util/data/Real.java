@@ -18,7 +18,9 @@
  *
  * Copyright (c) 2015 Ted Meyer and Michael Andrews
  */
-package net.lldp.checksims.parse;
+package net.lldp.checksims.util.data;
+
+import net.lldp.checksims.parse.Percentable;
 
 /**
  * 

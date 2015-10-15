@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.util.data.Monad;
+import net.lldp.checksims.util.data.Real;
 import static net.lldp.checksims.util.data.Monad.unwrap;
 import static net.lldp.checksims.util.data.Monad.wrap;
 
