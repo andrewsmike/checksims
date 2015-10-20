@@ -67,7 +67,7 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
         {
             try
             {
-                result.add(j8p.typeDeclaration());
+                result.add(j8p.typeDeclaration()); // cant use compilationUnit here, since code is mashed together
             }
             catch(ASTFactory.EOFParsingException epe)
             {

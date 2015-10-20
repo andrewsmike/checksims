@@ -51,7 +51,7 @@ public class SubmissionParser implements SubmissionPercentableCalculator<AST>
     public AST generateFromSubmission(Submission s)
     {
         Stream<AST> asts = ldsp.sourceToDefaultcontext(s, s.getContentAsString()).stream().map(A -> A.accept(ldsp.getTreeWalker()));
-        return new AST("#PROGRAM", asts);
+        return new AST("#PROGRAM", asts).cacheFingerprinting();
     }
 
     @Override

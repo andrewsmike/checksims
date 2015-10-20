@@ -92,9 +92,10 @@ public class AST implements Percentable
     /**
      * MUST BE CALLED AFTER GENERATION
      */
-    public void cacheFingerprinting()
+    public AST cacheFingerprinting()
     {
         fingerprint(wrap(fingerprints));
+        return this;
     }
     
     /** 
