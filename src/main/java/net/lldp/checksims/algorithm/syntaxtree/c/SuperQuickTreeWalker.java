@@ -1,4 +1,4 @@
-package net.lldp.checksims.algorithm.syntaxtree;
+package net.lldp.checksims.algorithm.syntaxtree.c;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -7,9 +7,9 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 
 import net.lldp.checksims.parse.ast.AST;
-import net.lldp.checksims.parse.ast.java.Java8BaseVisitor;
+import net.lldp.checksims.parse.ast.c.CBaseVisitor;
 
-public class BasicJavaTreeWalker extends Java8BaseVisitor<AST> 
+public class SuperQuickTreeWalker extends CBaseVisitor<AST> 
 {
     @Override
     public AST visitChildren(RuleNode rn)

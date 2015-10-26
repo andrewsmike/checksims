@@ -1,11 +1,11 @@
-package net.lldp.checksims.algorithm.syntaxtree;
+package net.lldp.checksims.algorithm.syntaxtree.c;
 
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
-import net.lldp.checksims.parse.Real;
+import net.lldp.checksims.util.data.Real;
 import net.lldp.checksims.parse.SubmissionPercentableCalculator;
 import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.SubmissionParser;

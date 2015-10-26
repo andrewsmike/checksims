@@ -24,8 +24,8 @@ package net.lldp.checksims.algorithm;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.data.Real;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**

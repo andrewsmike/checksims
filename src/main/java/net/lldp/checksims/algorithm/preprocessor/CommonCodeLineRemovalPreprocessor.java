@@ -26,13 +26,13 @@ import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.algorithm.linesimilarity.LineSimilarityChecker;
 import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.parse.token.TokenType;
 import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.submission.ValidityIgnoringSubmission;
+import net.lldp.checksims.util.data.Real;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;

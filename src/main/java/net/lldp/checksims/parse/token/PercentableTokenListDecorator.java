@@ -1,7 +1,7 @@
 package net.lldp.checksims.parse.token;
 
 import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
+import net.lldp.checksims.util.data.Real;
 
 public class PercentableTokenListDecorator implements Percentable
 {

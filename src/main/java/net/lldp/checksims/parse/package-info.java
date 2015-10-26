@@ -18,23 +18,10 @@
  *
  * Copyright (c) 2015 Ted Meyer and Michael Andrews
  */
-package net.lldp.checksims.parse;
-
-import net.lldp.checksims.util.data.Real;
 
 /**
- * 
- * @author ted
- *
- * The percentable interface is for any class that can be used by
- * an algorithm to return a result. These may cache or recalculate
- * percents at any time.
- *
+ * This package contains the Utilities and packages specific to the types
+ * of methods of parsing submissions, as well as some general interfaces
+ * for using them together.
  */
-public interface Percentable
-{
-    /**
-     * @return get the percent value associated with this class
-     */
-    Real getPercentageMatched();
-}
+package net.lldp.checksims.parse;

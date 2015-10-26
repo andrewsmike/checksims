@@ -1,7 +1,26 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ *
+ * Copyright (c) 2015 Ted Meyer and Michael Andrews
+ */
 package net.lldp.checksims.parse.ast;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,10 +29,17 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
-import static net.lldp.checksims.parse.ast.Monad.unwrap;
-import static net.lldp.checksims.parse.ast.Monad.wrap;
+import net.lldp.checksims.util.data.Monad;
+import net.lldp.checksims.util.data.Real;
+import static net.lldp.checksims.util.data.Monad.unwrap;
+import static net.lldp.checksims.util.data.Monad.wrap;
 
+/**
+ * This is where the magic happens
+ * @author ted
+ *
+ * The AST structure for all parsers to target
+ */
 public class AST implements Percentable
 {
     private final String tag;
@@ -23,14 +49,24 @@ public class AST implements Percentable
     private final Map<Integer, AST> fingerprints;
     
     // scoring heuristics?
-    private final Integer size;
+    public final Integer size;
     private final Integer depth;
     
+    /**
+     * Creates an AST with variadic children
+     * @param tag the name/tag of the AST
+     * @param children an array or variadic number of children
+     */
     public AST(String tag, AST ... children)
     {
         this(tag, Arrays.asList(children).stream());
     }
     
+    /**
+     * Creates an AST from a stream of children
+     * @param tag the name/tag of the AST
+     * @param children a stream containing children to add to the AST
+     */
     public AST(String tag, Stream<AST> children)
     {
         this.tag = tag;
@@ -51,15 +87,29 @@ public class AST implements Percentable
         this.size = unwrap(size)+1;
         this.depth = unwrap(depth)+1;
         hashCode = _hashCode();
-        
-        fingerprint(wrap(fingerprints));
     }
     
+    /**
+     * MUST BE CALLED AFTER GENERATION
+     */
+    public AST cacheFingerprinting()
+    {
+        fingerprint(wrap(fingerprints));
+        return this;
+    }
+    
+    /** 
+     * @return gets a mapping for all nodes in this tree of all fingerprints
+     */
     public Map<Integer, AST> getFingerprints()
     {
         return Collections.unmodifiableMap(fingerprints);
     }
     
+    /**
+     * Store fingerprints in the provided Map
+     * @param fpdb a monad of a map in which the fingerprints will be stored
+     */
     public void fingerprint(final Monad<Map<Integer, AST>> fpdb)
     {
         AST t = 
@@ -74,6 +124,11 @@ public class AST implements Percentable
         asts.stream().forEach(A -> A.fingerprint(fpdb));
     }
     
+    /**
+     * given a mapping of another tree's fingerprints, generate a similarity score
+     * @param fpdb the map of the other tree's fingerprints
+     * @return A percentage representing the amount of similarity between the two trees
+     */
     public Real getPercentMatched(Map<Integer, AST> fpdb)
     {
         Real result = null;
@@ -151,14 +206,5 @@ public class AST implements Percentable
     public Real getPercentageMatched()
     {
         throw new RuntimeException("cannot evaluate getPercentMatched()");
-    }
-
-    public Collection<? extends AST> getASTs()
-    {
-        return Collections.unmodifiableSet(asts);
-    }
-    
-    public String toString() {
-    	return "(" + this.tag + "):" + this.asts.toString() + "";
     }
 }

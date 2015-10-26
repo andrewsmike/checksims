@@ -27,8 +27,8 @@ import com.google.common.collect.Iterables;
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.similaritymatrix.SimilarityMatrix;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.data.Real;
 
 import java.text.DecimalFormat;
 import java.util.HashSet;

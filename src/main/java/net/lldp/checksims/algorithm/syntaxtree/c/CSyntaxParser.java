@@ -1,4 +1,4 @@
-package net.lldp.checksims.algorithm.syntaxtree;
+package net.lldp.checksims.algorithm.syntaxtree.c;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -22,7 +22,7 @@ public class CSyntaxParser implements LanguageDependantSyntaxParser
     @Override
     public ParseTreeVisitor<AST> getTreeWalker()
     {
-        return new BasicCTreeWalker();
+        return new SuperQuickTreeWalker();
     }
 
     @Override

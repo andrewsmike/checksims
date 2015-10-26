@@ -23,8 +23,8 @@ package net.lldp.checksims.testutil;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
 import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.data.Real;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
