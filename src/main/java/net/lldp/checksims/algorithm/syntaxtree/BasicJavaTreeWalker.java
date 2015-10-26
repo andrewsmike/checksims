@@ -9,7 +9,7 @@ import org.antlr.v4.runtime.tree.RuleNode;
 import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.java.Java8BaseVisitor;
 
-public class SuperQuickTreeWalker extends Java8BaseVisitor<AST> 
+public class BasicJavaTreeWalker extends Java8BaseVisitor<AST> 
 {
     @Override
     public AST visitChildren(RuleNode rn)

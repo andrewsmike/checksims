@@ -85,12 +85,14 @@ public class ASTFactory
     
     public static class EOFParsingException extends RuntimeException
     {
-        
+		private static final long serialVersionUID = 5539449705114560662L;
     }
     
     public static class SyntaxErrorException extends RuntimeException
     {
-        public SyntaxErrorException(String studentName, String message)
+		private static final long serialVersionUID = 5041945788107260961L;
+
+		public SyntaxErrorException(String studentName, String message)
         {
             super(studentName + " :: " + message);
         }

@@ -157,4 +157,8 @@ public class AST implements Percentable
     {
         return Collections.unmodifiableSet(asts);
     }
+    
+    public String toString() {
+    	return "(" + this.tag + "):" + this.asts.toString() + "";
+    }
 }

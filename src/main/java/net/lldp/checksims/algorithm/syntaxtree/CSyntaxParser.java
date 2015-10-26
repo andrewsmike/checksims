@@ -8,23 +8,21 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
-import net.lldp.checksims.parse.Percentable;
-import net.lldp.checksims.parse.Real;
 import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.ASTFactory;
 import net.lldp.checksims.parse.ast.LanguageDependantSyntaxParser;
-import net.lldp.checksims.parse.ast.java.Java8Lexer;
-import net.lldp.checksims.parse.ast.java.Java8Parser;
+import net.lldp.checksims.parse.ast.c.CLexer;
+import net.lldp.checksims.parse.ast.c.CParser;
 import net.lldp.checksims.submission.Submission;
 
 
-public class JavaSyntaxParser implements LanguageDependantSyntaxParser
+public class CSyntaxParser implements LanguageDependantSyntaxParser
 {
 
     @Override
     public ParseTreeVisitor<AST> getTreeWalker()
     {
-        return new BasicJavaTreeWalker();
+        return new BasicCTreeWalker();
     }
 
     @Override
@@ -32,10 +30,12 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
     {
         String in = Arrays.asList(contentAsString.split("\n"))
             .stream()
-            .filter(A -> !(A.contains("import")||A.contains("package")))
+            .map(A -> A.trim())
+            .filter(A -> A.length() > 0)
+            .filter(A -> A.trim().codePointAt(0) != '#')
             .collect(Collectors.joining("\n"));
         
-        Java8Parser j8p = ASTFactory.makeParser(s.getName(), new ANTLRInputStream(in), Java8Parser.class, Java8Lexer.class);
+       	CParser cp = ASTFactory.makeParser(s.getName(), new ANTLRInputStream(in), CParser.class, CLexer.class);
         
         Set<ParserRuleContext> result = new HashSet<>();
         boolean endOfFile = true;
@@ -43,7 +43,7 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
         {
             try
             {
-                result.add(j8p.typeDeclaration());
+                result.add(cp.translationUnit());
             }
             catch(ASTFactory.EOFParsingException epe)
             {
@@ -59,13 +59,4 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
         return result;
     }
 
-}
-
-class InvalidSubmission implements Percentable
-{
-    @Override
-    public Real getPercentageMatched()
-    {
-        return new Real(-1);
-    }
 }
