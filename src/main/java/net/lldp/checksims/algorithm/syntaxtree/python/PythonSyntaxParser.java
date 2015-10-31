@@ -26,14 +26,12 @@ import java.util.Set;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
-import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.ASTFactory;
 import net.lldp.checksims.parse.ast.LanguageDependantSyntaxParser;
 import net.lldp.checksims.parse.ast.python.Python3Lexer;
 import net.lldp.checksims.parse.ast.python.Python3Parser;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.util.data.Real;
 
 /**
  * 
@@ -56,39 +54,15 @@ public class PythonSyntaxParser implements LanguageDependantSyntaxParser
         Python3Parser j8p = ASTFactory.makeParser(s.getName(), new ANTLRInputStream(contentAsString), Python3Parser.class, Python3Lexer.class);
         
         Set<ParserRuleContext> result = new HashSet<>();
-        boolean endOfFile = true;
-        while(endOfFile)
+        try
         {
-            try
-            {
-                result.add(j8p.single_input());
-            }
-            catch(ASTFactory.EOFParsingException epe)
-            {
-                endOfFile = false;
-            }
-            catch(ASTFactory.SyntaxErrorException see)
-            {
-                System.out.println("Syntax Error for assignment: " + s.getName());
-                return new HashSet<>();
-            }
+            result.add(j8p.file_input());
+        }
+        catch(Exception see)
+        {
+            System.out.println("Syntax Error for assignment: " + s.getName());
         }
         
         return result;
-    }
-
-}
-
-/**
- * 
- * @author ted
- * sometimes students submit bad code, what else can I say?
- */
-class InvalidSubmission implements Percentable
-{
-    @Override
-    public Real getPercentageMatched()
-    {
-        return new Real(-1);
     }
 }
