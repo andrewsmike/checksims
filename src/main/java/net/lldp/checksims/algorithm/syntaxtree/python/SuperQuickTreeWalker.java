@@ -33,7 +33,7 @@ import net.lldp.checksims.parse.ast.python.Python3BaseVisitor;
  * 
  * @author ted
  * 
- * A treewalker for java that doesn't mess around with every node type
+ * A treewalker for python that doesn't mess around with every node type
  *
  */
 public class SuperQuickTreeWalker extends Python3BaseVisitor<AST> 

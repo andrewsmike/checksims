@@ -65,8 +65,8 @@ public class JavaParser implements SimilarityDetector<AST>
     public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, AST rft, AST comt)
             throws TokenTypeMismatchException, InternalAlgorithmError
     {
-        Real atb = rft.getPercentMatched(comt.getFingerprints());
-        Real bta = comt.getPercentMatched(rft.getFingerprints());
+        Real atb = rft.getPercentMatched(comt.getFingerprints()).scoreSummation(new Real(0, 2)); // scale out small comparisons
+        Real bta = comt.getPercentMatched(rft.getFingerprints()).scoreSummation(new Real(0, 2)); // scale out small comparisons
         
         return new AlgorithmResults(ab, atb, bta);
     }
