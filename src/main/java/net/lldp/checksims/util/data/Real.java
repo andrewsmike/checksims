@@ -133,19 +133,11 @@ public class Real implements Percentable
             return false;
         }
         Real other = (Real) obj;
-        if (numerator == 0 && other.numerator == 0)
+        if (other.numerator * this.denominator == other.denominator * this.numerator)
         {
             return true;
         }
-        if (denominator != other.denominator)
-        {
-            return false;
-        }
-        if (numerator != other.numerator)
-        {
-            return false;
-        }
-        return true;
+        return false;
     }
 
     @Override
@@ -238,5 +230,18 @@ public class Real implements Percentable
     public Real scoreSummation(Real r)
     {
         return new Real(numerator+r.numerator, denominator+r.denominator);
+    }
+
+    public int compareTo(Real o)
+    {
+        if (equals(o))
+        {
+            return 0;
+        }
+        if (greaterThan(o))
+        {
+            return 1;
+        }
+        return -1;
     }
 }

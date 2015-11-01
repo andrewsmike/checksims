@@ -111,6 +111,11 @@ public final class ChecksimsCommandLine {
                 .valueSeparator(',')
                 .desc("output format(s) to use, comma-separated if multiple given")
                 .build();
+        
+        Option ignoreInvalid = Option.builder()
+                .longOpt("ignoreInvalid")
+                .desc("Do not show the result of submissions that do not parse correctly")
+                .build();
 
         Option file = Option.builder("f")
                 .longOpt("file")
@@ -199,6 +204,7 @@ public final class ChecksimsCommandLine {
         opts.addOption(version);
         opts.addOption(archiveDir);
         opts.addOption(submissionDir);
+        opts.addOption(ignoreInvalid);
 
         return opts;
     }
@@ -294,6 +300,11 @@ public final class ChecksimsCommandLine {
             }
 
             config = config.setNumThreads(numThreads);
+        }
+        
+        if(cli.hasOption("ignoreInvalid"))
+        {
+            config = config.ignoreInvalid();
         }
 
         // Parse preprocessors

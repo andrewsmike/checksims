@@ -135,4 +135,9 @@ public class AlgorithmResults {
     {
         return new AlgorithmResults(b, a, percentableB, percentableA);
     }
+
+    public boolean isValid()
+    {
+        return true;
+    }
 }

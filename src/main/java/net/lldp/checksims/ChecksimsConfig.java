@@ -56,6 +56,7 @@ public final class ChecksimsConfig {
     private ImmutableSet<Submission> archiveSubmissions;
     private ImmutableSet<MatrixPrinter> outputPrinters;
     private int numThreads;
+    private boolean ignoringInvalid;
 
     /**
      * Base constructor, returns default config.
@@ -73,6 +74,7 @@ public final class ChecksimsConfig {
         this.outputPrinters = ImmutableSet.copyOf(
                 Collections.singleton(MatrixPrinterRegistry.getInstance().getDefaultImplementation()));
         this.numThreads = Runtime.getRuntime().availableProcessors();
+        this.ignoringInvalid = false;
     }
 
     /**
@@ -88,6 +90,7 @@ public final class ChecksimsConfig {
         this.preprocessors = old.getPreprocessors();
         this.outputPrinters = old.getOutputPrinters();
         this.numThreads = old.getNumThreads();
+        this.ignoringInvalid = old.ignoringInvalid;
     }
 
     /**
@@ -225,6 +228,13 @@ public final class ChecksimsConfig {
     public ImmutableSet<MatrixPrinter> getOutputPrinters() {
         return outputPrinters;
     }
+    
+    /**
+     * @return whether checksims should ignore unparsable options
+     */
+    public boolean isIgnoringInvalid() {
+        return ignoringInvalid;
+    }
 
 
     /**
@@ -259,5 +269,15 @@ public final class ChecksimsConfig {
                 && this.preprocessors.equals(otherConfig.getPreprocessors())
                 && this.submissions.equals(otherConfig.getSubmissions())
                 && this.tokenization.equals(otherConfig.getTokenization());
+    }
+
+    /**
+     * set config to ignore invalid
+     * @return this
+     */
+    public ChecksimsConfig ignoreInvalid()
+    {
+        this.ignoringInvalid = true;
+        return this;
     }
 }

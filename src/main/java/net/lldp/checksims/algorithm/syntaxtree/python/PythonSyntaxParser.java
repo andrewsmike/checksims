@@ -50,7 +50,7 @@ public class PythonSyntaxParser implements LanguageDependantSyntaxParser
     @Override
     public Set<ParserRuleContext> sourceToDefaultcontext(Submission s, String contentAsString)
     {
-        
+        contentAsString = contentAsString.replace((char) 0x0D, ' ');
         Python3Parser j8p = ASTFactory.makeParser(s.getName(), new ANTLRInputStream(contentAsString), Python3Parser.class, Python3Lexer.class);
         
         Set<ParserRuleContext> result = new HashSet<>();
@@ -60,6 +60,7 @@ public class PythonSyntaxParser implements LanguageDependantSyntaxParser
         }
         catch(Exception see)
         {
+            s.setFlag("invalid");
             System.out.println("Syntax Error for assignment: " + s.getName());
         }
         

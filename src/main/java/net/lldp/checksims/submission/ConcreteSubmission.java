@@ -25,7 +25,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import net.lldp.checksims.parse.Percentable;
 
@@ -35,9 +37,11 @@ import net.lldp.checksims.parse.Percentable;
  * Intended to be the only concrete implementation of Submission that is not a decorator.
  */
 public final class ConcreteSubmission implements Submission {
+    private final Set<String> flags = new HashSet<>();
     private final String content;
     private final String name;
     private final Map<Class<? extends Percentable>, Percentable> parsedTypes = new HashMap<>();
+    private double real;
     
     
     /**
@@ -59,6 +63,7 @@ public final class ConcreteSubmission implements Submission {
 
         this.name = name;
         this.content = content;
+        this.real = 0;
     }
 
     @Override
@@ -138,5 +143,33 @@ public final class ConcreteSubmission implements Submission {
     public void invalidateCache()
     {
         parsedTypes.clear();
+    }
+    
+    public void setFlag(String flagName)
+    {
+        flags.add(flagName);
+    }
+    
+    public void unsetFlag(String flagName)
+    {
+        flags.remove(flagName);
+    }
+    
+    public boolean testFlag(String flagName)
+    {
+        boolean result =flags.contains(flagName);
+        return result;
+    }
+
+    @Override
+    public void increaseScore(double r)
+    {
+        real += r;
+    }
+
+    @Override
+    public double getTotalCopyScore()
+    {
+        return real;
     }
 }

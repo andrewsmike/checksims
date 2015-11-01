@@ -27,7 +27,9 @@ import net.lldp.checksims.parse.token.ValidityEnsuringToken;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -38,7 +40,9 @@ import java.util.stream.Collectors;
  */
 public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorator {
 
+    private final Set<String> flags = new HashSet<>();
     private final Map<Class<? extends Percentable>, Percentable> parsedTypes = new HashMap<>();
+    private double real = 0;
     
     public ValidityEnsuringSubmission(Submission wrappedSubmission, Tokenizer tokenizer) {
         super(wrappedSubmission, tokenizer);
@@ -99,5 +103,33 @@ public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorato
     public <T extends Percentable> T get(Class<T> clazz)
     {
         return (T) parsedTypes.get(clazz);
+    }
+    
+    public void setFlag(String flagName)
+    {
+        flags.add(flagName);
+    }
+    
+    public void unsetFlag(String flagName)
+    {
+        flags.remove(flagName);
+    }
+    
+    public boolean testFlag(String flagName)
+    {
+        boolean result =flags.contains(flagName);
+        return result;
+    }
+
+    @Override
+    public void increaseScore(double r)
+    {
+        real += r;
+    }
+
+    @Override
+    public double getTotalCopyScore()
+    {
+        return real;
     }
 }

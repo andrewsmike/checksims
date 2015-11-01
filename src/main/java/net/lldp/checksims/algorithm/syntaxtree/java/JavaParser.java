@@ -23,14 +23,12 @@ package net.lldp.checksims.algorithm.syntaxtree.java;
 import org.apache.commons.lang3.tuple.Pair;
 
 import net.lldp.checksims.algorithm.AlgorithmResults;
-import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.algorithm.syntaxtree.ASTSimilarityDetector;
 import net.lldp.checksims.parse.SubmissionPercentableCalculator;
 import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.SubmissionParser;
-import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.util.data.Real;
 
 /**
  * 
@@ -63,12 +61,7 @@ public class JavaParser implements SimilarityDetector<AST>
 
     @Override
     public AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, AST rft, AST comt)
-            throws TokenTypeMismatchException, InternalAlgorithmError
     {
-        Real atb = rft.getPercentMatched(comt.getFingerprints()).scoreSummation(new Real(0, 2)); // scale out small comparisons
-        Real bta = comt.getPercentMatched(rft.getFingerprints()).scoreSummation(new Real(0, 2)); // scale out small comparisons
-        
-        return new AlgorithmResults(ab, atb, bta);
+        return ASTSimilarityDetector.detectSimilarity(ab, rft, comt);
     }
-
 }
