@@ -32,28 +32,20 @@ public class CPPSyntaxParser implements LanguageDependantSyntaxParser
             .stream()
             .map(A -> A.trim())
             .filter(A -> A.length() > 0)
-            .filter(A -> A.trim().codePointAt(0) != '#')
+            .filter(A -> A.codePointAt(0) != '#')
             .collect(Collectors.joining("\n"));
 
        	CPP14Parser cp = ASTFactory.makeParser(s.getName(), new ANTLRInputStream(in), CPP14Parser.class, CPP14Lexer.class);
 
         Set<ParserRuleContext> result = new HashSet<>();
-        boolean endOfFile = true;
-        while(endOfFile)
+        try
         {
-            try
-            {
-                result.add(cp.declarationseq());
-            }
-            catch(ASTFactory.EOFParsingException epe)
-            {
-                endOfFile = false;
-            }
-            catch(ASTFactory.SyntaxErrorException see)
-            {
-                System.out.println("Syntax Error for assignment: " + s.getName());
-                return new HashSet<>();
-            }
+            result.add(cp.declarationseq());
+        }
+        catch(ASTFactory.SyntaxErrorException see)
+        {
+            System.out.println("Syntax Error for assignment: " + s.getName());
+            return new HashSet<>();
         }
 
         return result;
