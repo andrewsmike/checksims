@@ -24,6 +24,7 @@ package net.lldp.checksims.submission;
 import com.google.common.collect.Ordering;
 
 import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.util.data.Real;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -50,6 +51,41 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Also contains factory methods for submissions
  */
 public interface Submission extends Comparable<Submission> {
+    
+    /**
+     * Increase the cumulative score for this submission.
+     * The Score is the sum of all comparison values between
+     * this and every other submission
+     * @param i the score to increase by
+     */
+    void increaseScore(double i);
+    
+    /**
+     * get the total copy score for this submission.
+     * see {@link #increaseScore(Real)}
+     * @return the total copy score for this subsmission
+     */
+    double getTotalCopyScore();
+    
+    /**
+     * set an arbitrary flag on a submission
+     * @param flagName the name of the flag to set
+     */
+    void setFlag(String flagName);
+    
+    /**
+     * unset a flag on a submission
+     * @param flagName the flag name to unset
+     */
+    void unsetFlag(String flagName);
+    
+    /**
+     * test whether a flag is set
+     * @param flagName
+     * @return whether flagName is set
+     */
+    boolean testFlag(String flagName);
+    
     /**
      * @return String consisting of the body of the submission
      */

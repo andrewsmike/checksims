@@ -114,6 +114,15 @@ public final class SmithWaterman implements SimilarityDetector<PercentableTokenL
 
         Pair<TokenList, TokenList> endLists = algorithm.computeSmithWatermanAlignmentExhaustive();
 
+        PercentableTokenListDecorator atb = new PercentableTokenListDecorator(endLists.getLeft());
+        PercentableTokenListDecorator bta = new PercentableTokenListDecorator(endLists.getRight());
+        
+        double x = atb.getPercentageMatched().asDouble();
+        double y = bta.getPercentageMatched().asDouble();
+        
+        ab.getLeft().increaseScore(y*y);
+        ab.getRight().increaseScore(x*x);
+        
         return new AlgorithmResults(ab,
                 new PercentableTokenListDecorator(endLists.getLeft()), 
                 new PercentableTokenListDecorator(endLists.getRight()));

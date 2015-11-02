@@ -61,7 +61,7 @@ public final class SimilarityMatrix {
      * @param builtFrom    Set of Algorithm Results used to build the matrix
      */
     protected SimilarityMatrix(AlgorithmResults[][] entries, List<Submission> xSubmissions, List<Submission> ySubmissions,
-                               Set<AlgorithmResults> builtFrom) {
+            Set<AlgorithmResults> builtFrom) {
         checkNotNull(entries);
         checkNotNull(xSubmissions);
         checkNotNull(ySubmissions);
@@ -72,10 +72,10 @@ public final class SimilarityMatrix {
                 "Cannot make similarity matrix with empty list of submissions to compare to!");
         checkArgument(xSubmissions.size() == entries.length,
                 "Array size mismatch when creating Similarity Matrix - X direction, found " + xSubmissions.size()
-                        + ", expecting " + entries.length);
+                + ", expecting " + entries.length);
         checkArgument(ySubmissions.size() == entries[0].length,
                 "Array size mismatch when creating Similarity Matrix - Y direction, found " + ySubmissions.size()
-                        + ", expecting " + entries[0].length);
+                + ", expecting " + entries[0].length);
         checkArgument(!builtFrom.isEmpty(),
                 "Must provide Algorithm Results used to build similarity matrix - instead got empty set!");
 
@@ -169,10 +169,10 @@ public final class SimilarityMatrix {
 
         if (!xSubmissions.contains(xSubmission)) {
             throw new NoSuchSubmissionException("X Submission with name " + xSubmission.getName()
-                    + " not found in similarity matrix!");
+            + " not found in similarity matrix!");
         } else if (!ySubmissions.contains(ySubmission)) {
             throw new NoSuchSubmissionException("Y Submission with name " + ySubmission.getName()
-                    + " not found in similarity matrix!");
+            + " not found in similarity matrix!");
         }
 
         int xIndex = xSubmissions.indexOf(xSubmission);
@@ -221,15 +221,24 @@ public final class SimilarityMatrix {
         // Generate the matrix we'll use
         AlgorithmResults[][] matrix = new AlgorithmResults[inputSubmissions.size()][inputSubmissions.size()];
 
+        //Ordering sortBy = Ordering.natural();
+        Ordering<Submission> sortBy = Ordering.from(new Comparator<Submission>() {
+            public int compare(Submission a, Submission b) {
+                return ((Double)b.getTotalCopyScore()).compareTo(a.getTotalCopyScore());
+            }
+        });
+        
         // Order the submissions
-        List<Submission> orderedSubmissions = Ordering.natural().immutableSortedCopy(inputSubmissions);
+        List<Submission> orderedSubmissions = sortBy.immutableSortedCopy(inputSubmissions);
+        
+        
 
         // Generate the matrix
 
         // Start with the diagonal, filling with 100% similarity
         for (int i = 0; i < orderedSubmissions.size(); i++) {
             Submission s = orderedSubmissions.get(i);
-
+            
             matrix[i][i] = new AlgorithmResults(Pair.of(s, s), Real.ONE, Real.ONE);
         }
 
@@ -239,17 +248,23 @@ public final class SimilarityMatrix {
             int bIndex = orderedSubmissions.indexOf(result.b);
 
             if (aIndex == -1) {
-                throw new InternalAlgorithmError(
-                        "Processed Algorithm Result with submission not in given input submissions with name \""
-                        + result.a.getName() + "\"");
+                if (!result.a.testFlag("invalid"))
+                {
+                    throw new InternalAlgorithmError(
+                            "Processed Algorithm Result with submission not in given input submissions with name \""
+                                    + result.a.getName() + "\"");
+                }
             } else if (bIndex == -1) {
-                throw new InternalAlgorithmError(
-                        "Processed Algorithm Result with submission not in given input submissions with name \""
-                        + result.b.getName() + "\"");
+                if (!result.b.testFlag("invalid"))
+                {
+                    throw new InternalAlgorithmError(
+                            "Processed Algorithm Result with submission not in given input submissions with name \""
+                                    + result.b.getName() + "\"");
+                }
+            } else {
+                matrix[aIndex][bIndex] = result.inverse();
+                matrix[bIndex][aIndex] = result;
             }
-
-            matrix[aIndex][bIndex] = result.inverse();
-            matrix[bIndex][aIndex] = result;
         }
 
         // Verification pass: Go through and ensure that the entire array was populated
@@ -279,7 +294,7 @@ public final class SimilarityMatrix {
      * @throws InternalAlgorithmError Thrown on missing results, or results containing a submission not in the input
      */
     public static SimilarityMatrix generateMatrix(Set<Submission> inputSubmissions, Set<Submission> archiveSubmissions,
-                                                  Set<AlgorithmResults> results) throws InternalAlgorithmError {
+            Set<AlgorithmResults> results) throws InternalAlgorithmError {
         checkNotNull(inputSubmissions);
         checkNotNull(archiveSubmissions);
         checkNotNull(results);

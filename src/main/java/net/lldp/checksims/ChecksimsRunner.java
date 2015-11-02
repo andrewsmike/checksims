@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -150,6 +151,26 @@ public final class ChecksimsRunner {
         Set<Pair<Submission, Submission>> allPairs = PairGenerator.generatePairsWithArchive(submissions,
                 archiveSubmissions);
         Set<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(allPairs, config.getAlgorithm());
+        
+        if (config.isIgnoringInvalid()) {
+            Set<Submission> validSubmissions = new HashSet<>();
+            Set<Submission> validArchivedSubmissions = new HashSet<>();
+            Set<AlgorithmResults> validResults = new HashSet<>();
+            submissions.stream().filter(S -> !S.testFlag("invalid"))
+                                .forEach(S -> validSubmissions.add(S));
+            archiveSubmissions.stream().filter(S -> !S.testFlag("invalid"))
+                                       .forEach(S -> validArchivedSubmissions.add(S));
+            results.stream().filter(S -> S.isValid())
+                            .forEach(S -> validResults.add(S));
+            
+            submissions = ImmutableSet.copyOf(validSubmissions);
+            archiveSubmissions = ImmutableSet.copyOf(validArchivedSubmissions);
+            results = validResults;
+            
+        }
+        
+        
+        
         SimilarityMatrix resultsMatrix = SimilarityMatrix.generateMatrix(submissions, archiveSubmissions, results);
 
         // All parallel jobs are done, shut down the parallel executor
