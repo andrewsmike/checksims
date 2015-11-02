@@ -76,6 +76,7 @@ public class JavaSyntaxParser implements LanguageDependantSyntaxParser
             catch(ASTFactory.SyntaxErrorException see)
             {
                 System.out.println("Syntax Error for assignment: " + s.getName());
+                s.setFlag("invalid");
                 return new HashSet<>();
             }
         }
