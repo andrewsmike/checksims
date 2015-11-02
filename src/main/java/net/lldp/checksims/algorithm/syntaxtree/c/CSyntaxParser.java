@@ -24,39 +24,34 @@ public class CSyntaxParser implements LanguageDependantSyntaxParser
     {
         return new SuperQuickTreeWalker();
     }
+    
+    public static boolean macroLine(String s) {
+        s = s.trim();
+        return s.length() > 0 && s.codePointAt(0) == '#';
+    }
 
     @Override
     public Set<ParserRuleContext> sourceToDefaultcontext(Submission s, String contentAsString)
     {
         String in = Arrays.asList(contentAsString.split("\n"))
             .stream()
-            .map(A -> A.trim())
-            .filter(A -> A.length() > 0)
-            .filter(A -> A.trim().codePointAt(0) != '#')
+            .filter(A -> !macroLine(A))
             .collect(Collectors.joining("\n"));
+        in = in.replace('\r', ' ');
         
        	CParser cp = ASTFactory.makeParser(s.getName(), new ANTLRInputStream(in), CParser.class, CLexer.class);
         
         Set<ParserRuleContext> result = new HashSet<>();
-        boolean endOfFile = true;
-        while(endOfFile)
+        try
         {
-            try
-            {
-                result.add(cp.translationUnit());
-            }
-            catch(ASTFactory.EOFParsingException epe)
-            {
-                endOfFile = false;
-            }
-            catch(ASTFactory.SyntaxErrorException see)
-            {
-                System.out.println("Syntax Error for assignment: " + s.getName());
-                return new HashSet<>();
-            }
+            result.add(cp.translationUnit());
+        }
+        catch(ASTFactory.SyntaxErrorException see)
+        {
+            System.out.println("Syntax Error for assignment: " + s.getName());
+            s.setFlag("invalid");
         }
         
         return result;
     }
-
 }
