@@ -71,6 +71,11 @@ public class SortableMatrixViewer extends JPanel
                 setBackground(bg);
             }
         }
+
+        public PairScore getPs()
+        {
+            return ps;
+        }
     }
     
     public static class BlankMatrixElement extends MatrixElement
