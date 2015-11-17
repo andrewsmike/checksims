@@ -97,7 +97,6 @@ public class RunChecksimsListener implements ActionListener
                 }
                 catch (ChecksimsException e)
                 {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             }

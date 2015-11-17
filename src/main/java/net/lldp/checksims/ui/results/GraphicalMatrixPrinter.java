@@ -1,7 +1,6 @@
 package net.lldp.checksims.ui.results;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 
 import javax.swing.JFrame;
 
@@ -25,10 +24,9 @@ public class GraphicalMatrixPrinter implements MatrixPrinter
         
         JFrame f = new JFrame();
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setPreferredSize(new Dimension(700, 700));
         f.setResizable(false);
         
-        f.add(new SortableMatrixViewer(sm), BorderLayout.CENTER);
+        f.add(new ScrollViewer(new SortableMatrixViewer(sm), f), BorderLayout.CENTER);
         f.pack();
         
         f.setVisible(true);

@@ -46,4 +46,14 @@ public class SubmissionPair
             return false;
         return true;
     }
+
+    public String getAName()
+    {
+        return a.getName();
+    }
+    
+    public String getBName()
+    {
+        return b.getName();
+    }
 }

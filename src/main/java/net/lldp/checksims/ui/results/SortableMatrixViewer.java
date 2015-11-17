@@ -2,37 +2,50 @@ package net.lldp.checksims.ui.results;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.util.data.Monad;
-import static net.lldp.checksims.util.data.Monad.wrap;
-import static net.lldp.checksims.util.data.Monad.unwrap;
+import net.lldp.checksims.ui.HSLColor;
 
 public class SortableMatrixViewer extends JPanel
 {
-    public final Monad<Double> threshold = wrap(0.7);
     private final SortableMatrix sm;
+    private final ResultsInspector ins;
+    
+    public static final int DEFAULT_ELEMENT_SIZE = 80;
     
     
     public SortableMatrixViewer(SortableMatrix sm)
     {
         this.sm = sm;
-        updateMatrix();
+        int size = updateMatrix(70) * DEFAULT_ELEMENT_SIZE;
+        setPreferredSize(new Dimension(size, size));
+        ins = new ResultsInspector(){
+            @Override
+            public void handleResults(PairScore ps)
+            {
+                SubmissionPair sp = ps.getSubmissions();
+                System.out.println(sp.getAName());
+                System.out.println(sp.getBName());
+            }
+        };
     }
     
     public void updateThreshold(double d)
     {
-        threshold.set(d);
-        //updateMatrix(); //TODO fix this
+        int size = updateMatrix(d) * DEFAULT_ELEMENT_SIZE;
+        setPreferredSize(new Dimension(size, size));
     }
     
-    private void updateMatrix()
+    private int updateMatrix(double d)
     {
-        Submission[] subs = sm.getSubmissionsAboveThreshold(unwrap(threshold));
+        Submission[] subs = sm.getSubmissionsAboveThreshold(d);
         removeAll();
         setLayout(new GridLayout(subs.length, subs.length));
         
@@ -46,43 +59,65 @@ public class SortableMatrixViewer extends JPanel
                 }
                 else
                 {
-                    add(new MatrixElement(sm.getPairForSubmissions(subs[i], subs[j])));
+                    add(new MatrixElement(sm.getPairForSubmissions(subs[i], subs[j]), ins));
                 }
             }
         }
+        return subs.length;
     }
     
-    public static class MatrixElement extends JPanel
+    public static class MatrixElement extends JPanel implements MouseListener
     {
         private final PairScore ps;
+        private final ResultsInspector ri;
         
-        public MatrixElement(PairScore ps)
+        public MatrixElement(PairScore ps, ResultsInspector ri)
         {
             this.ps = ps;
+            this.ri = ri;
             if (ps != null)
             {
                 JLabel l = new JLabel(((int)(ps.getScore()*100))+"");
                 this.add(l, BorderLayout.CENTER);
-                Color bg = new Color(
-                        (int)(255*ps.getScore())
-                       ,255-(int)(60*ps.getScore())
-                       ,(int)(255-(255*ps.getScore()))
+                
+                HSLColor hsl = new HSLColor(
+                        (float) ((1.0 - ps.getScore()) * 60)
+                       ,(float) (ps.getScore() * 100)
+                       ,(float) (100 - (ps.getScore() * 50))
                 );
-                setBackground(bg);
+                setBackground(hsl.getRGB());
+                this.addMouseListener(this);
             }
         }
 
-        public PairScore getPs()
+        @Override
+        public void mouseClicked(MouseEvent me)
         {
-            return ps;
+            ri.handleResults(ps);
         }
+
+        @Override
+        public void mouseEntered(MouseEvent arg0)
+        { }
+
+        @Override
+        public void mouseExited(MouseEvent arg0)
+        { }
+
+        @Override
+        public void mousePressed(MouseEvent arg0)
+        { }
+
+        @Override
+        public void mouseReleased(MouseEvent arg0)
+        { }
     }
     
     public static class BlankMatrixElement extends MatrixElement
     {
         public BlankMatrixElement()
         {
-            super(null);
+            super(null, null);
             setBackground(Color.BLACK);
         }
     }    

@@ -27,10 +27,12 @@ public abstract class ASTSimilarityDetector
         double d_tmp = a;
         Submission s_tmp = ab.getRight();
         s_tmp.increaseScore(Math.pow(5, d_tmp*10), d_tmp);
+        s_tmp.increaseScore(0, b);
         
         d_tmp = b;
         s_tmp = ab.getLeft();
         s_tmp.increaseScore(Math.pow(5, d_tmp*10), d_tmp);
+        s_tmp.increaseScore(0, a);
         
         return new AlgorithmResults(ab, atb, bta);
     }
