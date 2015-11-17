@@ -141,22 +141,6 @@ public class MatrixToHTMLPrinterTest {
     }
 
     @Test
-    public void TestPrintNoSignificant() throws Exception {
-        InputStream expectedStream = this.getClass().getResourceAsStream("expected_1.html");
-        String expected = IOUtils.toString(expectedStream, StandardCharsets.UTF_8);
-
-        assertEquals(expected, instance.printMatrix(noSignificant));
-    }
-
-    @Test
-    public void TestPrintOneSignificant() throws Exception {
-        InputStream expectedStream = this.getClass().getResourceAsStream("expected_2.html");
-        String expected = IOUtils.toString(expectedStream, StandardCharsets.UTF_8);
-
-        AssertUtils.betterStringEQAssert(expected, instance.printMatrix(oneSignificant));
-    }
-
-    @Test
     public void TestPrintOneHalfSignificant() throws Exception {
         InputStream expectedStream = this.getClass().getResourceAsStream("expected_3.html");
         String expected = IOUtils.toString(expectedStream, StandardCharsets.UTF_8);
