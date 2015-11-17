@@ -31,6 +31,8 @@ import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinterRegistry;
 import net.lldp.checksims.parse.SubmissionPercentableCalculator;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.completion.DefaultLoggerStatusLogger;
+import net.lldp.checksims.util.completion.StatusLogger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -50,6 +52,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class ChecksimsConfig {
     private SimilarityDetector<?> algorithm;
+    private StatusLogger logger;
     private SubmissionPercentableCalculator<?> tokenization;
     private ImmutableList<SubmissionPreprocessor> preprocessors;
     private ImmutableSet<Submission> submissions;
@@ -75,6 +78,7 @@ public final class ChecksimsConfig {
                 Collections.singleton(MatrixPrinterRegistry.getInstance().getDefaultImplementation()));
         this.numThreads = Runtime.getRuntime().availableProcessors();
         this.ignoringInvalid = false;
+        this.logger = new DefaultLoggerStatusLogger();
     }
 
     /**
@@ -278,6 +282,17 @@ public final class ChecksimsConfig {
     public ChecksimsConfig ignoreInvalid()
     {
         this.ignoringInvalid = true;
+        return this;
+    }
+
+    public StatusLogger getStatusLogger()
+    {
+        return logger;
+    }
+
+    public ChecksimsConfig setStatusLogger(StatusLogger logger)
+    {
+        this.logger = logger;
         return this;
     }
 }

@@ -10,7 +10,7 @@ import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.SubmissionParser;
 import net.lldp.checksims.submission.Submission;
 
-public class CParser implements SimilarityDetector<AST>
+public class CParser extends SimilarityDetector<AST>
 {
     public static CParser getInstance()
     {

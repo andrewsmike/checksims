@@ -46,7 +46,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Implements a line-by-line similarity checker.
  */
-public final class LineSimilarityChecker implements SimilarityDetector<PercentableTokenListDecorator> { // TODO LINE
+public final class LineSimilarityChecker extends SimilarityDetector<PercentableTokenListDecorator> { // TODO LINE
     private static LineSimilarityChecker instance;
 
     /**
@@ -217,11 +217,6 @@ public final class LineSimilarityChecker implements SimilarityDetector<Percentab
             SubmissionLine line = new SubmissionLine(i, submitter);
             lineDatabase.get(hash).add(line);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Sole instance of the Line Similarity Counter algorithm";
     }
 
     @Override

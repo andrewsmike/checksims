@@ -41,4 +41,5 @@ public interface NamedInstantiable {
      * @return Name of the implementation as it will be seen in the registry
      */
     String getName();
+    
 }

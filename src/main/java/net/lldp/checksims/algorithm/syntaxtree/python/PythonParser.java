@@ -36,7 +36,7 @@ import net.lldp.checksims.submission.Submission;
  *
  * An algorithm to compare python submissions
  */
-public class PythonParser implements SimilarityDetector<AST>
+public class PythonParser extends SimilarityDetector<AST>
 {
     /**
      * getInstance required by reflective instantiator

@@ -20,6 +20,6 @@
  */
 
 /**
- * This package contains an algorithm specifically for parsing assignments in c.
+ * This package contains an algorithm specifically for parsing assignments in c++.
  */
-package net.lldp.checksims.algorithm.syntaxtree.c;
+package net.lldp.checksims.algorithm.syntaxtree.cpp;

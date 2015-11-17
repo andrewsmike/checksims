@@ -24,24 +24,41 @@ public abstract class ASTSimilarityDetector
         double b = atb.asDouble();
         double a = bta.asDouble();
         
-        if(a > .99) {
-            ab.getRight().increaseScore(10);
-        } else if (a > .8) {
-            ab.getRight().increaseScore(5);
-        } else if (a > .7) {
-            ab.getRight().increaseScore(1);
+        double d_tmp = a;
+        Submission s_tmp = ab.getRight();
+        s_tmp.increaseScore(0, d_tmp);
+        s_tmp.increaseScore(Math.pow(5, d_tmp*10), d_tmp);
+        /*
+        if(d_tmp > .99) {
+            s_tmp.increaseScore(100000, d_tmp);
+        } else if (d_tmp > .9){
+            s_tmp.increaseScore(10000, d_tmp);
+        } else if (d_tmp > .8) {
+            s_tmp.increaseScore(1000, d_tmp);
+        } else if (d_tmp > .7) {
+            s_tmp.increaseScore(100, d_tmp);
+        } else if (d_tmp > .6) {
+            s_tmp.increaseScore(10, d_tmp);
         }
+        */
         
-        if(b > .99) {
-            ab.getLeft().increaseScore(10);
-        } else if (b > .8) {
-            ab.getLeft().increaseScore(5);
-        } else if (b > .7) {
-            ab.getLeft().increaseScore(1);
+        d_tmp = b;
+        s_tmp = ab.getLeft();
+        s_tmp.increaseScore(0, d_tmp);
+        s_tmp.increaseScore(Math.pow(5, d_tmp*10), d_tmp);
+        /*
+        if(d_tmp > .99) {
+            s_tmp.increaseScore(100000, d_tmp);
+        } else if (d_tmp > .9){
+            s_tmp.increaseScore(10000, d_tmp);
+        } else if (d_tmp > .8) {
+            s_tmp.increaseScore(1000, d_tmp);
+        } else if (d_tmp > .7) {
+            s_tmp.increaseScore(100, d_tmp);
+        } else if (d_tmp > .6) {
+            s_tmp.increaseScore(10, d_tmp);
         }
-
-        ab.getLeft().increaseScore(b / 10);
-        ab.getRight().increaseScore(a / 10);
+        */
         
         return new AlgorithmResults(ab, atb, bta);
     }

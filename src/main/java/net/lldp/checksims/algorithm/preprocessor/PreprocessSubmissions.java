@@ -23,7 +23,9 @@ package net.lldp.checksims.algorithm.preprocessor;
 
 import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.completion.StatusLogger;
 import net.lldp.checksims.util.threading.ParallelAlgorithm;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +48,7 @@ public final class PreprocessSubmissions {
      * @param submissions Input list of submissions to apply to
      * @return New list formed by applying the mapping function to each submission. Retains order of input list.
      */
-    public static Set<Submission> process(SubmissionPreprocessor preprocessor, Set<Submission> submissions)
+    public static Set<Submission> process(SubmissionPreprocessor preprocessor, Set<Submission> submissions, StatusLogger logger)
             throws ChecksimsException {
         checkNotNull(preprocessor);
         checkNotNull(submissions);
@@ -55,6 +57,6 @@ public final class PreprocessSubmissions {
 
         logs.info("Preprocessing " + submissions.size() + " submissions with preprocessor " + preprocessor.getName());
 
-        return ParallelAlgorithm.parallelSubmissionPreprocessing(preprocessor, submissions);
+        return ParallelAlgorithm.parallelSubmissionPreprocessing(preprocessor, submissions, logger);
     }
 }

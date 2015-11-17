@@ -41,7 +41,8 @@ public final class ConcreteSubmission implements Submission {
     private final String content;
     private final String name;
     private final Map<Class<? extends Percentable>, Percentable> parsedTypes = new HashMap<>();
-    private double real;
+    private double sortingScore;
+    private double maximumScore;
     
     
     /**
@@ -63,7 +64,7 @@ public final class ConcreteSubmission implements Submission {
 
         this.name = name;
         this.content = content;
-        this.real = 0;
+        this.sortingScore = 0;
     }
 
     @Override
@@ -162,14 +163,24 @@ public final class ConcreteSubmission implements Submission {
     }
 
     @Override
-    public void increaseScore(double r)
+    public void increaseScore(double r, double orig)
     {
-        real += r;
+        if (orig > maximumScore)
+        {
+            maximumScore = orig;
+        }
+        sortingScore += r;
     }
 
     @Override
     public double getTotalCopyScore()
     {
-        return real;
+        return sortingScore;
+    }
+
+    @Override
+    public double getMaximumCopyScore()
+    {
+        return maximumScore;
     }
 }
