@@ -55,7 +55,7 @@ public class SortableMatrix
         int mod = submissions.length;
         int check = 0;
         
-        while(mod > 0 && check > 0)
+        while(mod > 0 && check >= 0)
         {
             double max = submissions[check].getMaximumCopyScore();
             if (score > max)
@@ -71,7 +71,7 @@ public class SortableMatrix
                 return check;
             }
         }
-        return check>0?check+1:0; //TODO maybe -1? or +1?
+        return check>0?check+1:0;
     }
     
     public Submission[] getSubmissionsAboveThreshold(double thresh)
@@ -86,7 +86,7 @@ public class SortableMatrix
         Arrays.sort(result, new Comparator<Submission>(){
             @Override
             public int compare(Submission o1, Submission o2) {
-                return (int) ((o2.getTotalCopyScore() - o1.getTotalCopyScore())*1000);
+                return (int) ((o2.getMaximumCopyScore() - o1.getMaximumCopyScore())*1000);
             }
         });
         
