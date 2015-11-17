@@ -55,9 +55,6 @@ public class SortableMatrix
         int mod = submissions.length;
         int check = 0;
         
-        double[] r = new double[mod];
-        for(int i=0;i<mod;i++)r[i]=submissions[i].getMaximumCopyScore();
-        
         while(mod > 0 && check > 0)
         {
             double max = submissions[check].getMaximumCopyScore();
