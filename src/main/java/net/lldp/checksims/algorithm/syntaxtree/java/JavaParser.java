@@ -36,7 +36,7 @@ import net.lldp.checksims.submission.Submission;
  *
  * An algorithm to compare java submissions
  */
-public class JavaParser implements SimilarityDetector<AST>
+public class JavaParser extends SimilarityDetector<AST>
 {
     /**
      * getInstance required by reflective instantiator

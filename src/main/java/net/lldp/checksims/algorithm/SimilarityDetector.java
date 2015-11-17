@@ -38,11 +38,11 @@ import net.lldp.checksims.util.reflection.NamedInstantiable;
  * This is required as reflection is used to automatically detect and instantiate all similarity detection algorithms
  * present at runtime.
  */
-public interface SimilarityDetector<T extends Percentable> extends NamedInstantiable {
+public abstract class SimilarityDetector<T extends Percentable> implements NamedInstantiable {
     /**
      * @return Default token type to be used for this similarity detector
      */
-    SubmissionPercentableCalculator<T> getPercentableCalculator();
+    public abstract SubmissionPercentableCalculator<T> getPercentableCalculator();
 
     /**
      * Apply a pairwise similarity detection algorithm.
@@ -55,6 +55,12 @@ public interface SimilarityDetector<T extends Percentable> extends NamedInstanti
      * @throws TokenTypeMismatchException Thrown on comparing two submissions with different token types
      * @throws InternalAlgorithmError Thrown on error detecting similarities
      */
-    AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, T rft, T comt)
+    public abstract AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, T rft, T comt)
             throws TokenTypeMismatchException, InternalAlgorithmError;
+    
+    @Override
+    public String toString()
+    {
+        return getName();
+    }
 }

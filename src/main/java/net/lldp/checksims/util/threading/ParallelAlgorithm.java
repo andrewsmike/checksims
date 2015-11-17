@@ -29,6 +29,7 @@ import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.algorithm.preprocessor.SubmissionPreprocessor;
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.completion.StatusLogger;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -89,7 +90,8 @@ public final class ParallelAlgorithm {
      * @return Collection of results, one for each pair
      */
     public static <T extends Percentable> Set<AlgorithmResults> parallelSimilarityDetection(SimilarityDetector<T> algorithm,
-                                                                    Set<Pair<Submission, Submission>> pairs)
+                                                                    Set<Pair<Submission, Submission>> pairs,
+                                                                    StatusLogger logger)
             throws ChecksimsException {
         checkNotNull(algorithm);
         checkNotNull(pairs);
@@ -100,11 +102,12 @@ public final class ParallelAlgorithm {
                 .collect(Collectors.toList());
 
         //TODO do something with the right side?
-        return ImmutableSet.copyOf(executeTasks(workers));
+        return ImmutableSet.copyOf(executeTasks(workers, logger));
     }
 
     public static Set<Submission> parallelSubmissionPreprocessing(SubmissionPreprocessor preprocessor,
-                                                                  Set<Submission> submissions)
+                                                                  Set<Submission> submissions,
+                                                                  StatusLogger logger)
             throws ChecksimsException {
         checkNotNull(preprocessor);
         checkNotNull(submissions);
@@ -114,7 +117,7 @@ public final class ParallelAlgorithm {
                 .map((submission) -> new PreprocessorWorker(submission, preprocessor))
                 .collect(Collectors.toList());
 
-        return ImmutableSet.copyOf(executeTasks(workers));
+        return ImmutableSet.copyOf(executeTasks(workers, logger));
     }
     
     /**
@@ -127,7 +130,7 @@ public final class ParallelAlgorithm {
      * @param <T> Type returned by the tasks
      * @return Collection of Ts
      */
-    private static <T, T2 extends Callable<T>> Collection<T> executeTasks(Collection<T2> tasks)
+    private static <T, T2 extends Callable<T>> Collection<T> executeTasks(Collection<T2> tasks, StatusLogger logger)
             throws ChecksimsException {
         checkNotNull(tasks);
 
@@ -145,7 +148,7 @@ public final class ParallelAlgorithm {
         // Invoke the executor on all the worker instances
         try {
             // Create a monitoring thread to show progress
-            MonitorThread monitor = new MonitorThread(executor);
+            MonitorThread monitor = new MonitorThread(executor, logger);
             Thread monitorThread = new Thread(monitor);
             monitorThread.start();
 

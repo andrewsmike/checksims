@@ -22,6 +22,7 @@
 package net.lldp.checksims.util.reflection;
 
 import com.google.common.collect.ImmutableMap;
+
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -88,6 +90,13 @@ public class Registry<T extends NamedInstantiable> {
      */
     public Set<String> getSupportedImplementationNames() {
         return registeredHandlers.keySet();
+    }
+    
+    /**
+     * @return A collection of all implementations
+     */
+    public Collection<T> getSupportedImplementations() {
+        return registeredHandlers.values();
     }
 
     /**

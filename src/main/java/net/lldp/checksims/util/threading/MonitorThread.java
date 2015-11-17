@@ -21,6 +21,9 @@
 
 package net.lldp.checksims.util.threading;
 
+import net.lldp.checksims.util.completion.DefaultLoggerStatusLogger;
+import net.lldp.checksims.util.completion.StatusLogger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,14 +41,22 @@ class MonitorThread implements Runnable {
     long total;
 
     private static Logger logs = LoggerFactory.getLogger(MonitorThread.class);
+    private final StatusLogger logger;
 
-    MonitorThread(ThreadPoolExecutor toMonitor) {
+    MonitorThread(ThreadPoolExecutor toMonitor, StatusLogger logger) {
         checkNotNull(toMonitor);
 
         this.toMonitor = toMonitor;
         doRun = true;
         currentComplete = 0;
         total = toMonitor.getTaskCount();
+        
+        if (logger instanceof DefaultLoggerStatusLogger)
+        {
+            ((DefaultLoggerStatusLogger) logger).setLogger(logs);
+        }
+        
+        this.logger = logger;
     }
 
     public void shutDown() {
@@ -61,7 +72,7 @@ class MonitorThread implements Runnable {
             // Only print if we have an update
             if(newComplete != currentComplete) {
                 currentComplete = newComplete;
-                logs.info("Processed " + currentComplete + "/" + total + " tasks");
+                logger.logStatus(currentComplete, total);
             }
 
             try {

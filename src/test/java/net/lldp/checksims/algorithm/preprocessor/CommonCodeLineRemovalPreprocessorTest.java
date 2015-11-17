@@ -22,6 +22,9 @@
 package net.lldp.checksims.algorithm.preprocessor;
 
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.completion.DefaultLoggerStatusLogger;
+import net.lldp.checksims.util.completion.StatusLogger;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,6 +44,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
     private Submission abc;
     private Submission abcde;
     private Submission def;
+    private StatusLogger logger;
 
     @Before
     public void setUp() throws Exception {
@@ -48,6 +52,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
         abc = submissionFromString("ABC", "A\nB\nC\n");
         abcde = submissionFromString("ABCDE", "A\nB\nC\nD\nE\n");
         def = submissionFromString("DEF", "D\nE\nF\n");
+        logger = new DefaultLoggerStatusLogger();
     }
 
     @Test
@@ -55,7 +60,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
         SubmissionPreprocessor handler = new CommonCodeLineRemovalPreprocessor(abc);
         Set<Submission> removeFrom = singleton(empty);
 
-        Collection<Submission> result = PreprocessSubmissions.process(handler, removeFrom);
+        Collection<Submission> result = PreprocessSubmissions.process(handler, removeFrom, logger);
 
         checkSubmissionCollections(result, removeFrom);
     }
@@ -66,7 +71,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
         Set<Submission> removeFrom = singleton(abc);
         Submission expected = submissionFromString(abc.getName(), empty.getContentAsString());
 
-        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
+        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom, logger);
 
         checkSubmissionCollections(results, singletonList(expected));
     }
@@ -76,7 +81,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
         SubmissionPreprocessor handler = new CommonCodeLineRemovalPreprocessor(def);
         Set<Submission> removeFrom = singleton(abc);
 
-        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
+        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom, logger);
 
         checkSubmissionCollections(results, removeFrom);
     }
@@ -87,7 +92,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
         Set<Submission> removeFrom = singleton(abcde);
         Submission expected = submissionFromString(abcde.getName(), "D\nE\n");
 
-        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
+        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom, logger);
 
         checkSubmissionCollections(results, singletonList(expected));
     }
@@ -98,7 +103,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
         Set<Submission> removeFrom = singleton(abc);
         Submission expected = submissionFromString(abc.getName(), empty.getContentAsString());
 
-        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
+        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom, logger);
 
         checkSubmissionCollections(results, singletonList(expected));
     }
@@ -112,7 +117,7 @@ public class CommonCodeLineRemovalPreprocessorTest {
         Submission expected3 = def;
         Collection<Submission> expected = Arrays.asList(expected1, expected2, expected3);
 
-        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom);
+        Collection<Submission> results = PreprocessSubmissions.process(handler, removeFrom, logger);
 
         checkSubmissionCollections(results, expected);
     }

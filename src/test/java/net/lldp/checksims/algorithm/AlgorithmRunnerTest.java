@@ -30,6 +30,8 @@ import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.parse.token.tokenizer.Tokenizer;
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.testutil.AlgorithmUtils;
+import net.lldp.checksims.util.completion.DefaultLoggerStatusLogger;
+import net.lldp.checksims.util.completion.StatusLogger;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Before;
@@ -53,6 +55,8 @@ public class AlgorithmRunnerTest {
     private Submission b;
     private Submission c;
     private Submission d;
+    
+    private StatusLogger logger;
 
     private SimilarityDetector<PercentableTokenListDecorator> detectNothing;
 
@@ -87,33 +91,35 @@ public class AlgorithmRunnerTest {
         b = submissionFromString("B", "B");
         c = submissionFromString("C", "C");
         d = submissionFromString("D", "D");
+        
+        logger = new DefaultLoggerStatusLogger();
     }
 
     @Test
     public void TestRunAlgorithmNull() throws ChecksimsException {
         expectedEx.expect(NullPointerException.class);
 
-        AlgorithmRunner.runAlgorithm(null, detectNothing);
+        AlgorithmRunner.runAlgorithm(null, detectNothing, logger);
     }
 
     @Test
     public void TestRunAlgorithmNullAlgorithm() throws ChecksimsException {
         expectedEx.expect(NullPointerException.class);
 
-        AlgorithmRunner.runAlgorithm(singleton(Pair.of(a, b)), null);
+        AlgorithmRunner.runAlgorithm(singleton(Pair.of(a, b)), null, logger);
     }
 
     @Test
     public void TestRunAlgorithmEmptySet() throws ChecksimsException {
         expectedEx.expect(IllegalArgumentException.class);
 
-        AlgorithmRunner.runAlgorithm(new HashSet<>(), null);
+        AlgorithmRunner.runAlgorithm(new HashSet<>(), null, logger);
     }
 
     @Test
     public void TestRunAlgorithmSinglePair() throws ChecksimsException {
         Set<Pair<Submission, Submission>> submissions = singleton(Pair.of(a, b));
-        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing);
+        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing, logger);
 
         AlgorithmUtils.checkResultsContainsPairs(results, submissions);
     }
@@ -121,7 +127,7 @@ public class AlgorithmRunnerTest {
     @Test
     public void TestRunAlgorithmTwoPairs() throws ChecksimsException {
         Set<Pair<Submission, Submission>> submissions = setFromElements(Pair.of(a, b), Pair.of(a, c));
-        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing);
+        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing, logger);
 
         AlgorithmUtils.checkResultsContainsPairs(results, submissions);
     }
@@ -129,7 +135,7 @@ public class AlgorithmRunnerTest {
     @Test
     public void TestRunAlgorithmThreePairs() throws ChecksimsException {
         Set<Pair<Submission, Submission>> submissions = setFromElements(Pair.of(a, b), Pair.of(a, c), Pair.of(b, c));
-        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing);
+        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing, logger);
 
         AlgorithmUtils.checkResultsContainsPairs(results, submissions);
     }
@@ -137,7 +143,7 @@ public class AlgorithmRunnerTest {
     @Test
     public void TestRunAlgorithmAllPossiblePairs() throws ChecksimsException {
         Set<Pair<Submission, Submission>> submissions = setFromElements(Pair.of(a, b), Pair.of(a, c), Pair.of(a, d), Pair.of(b, c), Pair.of(b, d), Pair.of(c, d));
-        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing);
+        Collection<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(submissions, detectNothing, logger);
 
         AlgorithmUtils.checkResultsContainsPairs(results, submissions);
     }

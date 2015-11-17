@@ -477,7 +477,7 @@ public final class ChecksimsCommandLine {
      * @return Collection of submissions which will be used to run Checksims
      * @throws IOException Thrown on issue reading files or traversing directories to build submissions
      */
-    static Set<Submission> getSubmissions(Set<File> submissionDirs, String glob, boolean recursive,
+    public static Set<Submission> getSubmissions(Set<File> submissionDirs, String glob, boolean recursive,
                                           boolean retainEmpty) throws IOException, ChecksimsException {
         checkNotNull(submissionDirs);
         checkArgument(!submissionDirs.isEmpty(), "Must provide at least one submission directory!");
@@ -486,7 +486,10 @@ public final class ChecksimsCommandLine {
         // Generate submissions to work on
         Set<Submission> submissions = new HashSet<>();
         for(File dir : submissionDirs) {
-            logs.debug("Adding directory " + dir.getName());
+            if (logs != null)
+            {
+                logs.debug("Adding directory " + dir.getName());
+            }
 
             submissions.addAll(Submission.submissionListFromDir(dir, glob, recursive));
         }
@@ -497,7 +500,10 @@ public final class ChecksimsCommandLine {
 
             for(Submission s : submissions) {
                 if(s.getContentAsString().isEmpty()) {
-                    logs.warn("Discarding empty submission " + s.getName());
+                    if (logs != null)
+                    {
+                        logs.warn("Discarding empty submission " + s.getName());
+                    }
                 } else {
                     submissionsNoEmpty.add(s);
                 }

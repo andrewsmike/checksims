@@ -23,7 +23,9 @@ package net.lldp.checksims.algorithm;
 
 import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.completion.StatusLogger;
 import net.lldp.checksims.util.threading.ParallelAlgorithm;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +49,8 @@ public final class AlgorithmRunner {
      * @return Collection of AlgorithmResults, one for each input pair
      */
     public static Set<AlgorithmResults> runAlgorithm(Set<Pair<Submission, Submission>> submissions,
-                                                     SimilarityDetector<?> algorithm) throws ChecksimsException {
+                                                     SimilarityDetector<?> algorithm,
+                                                     StatusLogger logger) throws ChecksimsException {
         checkNotNull(submissions);
         checkArgument(submissions.size() > 0, "Must provide at least one pair of submissions to run on!");
         checkNotNull(algorithm);
@@ -59,7 +62,7 @@ public final class AlgorithmRunner {
                 + algorithm.getName());
 
         // Perform parallel analysis of all submission pairs to generate a results list
-        Set<AlgorithmResults> results = ParallelAlgorithm.parallelSimilarityDetection(algorithm, submissions);
+        Set<AlgorithmResults> results = ParallelAlgorithm.parallelSimilarityDetection(algorithm, submissions, logger);
 
         long endTime = System.currentTimeMillis();
         long timeElapsed = endTime - startTime;

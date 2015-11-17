@@ -24,6 +24,9 @@ package net.lldp.checksims.algorithm.preprocessor;
 import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.submission.ConcreteSubmission;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.completion.DefaultLoggerStatusLogger;
+import net.lldp.checksims.util.completion.StatusLogger;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,11 +49,13 @@ public class PreprocessSubmissionsTest {
     private Set<Submission> twoSubmissions;
     private SubmissionPreprocessor identity;
     private SubmissionPreprocessor renamer;
+    private StatusLogger logger;
 
     @Before
     public void setUp() {
         a = submissionFromString("Submission A", "A");
         b = submissionFromString("Submission B", "B");
+        logger = new DefaultLoggerStatusLogger();
 
         empty = new HashSet<>();
         oneSubmission = singleton(a);
@@ -83,7 +88,7 @@ public class PreprocessSubmissionsTest {
 
     @Test
     public void testEmptyReturnsEmpty() throws ChecksimsException {
-        Collection<Submission> results = PreprocessSubmissions.process(identity, empty);
+        Collection<Submission> results = PreprocessSubmissions.process(identity, empty, logger);
 
         assertNotNull(results);
         assertTrue(results.isEmpty());
@@ -91,7 +96,7 @@ public class PreprocessSubmissionsTest {
 
     @Test
     public void testOneSubmissionIdentity() throws ChecksimsException {
-        Collection<Submission> results = PreprocessSubmissions.process(identity, oneSubmission);
+        Collection<Submission> results = PreprocessSubmissions.process(identity, oneSubmission, logger);
 
         assertNotNull(results);
         assertEquals(results, oneSubmission);
@@ -99,7 +104,7 @@ public class PreprocessSubmissionsTest {
 
     @Test
     public void testOneSubmissionRename() throws ChecksimsException {
-        Collection<Submission> results = PreprocessSubmissions.process(renamer, oneSubmission);
+        Collection<Submission> results = PreprocessSubmissions.process(renamer, oneSubmission, logger);
         Submission expected = submissionFromString("renamed " + a.getName(), a.getContentAsString());
 
         checkSubmissionCollections(singleton(expected), results);
@@ -107,14 +112,14 @@ public class PreprocessSubmissionsTest {
 
     @Test
     public void testTwoSubmissionIdentity() throws ChecksimsException {
-        Collection<Submission> results = PreprocessSubmissions.process(identity, twoSubmissions);
+        Collection<Submission> results = PreprocessSubmissions.process(identity, twoSubmissions, logger);
 
         checkSubmissionCollections(twoSubmissions, results);
     }
 
     @Test
     public void testTwoSubmissionRename() throws ChecksimsException {
-        Collection<Submission> results = PreprocessSubmissions.process(renamer, twoSubmissions);
+        Collection<Submission> results = PreprocessSubmissions.process(renamer, twoSubmissions, logger);
         Submission expectedA = submissionFromString("renamed " + a.getName(), a.getContentAsString());
         Submission expectedB = submissionFromString("renamed " + b.getName(), b.getContentAsString());
         List<Submission> expected = Arrays.asList(expectedA, expectedB);

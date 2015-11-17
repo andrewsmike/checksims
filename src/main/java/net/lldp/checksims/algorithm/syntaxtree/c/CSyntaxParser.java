@@ -51,6 +51,7 @@ public class CSyntaxParser implements LanguageDependantSyntaxParser
             }
             catch(ASTFactory.SyntaxErrorException see)
             {
+                s.setFlag("invalid");
                 System.out.println("Syntax Error for assignment: " + s.getName());
                 return new HashSet<>();
             }

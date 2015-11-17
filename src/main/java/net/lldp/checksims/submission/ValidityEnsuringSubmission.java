@@ -122,7 +122,7 @@ public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorato
     }
 
     @Override
-    public void increaseScore(double r)
+    public void increaseScore(double r, double o)
     {
         real += r;
     }
@@ -131,5 +131,11 @@ public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorato
     public double getTotalCopyScore()
     {
         return real;
+    }
+
+    @Override
+    public double getMaximumCopyScore()
+    {
+        return 0;
     }
 }

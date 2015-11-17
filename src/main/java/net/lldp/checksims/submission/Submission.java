@@ -57,15 +57,23 @@ public interface Submission extends Comparable<Submission> {
      * The Score is the sum of all comparison values between
      * this and every other submission
      * @param i the score to increase by
+     * @param o the original score calculation
      */
-    void increaseScore(double i);
+    void increaseScore(double i, double o);
     
     /**
      * get the total copy score for this submission.
      * see {@link #increaseScore(Real)}
-     * @return the total copy score for this subsmission
+     * @return the total copy score for this submission
      */
     double getTotalCopyScore();
+    
+    /**
+     * get the maximum copy score for this submission.
+     * see {@link #increaseScore(Real)}
+     * @return the maximum score for this submission
+     */
+    double getMaximumCopyScore();
     
     /**
      * set an arbitrary flag on a submission

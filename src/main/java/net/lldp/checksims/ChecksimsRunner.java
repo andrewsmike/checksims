@@ -136,10 +136,10 @@ public final class ChecksimsRunner {
 
         // Apply all preprocessors
         for(SubmissionPreprocessor p : config.getPreprocessors()) {
-            submissions = ImmutableSet.copyOf(PreprocessSubmissions.process(p, submissions));
+            submissions = ImmutableSet.copyOf(PreprocessSubmissions.process(p, submissions, config.getStatusLogger()));
 
             if(!archiveSubmissions.isEmpty()) {
-                archiveSubmissions = ImmutableSet.copyOf(PreprocessSubmissions.process(p, archiveSubmissions));
+                archiveSubmissions = ImmutableSet.copyOf(PreprocessSubmissions.process(p, archiveSubmissions, config.getStatusLogger()));
             }
         }
 
@@ -150,7 +150,7 @@ public final class ChecksimsRunner {
         // Apply algorithm to submissions
         Set<Pair<Submission, Submission>> allPairs = PairGenerator.generatePairsWithArchive(submissions,
                 archiveSubmissions);
-        Set<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(allPairs, config.getAlgorithm());
+        Set<AlgorithmResults> results = AlgorithmRunner.runAlgorithm(allPairs, config.getAlgorithm(), config.getStatusLogger());
         
         if (config.isIgnoringInvalid()) {
             Set<Submission> validSubmissions = new HashSet<>();
@@ -175,6 +175,7 @@ public final class ChecksimsRunner {
 
         // All parallel jobs are done, shut down the parallel executor
         ParallelAlgorithm.shutdownExecutor();
+        config.getStatusLogger().end();
 
         Map<String, String> outputMap = new HashMap<>();
 

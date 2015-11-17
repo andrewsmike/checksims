@@ -37,8 +37,8 @@ public class AlgorithmResults {
     public final Submission b;
     public final Percentable percentableA;
     public final Percentable percentableB;
-    private final Real percentMatchedA;
-    private final Real percentMatchedB;
+    public final Real percentMatchedA;
+    public final Real percentMatchedB;
 
     /**
      * Construct results for a pairwise similarity detection algorithm.

@@ -40,7 +40,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Implementation of the Smith-Waterman algorithm.
  */
-public final class SmithWaterman implements SimilarityDetector<PercentableTokenListDecorator> {
+public final class SmithWaterman extends SimilarityDetector<PercentableTokenListDecorator> {
     private static SmithWaterman instance;
 
     private SmithWaterman() {}
@@ -120,17 +120,12 @@ public final class SmithWaterman implements SimilarityDetector<PercentableTokenL
         double x = atb.getPercentageMatched().asDouble();
         double y = bta.getPercentageMatched().asDouble();
         
-        ab.getLeft().increaseScore(y*y);
-        ab.getRight().increaseScore(x*x);
+        ab.getLeft().increaseScore(y*y, y);
+        ab.getRight().increaseScore(x*x, x);
         
         return new AlgorithmResults(ab,
                 new PercentableTokenListDecorator(endLists.getLeft()), 
                 new PercentableTokenListDecorator(endLists.getRight()));
-    }
-
-    @Override
-    public String toString() {
-        return "Singleton instance of Smith-Waterman Algorithm";
     }
 
     @Override
