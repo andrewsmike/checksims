@@ -1,7 +1,7 @@
 Checksims
 =========
 
-![Build Status](https://travis-ci.org/Checksims/checksims.svg?branch=master)
+![Build Status](https://travis-ci.org/tmathmeyer/checksims.svg?branch=master)
 
 Checksims is a modular, cross-platform framework for software similarity
 detection designed to be used for academic dishonesty detection in undergraduate
