@@ -22,7 +22,7 @@ public class FileInputOptionAccordionList extends JPanel
     private long nextID = 0;
     private final JFrame superParent;
     
-    public FileInputOptionAccordionList(JFrame repack)
+    public FileInputOptionAccordionList(JFrame repack, String type)
     {
         fios = new TreeSet<>(new Comparator<FileInputOption>(){
             @Override
@@ -32,7 +32,7 @@ public class FileInputOptionAccordionList extends JPanel
             }
         });
         
-        click = new JButton("Add Source Directory");
+        click = new JButton("Add " + type + " Directory");
         FileInputOptionAccordionList self = this;
         click.addActionListener(new ActionListener(){
 

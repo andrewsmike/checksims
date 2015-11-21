@@ -24,7 +24,7 @@ public class FileInputOption extends JPanel
             this.path = path;
             
             fc = new JFileChooser();
-            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             fc.setCurrentDirectory(new java.io.File("."));
             fc.setDialogTitle("title");
             fc.setAcceptAllFileFilterUsed(false);

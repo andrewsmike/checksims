@@ -22,6 +22,7 @@ import net.lldp.checksims.ui.file.FileInputOptionAccordionList;
 
 public class ChecksimsInitializer extends JPanel
 {
+
     private final JComboBox<SimilarityDetector<? extends Percentable>> parsers;
     private final JButton checkSims;
 
@@ -47,11 +48,13 @@ public class ChecksimsInitializer extends JPanel
         logo.setMaximumSize(new Dimension(600, 175));
         logo.setPreferredSize(new Dimension(600, 175));
 
-        FileInputOptionAccordionList top = new FileInputOptionAccordionList(f);
+        FileInputOptionAccordionList subs = new FileInputOptionAccordionList(f, "source");
+        FileInputOptionAccordionList archs = new FileInputOptionAccordionList(f, "archive");
         JPanel mid = new JPanel();
         JPanel bot = new JPanel();
         
-        top.setBackground(new Color(0xA9, 0xB0, 0xB7)); // WPI colors
+        subs.setBackground(new Color(0xA9, 0xB0, 0xB7)); // WPI colors
+        archs.setBackground(new Color(0xA9, 0xB0, 0xB7)); // WPI colors
         mid.setBackground(new Color(0xA9, 0xB0, 0xB7)); // TODO make this static somewhere
         bot.setBackground(new Color(0xA9, 0xB0, 0xB7));
 
@@ -61,11 +64,12 @@ public class ChecksimsInitializer extends JPanel
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         add(logo);
-        add(top);
+        add(subs);
+        add(archs);
         add(mid);
         add(bot);
         
-        checkSims.addActionListener(new RunChecksimsListener(this, parsers, top));
+        checkSims.addActionListener(new RunChecksimsListener(this, parsers, subs, archs));
     }
 
     

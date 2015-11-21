@@ -26,18 +26,19 @@ import net.lldp.checksims.ui.results.GraphicalMatrixPrinter;
 public class RunChecksimsListener implements ActionListener
 {
     private final ChecksimsInitializer uiPanel;
-    private final FileInputOptionAccordionList paths;
+    private final FileInputOptionAccordionList submissionPaths;
+    private final FileInputOptionAccordionList archivePaths;
     private final JComboBox<SimilarityDetector<? extends Percentable>> selection;
 
     public RunChecksimsListener(ChecksimsInitializer checksimsInitializer,
-            JComboBox<SimilarityDetector<? extends Percentable>> parsers, FileInputOptionAccordionList paths)
+            JComboBox<SimilarityDetector<? extends Percentable>> parsers, 
+            FileInputOptionAccordionList submissionPaths, FileInputOptionAccordionList archivePaths)
     {
-        this.paths = paths;
+        this.submissionPaths = submissionPaths;
+        this.archivePaths = archivePaths;
         this.selection = parsers;
-        
+
         uiPanel = checksimsInitializer;
-        
-        
     }
 
     @Override
@@ -55,10 +56,30 @@ public class RunChecksimsListener implements ActionListener
         conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedItem());
         try
         {
-            Set<File> files = paths.getFileSet();
+            Set<File> files = submissionPaths.getFileSet();
             if (files != null && files.size() > 0)
             {
                 conf.setSubmissions(ChecksimsCommandLine.getSubmissions(files, "*", false, false));
+            }
+            else
+            {
+                ((JButton)ae.getSource()).setEnabled(true);
+                throw new ChecksimsException("missing files");
+            }
+        }
+        catch (IOException | ChecksimsException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return;
+        }
+        
+        try
+        {
+            Set<File> files = archivePaths.getFileSet();
+            if (files != null && files.size() > 0)
+            {
+                conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(files, "*", false, false));
             }
             else
             {

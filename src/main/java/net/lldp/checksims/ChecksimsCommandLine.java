@@ -43,8 +43,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import net.lingala.zip4j.core.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.CentralDirectory;
+import net.lingala.zip4j.model.FileHeader;
+
+import com.google.common.io.Files;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -341,6 +349,57 @@ public final class ChecksimsCommandLine {
 
         return config;
     }
+    
+    /**
+     * Extract ZIP file, return temporary directory.
+     *
+     * @param file ZIP file.
+     * @return Uncompressed, temporary directory.
+     */
+
+    static File extractFile(File file) throws ZipException {
+
+        File extracted;
+
+        extracted = Files.createTempDir();
+        extracted.deleteOnExit();
+
+        ZipFile zip = new ZipFile(file);
+        zip.extractAll(extracted.getAbsolutePath());
+        String name = ((FileHeader) zip.getFileHeaders().get(0)).getFileName();
+        name = name.split("/")[0].split("\\\\")[0];
+
+        return new File(extracted.getAbsolutePath() + File.separatorChar + name);
+    }
+
+    /**
+     * Extract all ZIP files and add turnin format directories.
+     * @param files Set of files to parse.
+     * @return Set of files, with turnin files extracted and user/ and group/ directories added.
+     */
+    static Set<File> extractTurninFiles(Set<File> files) {
+
+        Set<File> extracted = new HashSet<>();
+
+        for (File t : files) {
+
+            if (!t.getAbsolutePath().endsWith(".zip")) {
+                extracted.add(t);
+            } else {
+                try {
+                    File turninRoot = extractFile(t);
+                    extracted.add(new File(turninRoot.getAbsolutePath()
+                            + File.separatorChar + "groups"));
+                    extracted.add(new File(turninRoot.getAbsolutePath()
+                            + File.separatorChar + "students"));
+                } catch (ZipException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return extracted;
+    }
 
     /**
      * Parse flags which require submissions to be built.
@@ -441,6 +500,8 @@ public final class ChecksimsCommandLine {
                     .map(File::getAbsoluteFile)
                     .collect(Collectors.toSet());
 
+            archiveDirs = extractTurninFiles(archiveDirs);
+
             // Ensure that none of them are also submission directories
             for(File archiveDir : archiveDirs) {
                 if(submissionDirs.contains(archiveDir)) {
@@ -482,6 +543,9 @@ public final class ChecksimsCommandLine {
         checkNotNull(submissionDirs);
         checkArgument(!submissionDirs.isEmpty(), "Must provide at least one submission directory!");
         checkNotNull(glob);
+
+        submissionDirs = extractTurninFiles(submissionDirs);
+
 
         // Generate submissions to work on
         Set<Submission> submissions = new HashSet<>();
