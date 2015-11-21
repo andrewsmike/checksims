@@ -95,6 +95,7 @@ public final class ChecksimsConfig {
         this.outputPrinters = old.getOutputPrinters();
         this.numThreads = old.getNumThreads();
         this.ignoringInvalid = old.ignoringInvalid;
+        this.logger = old.logger;
     }
 
     /**
