@@ -367,7 +367,7 @@ public final class ChecksimsCommandLine {
         ZipFile zip = new ZipFile(file);
         zip.extractAll(extracted.getAbsolutePath());
         String name = ((FileHeader) zip.getFileHeaders().get(0)).getFileName();
-        name = name.split("/")[0];
+        name = name.split("/")[0].split("\\\\")[0];
 
         return new File(extracted.getAbsolutePath() + File.separatorChar + name);
     }
@@ -384,12 +384,10 @@ public final class ChecksimsCommandLine {
         for (File t : files) {
 
             if (!t.getAbsolutePath().endsWith(".zip")) {
-                System.out.println("Adding " + t.getAbsolutePath());
                 extracted.add(t);
             } else {
                 try {
                     File turninRoot = extractFile(t);
-                    System.out.println("Adding " + turninRoot.getAbsolutePath());
                     extracted.add(new File(turninRoot.getAbsolutePath()
                             + File.separatorChar + "groups"));
                     extracted.add(new File(turninRoot.getAbsolutePath()
