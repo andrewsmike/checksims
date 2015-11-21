@@ -6,12 +6,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
-import javax.swing.JTextField;
 
 import net.lldp.checksims.ChecksimsCommandLine;
 import net.lldp.checksims.ChecksimsConfig;
@@ -20,20 +20,22 @@ import net.lldp.checksims.ChecksimsRunner;
 import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
 import net.lldp.checksims.parse.Percentable;
+import net.lldp.checksims.ui.file.FileInputOptionAccordionList;
 import net.lldp.checksims.ui.results.GraphicalMatrixPrinter;
 
 public class RunChecksimsListener implements ActionListener
 {
     private final ChecksimsInitializer uiPanel;
-    private final JTextField submissionPath;
-    private final JTextField archivePath;
+    private final FileInputOptionAccordionList submissionPaths;
+    private final FileInputOptionAccordionList archivePaths;
     private final JComboBox<SimilarityDetector<? extends Percentable>> selection;
 
     public RunChecksimsListener(ChecksimsInitializer checksimsInitializer,
-            JComboBox<SimilarityDetector<? extends Percentable>> parsers, JTextField submissionPath, JTextField archivePath)
+            JComboBox<SimilarityDetector<? extends Percentable>> parsers, 
+            FileInputOptionAccordionList submissionPaths, FileInputOptionAccordionList archivePaths)
     {
-        this.submissionPath = submissionPath;
-        this.archivePath = archivePath;
+        this.submissionPaths = submissionPaths;
+        this.archivePaths = archivePaths;
         this.selection = parsers;
 
         uiPanel = checksimsInitializer;
@@ -54,11 +56,16 @@ public class RunChecksimsListener implements ActionListener
         conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedItem());
         try
         {
-            System.out.println(submissionPath.getText());
-            System.out.println(new File(submissionPath.getText()).getPath());
-            conf.setSubmissions(ChecksimsCommandLine.getSubmissions(new HashSet<File>(){{
-                add(new File(submissionPath.getText()));
-            }}, "*", false, false));
+            Set<File> files = submissionPaths.getFileSet();
+            if (files != null && files.size() > 0)
+            {
+                conf.setSubmissions(ChecksimsCommandLine.getSubmissions(files, "*", false, false));
+            }
+            else
+            {
+                ((JButton)ae.getSource()).setEnabled(true);
+                throw new ChecksimsException("missing files");
+            }
         }
         catch (IOException | ChecksimsException e)
         {
@@ -69,12 +76,23 @@ public class RunChecksimsListener implements ActionListener
         
         try
         {
-            System.out.println(archivePath.getText());
-            System.out.println(new File(archivePath.getText()).getPath());
-            conf.setSubmissions(ChecksimsCommandLine.getSubmissions(new HashSet<File>(){{
-                add(new File(archivePath.getText()));
-            }}, "*", false, false));
-        } catch (IOException | ChecksimsException e) {}
+            Set<File> files = archivePaths.getFileSet();
+            if (files != null && files.size() > 0)
+            {
+                conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(files, "*", false, false));
+            }
+            else
+            {
+                ((JButton)ae.getSource()).setEnabled(true);
+                throw new ChecksimsException("missing files");
+            }
+        }
+        catch (IOException | ChecksimsException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return;
+        }
         
         JProgressBar progressBar = new JProgressBar(0, 100);
         JLabel percent = new JLabel();

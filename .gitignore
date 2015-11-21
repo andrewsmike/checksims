@@ -13,3 +13,4 @@ target/
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.log
