@@ -25,18 +25,18 @@ import net.lldp.checksims.ui.results.GraphicalMatrixPrinter;
 public class RunChecksimsListener implements ActionListener
 {
     private final ChecksimsInitializer uiPanel;
-    private final JTextField path;
+    private final JTextField submissionPath;
+    private final JTextField archivePath;
     private final JComboBox<SimilarityDetector<? extends Percentable>> selection;
 
     public RunChecksimsListener(ChecksimsInitializer checksimsInitializer,
-            JComboBox<SimilarityDetector<? extends Percentable>> parsers, JTextField path2)
+            JComboBox<SimilarityDetector<? extends Percentable>> parsers, JTextField submissionPath, JTextField archivePath)
     {
-        this.path = path2;
+        this.submissionPath = submissionPath;
+        this.archivePath = archivePath;
         this.selection = parsers;
-        
+
         uiPanel = checksimsInitializer;
-        
-        
     }
 
     @Override
@@ -54,10 +54,10 @@ public class RunChecksimsListener implements ActionListener
         conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedItem());
         try
         {
-            System.out.println(path.getText());
-            System.out.println(new File(path.getText()).getPath());
+            System.out.println(submissionPath.getText());
+            System.out.println(new File(submissionPath.getText()).getPath());
             conf.setSubmissions(ChecksimsCommandLine.getSubmissions(new HashSet<File>(){{
-                add(new File(path.getText()));
+                add(new File(submissionPath.getText()));
             }}, "*", false, false));
         }
         catch (IOException | ChecksimsException e)
@@ -66,6 +66,15 @@ public class RunChecksimsListener implements ActionListener
             e.printStackTrace();
             return;
         }
+        
+        try
+        {
+            System.out.println(archivePath.getText());
+            System.out.println(new File(archivePath.getText()).getPath());
+            conf.setSubmissions(ChecksimsCommandLine.getSubmissions(new HashSet<File>(){{
+                add(new File(archivePath.getText()));
+            }}, "*", false, false));
+        } catch (IOException | ChecksimsException e) {}
         
         JProgressBar progressBar = new JProgressBar(0, 100);
         JLabel percent = new JLabel();

@@ -22,15 +22,19 @@ import net.lldp.checksims.parse.Percentable;
 
 public class ChecksimsInitializer extends JPanel
 {
-    private final JTextField path;
-    private final JButton pathSelector;
+    private final JTextField submissionPath;
+    private final JTextField archivePath;
+    private final JButton submissionPathSelector;
+    private final JButton archivePathSelector;
     private final JComboBox<SimilarityDetector<? extends Percentable>> parsers;
     private final JButton checkSims;
 
     public ChecksimsInitializer()
     {
-        path = new JTextField("/home/ted/checksims_samples/python", 30); // default empty
-        pathSelector = new JButton(" ... "); // select path standard ellipses
+        submissionPath = new JTextField("", 30);
+        archivePath = new JTextField("", 30);
+        submissionPathSelector = new JButton(" Other submission ");
+        archivePathSelector = new JButton(" Other achive ");
         parsers = new JComboBox<>(); // populate with parsers later
         checkSims = new JButton("CheckSims!");
         for (SimilarityDetector<? extends Percentable> s : AlgorithmRegistry.getInstance()
@@ -39,28 +43,35 @@ public class ChecksimsInitializer extends JPanel
             parsers.addItem(s);
         }
 
-        JPanel top = new JPanel();
+        JPanel subs = new JPanel();
+        JPanel archive = new JPanel();
         JPanel mid = new JPanel();
         JPanel bot = new JPanel();
-        
-        top.setBackground(new Color(0xA9, 0xB0, 0xB7));
+
+        subs.setBackground(new Color(0xA9, 0xB0, 0xB7));
+        archive.setBackground(new Color(0xA9, 0xB0, 0xB7));
         mid.setBackground(new Color(0xA9, 0xB0, 0xB7));
         bot.setBackground(new Color(0xA9, 0xB0, 0xB7));
 
-        top.add(path, BorderLayout.CENTER);
-        top.add(pathSelector, BorderLayout.EAST);
+        subs.add(submissionPath, BorderLayout.CENTER);
+        subs.add(submissionPathSelector, BorderLayout.EAST);
+
+        archive.add(archivePath, BorderLayout.CENTER);
+        archive.add(archivePathSelector, BorderLayout.EAST);
 
         mid.add(parsers);
 
         bot.add(checkSims);
 
-        setLayout(new GridLayout(3, 1));
-        add(top);
+        setLayout(new GridLayout(4, 1));
+        add(subs);
+        add(archive);
         add(mid);
         add(bot);
 
-        pathSelector.addActionListener(new PathSelectorListener(path));
-        checkSims.addActionListener(new RunChecksimsListener(this, parsers, path));
+        submissionPathSelector.addActionListener(new PathSelectorListener(submissionPath));
+        archivePathSelector.addActionListener(new PathSelectorListener(archivePath));
+        checkSims.addActionListener(new RunChecksimsListener(this, parsers, submissionPath, archivePath));
     }
 
     
