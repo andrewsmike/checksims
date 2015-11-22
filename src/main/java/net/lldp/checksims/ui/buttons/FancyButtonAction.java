@@ -1,4 +1,4 @@
-package net.lldp.checksims.ui;
+package net.lldp.checksims.ui.buttons;
 
 public interface FancyButtonAction
 {

@@ -10,8 +10,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
-import net.lldp.checksims.ui.FancyButtonAction;
-import net.lldp.checksims.ui.FancyButtonMouseListener;
+import net.lldp.checksims.ui.buttons.FancyButtonAction;
+import net.lldp.checksims.ui.buttons.FancyButtonColorTheme;
+import net.lldp.checksims.ui.buttons.FancyButtonMouseListener;
 
 public class FileInputOption extends JPanel
 {
@@ -71,14 +72,14 @@ public class FileInputOption extends JPanel
         add(path);
         add(browse);
         
-        browse.addMouseListener(new FancyButtonMouseListener(new FieldEditorAction(path)));
-        close.addMouseListener(new FancyButtonMouseListener(new FancyButtonAction(){
+        browse.addMouseListener(new FancyButtonMouseListener(browse, new FieldEditorAction(path), FancyButtonColorTheme.BROWSE));
+        close.addMouseListener(new FancyButtonMouseListener(close, new FancyButtonAction(){
             @Override
             public void performAction()
             {
                 parent.remove(self);
             }
-        }));
+        }, FancyButtonColorTheme.CLOSE));
     }
 
     public long getID()
