@@ -50,8 +50,6 @@ import static org.junit.Assert.assertEquals;
  */
 public class MatrixToHTMLPrinterTest {
     private MatrixToHTMLPrinter instance;
-    private SimilarityMatrix noSignificant;
-    private SimilarityMatrix oneSignificant;
     private SimilarityMatrix oneHalfSignificant;
     private SimilarityMatrix twoSignificant;
     private SubmissionTokenizer st;
@@ -65,13 +63,8 @@ public class MatrixToHTMLPrinterTest {
         st = new SubmissionTokenizer(Tokenizer.getTokenizer(TokenType.CHARACTER));
 
         Submission abcd = submissionFromString("ABCD", "ABCD");
-        Submission xyz = submissionFromString("XYZ", "XYZ");
         Submission abcde = submissionFromString("ABCDE", "ABCDE");
         Submission a = submissionFromString("A", "A");
-
-        AlgorithmResults abcdToXyz = new AlgorithmResults(abcd, xyz, st.fromSubmission(abcd), st.fromSubmission(xyz));
-
-        noSignificant = SimilarityMatrix.generateMatrix(setFromElements(abcd, xyz), singleton(abcdToXyz));
 
         TokenList abcdInval = TokenList.cloneTokenList(st.fromSubmission(abcd).getDataCopy());
         abcdInval.stream().forEach((token) -> token.setValid(false));
@@ -79,12 +72,6 @@ public class MatrixToHTMLPrinterTest {
         for(int i = 0; i < 4; i++) {
             abcdeInval.get(i).setValid(false);
         }
-
-        AlgorithmResults abcdToAbcde = new AlgorithmResults(abcd, abcde,
-                new PercentableTokenListDecorator(abcdInval),
-                new PercentableTokenListDecorator(abcdeInval));
-
-        oneSignificant = SimilarityMatrix.generateMatrix(setFromElements(abcd, abcde), singleton(abcdToAbcde));
 
         TokenList abcdInval2 = TokenList.cloneTokenList(st.fromSubmission(abcd).getDataCopy());
         abcdInval2.get(0).setValid(false);

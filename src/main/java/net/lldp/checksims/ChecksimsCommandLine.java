@@ -348,51 +348,98 @@ public final class ChecksimsCommandLine {
         return config;
     }
     
-    /**
-     * Extract ZIP file, return temporary directory.
-     *
-     * @param file ZIP file.
-     * @return Uncompressed, temporary directory.
-     */
-
-    static File extractFile(File file) throws ZipException {
-
-        File extracted;
-
-        extracted = Files.createTempDir();
-        extracted.deleteOnExit();
-
-        ZipFile zip = new ZipFile(file);
-        zip.extractAll(extracted.getAbsolutePath());
-        String name = ((FileHeader) zip.getFileHeaders().get(0)).getFileName();
-        name = name.split("/")[0].split("\\\\")[0];
-
-        return new File(extracted.getAbsolutePath() + File.separatorChar + name);
+    private static File recursiveTurninExtraction(File turninZip) throws ZipException, ChecksimsException
+    {
+        UUID ran = UUID.randomUUID(); // /tmp/uuid
+        String tmpPath = System.getProperty("java.io.tmpdir");
+        
+        File unzipLocation = new File(tmpPath, ran.toString());
+        if (unzipLocation.mkdir())
+        {
+            ZipFile zip = new ZipFile(turninZip);
+            if (zip.isEncrypted())
+            {
+                throw new ChecksimsException("zipfile: "+turninZip.getPath()+" is encrypted");
+            }
+            @SuppressWarnings("unchecked")
+            List<FileHeader> fileHeaders = zip.getFileHeaders();
+            
+            File studentsDir = new File(unzipLocation, "students");
+            File groupsDir = new File(unzipLocation, "groups");
+            studentsDir.mkdirs();
+            groupsDir.mkdirs();
+            for(FileHeader header: fileHeaders)
+            {
+                if (header.getFileName().startsWith("students") || header.getFileName().startsWith("groups"))
+                {
+                    zip.extractFile(header, unzipLocation.getPath());
+                }
+            }
+            
+            for(File submissionDir : studentsDir.listFiles())
+            {
+                if (submissionDir.isFile())
+                {
+                    throw new ChecksimsException("invalid file in turnin directory. might this be an invalid, hand crafted zip file?");
+                }
+                
+                for(File submission : submissionDir.listFiles())
+                {
+                    if (submission.getAbsolutePath().endsWith(".zip"))
+                    {
+                        ZipFile submissionZip = new ZipFile(submission);
+                        submissionZip.extractAll(submissionDir.getAbsolutePath());
+                        submission.delete(); // remove zip file!
+                    }
+                    if (submission.getAbsolutePath().endsWith(".tar"))
+                    {
+                        throw new RuntimeException(".tar submissions not accepted yet!");
+                    }
+                    // TODO: more archive handling,
+                    // tar.bz2, tar.gz, .tar, .7z, for starters
+                }
+            }
+            
+            return unzipLocation;
+        }
+        else
+        {
+            throw new ChecksimsException("canno create "+unzipLocation.getPath());
+        }
     }
 
     /**
      * Extract all ZIP files and add turnin format directories.
      * @param files Set of files to parse.
      * @return Set of files, with turnin files extracted and user/ and group/ directories added.
+     * @throws ChecksimsException 
      */
-    static Set<File> extractTurninFiles(Set<File> files) {
-
+    static Set<File> extractTurninFiles(Set<File> files) throws ChecksimsException
+    {
         Set<File> extracted = new HashSet<>();
 
-        for (File t : files) {
-
-            if (!t.getAbsolutePath().endsWith(".zip")) {
+        for (File t : files)
+        {
+            if (t.isDirectory())
+            {
                 extracted.add(t);
-            } else {
-                try {
-                    File turninRoot = extractFile(t);
-                    extracted.add(new File(turninRoot.getAbsolutePath()
-                            + File.separatorChar + "groups"));
-                    extracted.add(new File(turninRoot.getAbsolutePath()
-                            + File.separatorChar + "students"));
-                } catch (ZipException e) {
-                    e.printStackTrace();
+            }
+            else if (t.getAbsolutePath().endsWith(".zip"))
+            {
+                try
+                {
+                    File turninRoot = recursiveTurninExtraction(t);
+                    extracted.add(new File(turninRoot.getAbsolutePath() + File.separatorChar + "groups"));
+                    extracted.add(new File(turninRoot.getAbsolutePath() + File.separatorChar + "students"));
                 }
+                catch (ZipException e)
+                {
+                    throw new ChecksimsException("Input is not a directory or turnin zip file!", e);
+                }
+            }
+            else
+            {
+                throw new ChecksimsException("Input is not a directory or turnin zip file!");
             }
         }
 

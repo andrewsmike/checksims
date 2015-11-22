@@ -81,11 +81,6 @@ public class RunChecksimsListener implements ActionListener
             {
                 conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(files, "*", false, false));
             }
-            else
-            {
-                ((JButton)ae.getSource()).setEnabled(true);
-                throw new ChecksimsException("missing files");
-            }
         }
         catch (IOException | ChecksimsException e)
         {
