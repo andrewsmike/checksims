@@ -25,8 +25,6 @@ public class SortableMatrixViewer extends JPanel
     public SortableMatrixViewer(SortableMatrix sm)
     {
         this.sm = sm;
-        int size = updateMatrix(70) * DEFAULT_ELEMENT_SIZE;
-        setPreferredSize(new Dimension(size, size));
         ins = new ResultsInspector(){
             @Override
             public void handleResults(PairScore ps)
@@ -36,6 +34,8 @@ public class SortableMatrixViewer extends JPanel
                 System.out.println(sp.getBName());
             }
         };
+        int size = updateMatrix(70) * DEFAULT_ELEMENT_SIZE;
+        setPreferredSize(new Dimension(size, size));
     }
     
     public void updateThreshold(double d)
