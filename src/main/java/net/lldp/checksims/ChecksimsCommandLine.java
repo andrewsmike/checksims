@@ -50,8 +50,6 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.FileHeader;
 
-import com.google.common.io.Files;
-
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -62,6 +60,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public final class ChecksimsCommandLine {
     private static Logger logs;
+    private static Set<File> tempFiles = new HashSet<>();
 
     private ChecksimsCommandLine() {}
 
@@ -348,6 +347,33 @@ public final class ChecksimsCommandLine {
         return config;
     }
     
+    private static void addTempFile(File f)
+    {
+        tempFiles.add(f);
+    }
+    
+    public static void deleteTempFiles()
+    {
+        Set<File> copy = tempFiles;
+        tempFiles = new HashSet<>();
+        for(File f : copy)
+        {
+            deleteTempRecursive(f);
+        }
+    }
+    
+    private static void deleteTempRecursive(File f)
+    {
+        if (f.isDirectory())
+        {
+            for(File ff : f.listFiles())
+            {
+                deleteTempRecursive(ff);
+            }
+        }
+        f.delete();
+    }
+    
     private static File recursiveTurninExtraction(File turninZip) throws ZipException, ChecksimsException
     {
         UUID ran = UUID.randomUUID(); // /tmp/uuid
@@ -399,7 +425,7 @@ public final class ChecksimsCommandLine {
                     // tar.bz2, tar.gz, .tar, .7z, for starters
                 }
             }
-            
+            addTempFile(unzipLocation);
             return unzipLocation;
         }
         else

@@ -9,6 +9,7 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.ui.HSLColor;
@@ -77,7 +78,7 @@ public class SortableMatrixViewer extends JPanel
             this.ri = ri;
             if (ps != null)
             {
-                JLabel l = new JLabel(((int)(ps.getScore()*100))+"");
+                JLabel l = new JLabel(((int)(ps.getScore()*100))+"", SwingConstants.CENTER);
                 this.add(l, BorderLayout.CENTER);
                 
                 HSLColor hsl = new HSLColor(
@@ -86,6 +87,7 @@ public class SortableMatrixViewer extends JPanel
                        ,(float) (100 - (ps.getScore() * 50))
                 );
                 setBackground(hsl.getRGB());
+                l.setForeground(Color.BLACK);
                 this.addMouseListener(this);
             }
         }

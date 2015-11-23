@@ -185,6 +185,8 @@ public final class ChecksimsRunner {
 
             outputMap.put(p.getName(), p.printMatrix(resultsMatrix));
         }
+        
+        ChecksimsCommandLine.deleteTempFiles();
 
         return ImmutableMap.copyOf(outputMap);
     }
