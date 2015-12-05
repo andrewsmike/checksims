@@ -27,4 +27,9 @@ public class PairScore
     {
         return inverseScore;
     }
+
+    public String getFormattedSubmissions()
+    {
+        return submissions.getFormattedSubmissions();
+    }
 }

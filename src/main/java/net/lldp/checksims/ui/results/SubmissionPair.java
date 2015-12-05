@@ -56,4 +56,9 @@ public class SubmissionPair
     {
         return b.getName();
     }
+
+    public String getFormattedSubmissions()
+    {
+        return "<html>" + a.getName() + "<br>" + b.getName() + "</html>";
+    }
 }

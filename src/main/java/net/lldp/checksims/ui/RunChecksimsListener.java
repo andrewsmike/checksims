@@ -54,7 +54,7 @@ public class RunChecksimsListener implements ActionListener
                 ChecksimsConfig conf = new ChecksimsConfig();
                 
                 JProgressBar progressBar = new JProgressBar(0, 100);
-                JProgressBar overallStatus = new JProgressBar(0, 6);
+                JProgressBar overallStatus = new JProgressBar(0, 7);
                 JLabel percent = new JLabel("Percent");
                 JLabel eta = new JLabel("Estimated Time Remaining: NaN");
                 JLabel elapsed = new JLabel("Elapsed Time: 0s");
@@ -128,6 +128,7 @@ public class RunChecksimsListener implements ActionListener
                         try
                         {
                             Map<String, String> output = ChecksimsRunner.runChecksims(conf);
+                            tickProgress(overallStatus, message, "done");
                             for(String strategy : output.keySet()) {
                                 System.out.println("\n\n");
                                 System.out.println("Output from " + strategy + "\n");
@@ -136,7 +137,7 @@ public class RunChecksimsListener implements ActionListener
                         }
                         catch (ChecksimsException e)
                         {
-                            e.printStackTrace();
+                            message.setText(e.getMessage());
                         }
                     }
                 }.start();
