@@ -32,7 +32,7 @@ public class FileInputOptionAccordionList extends JPanel
             }
         });
         
-        click = new JButton("Add " + type + " Directory");
+        click = new JButton("Add " + type + " Directory or turnin zip file");
         FileInputOptionAccordionList self = this;
         click.addActionListener(new ActionListener(){
 
