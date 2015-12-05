@@ -23,6 +23,7 @@ package net.lldp.checksims.parse.ast;
 import java.util.stream.Stream;
 
 import net.lldp.checksims.parse.SubmissionPercentableCalculator;
+import net.lldp.checksims.parse.ast.ASTFactory.EOFParsingException;
 import net.lldp.checksims.submission.Submission;
 
 /**
@@ -50,8 +51,16 @@ public class SubmissionParser implements SubmissionPercentableCalculator<AST>
     @Override
     public AST generateFromSubmission(Submission s)
     {
-        Stream<AST> asts = ldsp.sourceToDefaultcontext(s, s.getContentAsString()).stream().map(A -> A.accept(ldsp.getTreeWalker()));
-        return new AST("#PROGRAM", asts).cacheFingerprinting();
+        try
+        {
+            Stream<AST> asts = ldsp.sourceToDefaultcontext(s, s.getContentAsString()).stream().map(A -> A.accept(ldsp.getTreeWalker()));
+            return new AST("#PROGRAM", asts).cacheFingerprinting();
+        }
+        catch(EOFParsingException eof)
+        {
+            return new AST("#INVALID AST").cacheFingerprinting();
+        }
+        
     }
 
     @Override

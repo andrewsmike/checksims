@@ -34,4 +34,10 @@ public class CParser extends SimilarityDetector<AST>
     {
         return ASTSimilarityDetector.detectSimilarity(ab, rft, comt);
     }
+    
+    @Override
+    public String getDefaultGlobPattern()
+    {
+        return "*.c";
+    }
 }

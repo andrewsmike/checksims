@@ -1,5 +1,6 @@
 package net.lldp.checksims.ui;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -44,86 +45,120 @@ public class RunChecksimsListener implements ActionListener
     @Override
     public void actionPerformed(ActionEvent ae)
     {
-        ((JButton)ae.getSource()).setEnabled(false);
-        
-        //TODO check conditions!
-        ChecksimsConfig conf = new ChecksimsConfig();
-        conf.ignoreInvalid();
-        conf.setOutputPrinters(new HashSet<MatrixPrinter>(){{
-            add(new GraphicalMatrixPrinter());
-        }});
-        
-        conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedItem());
-        try
-        {
-            Set<File> files = submissionPaths.getFileSet();
-            if (files != null && files.size() > 0)
-            {
-                conf.setSubmissions(ChecksimsCommandLine.getSubmissions(files, "*", false, false));
-            }
-            else
-            {
-                ((JButton)ae.getSource()).setEnabled(true);
-                throw new ChecksimsException("missing files");
-            }
-        }
-        catch (IOException | ChecksimsException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return;
-        }
-        
-        try
-        {
-            Set<File> files = archivePaths.getFileSet();
-            if (files != null && files.size() > 0)
-            {
-                conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(files, "*", false, false));
-            }
-        }
-        catch (IOException | ChecksimsException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return;
-        }
-        
-        JProgressBar progressBar = new JProgressBar(0, 100);
-        JLabel percent = new JLabel();
-        JLabel eta = new JLabel();
-        progressBar.setValue(0);
-        
-        uiPanel.removeAll();
-        uiPanel.add(progressBar);
-        uiPanel.add(percent);
-        uiPanel.add(eta);
-        
-        uiPanel.revalidate();
-        uiPanel.repaint();
-        
-        
-        conf.setStatusLogger(new ProgressBarStatusLogger(progressBar, percent, eta, ChecksimsInitializer.f));
-        
         new Thread() {
             @Override
             public void run() {
+                ((JButton)ae.getSource()).setEnabled(false);
+                
+                //TODO check conditions!
+                ChecksimsConfig conf = new ChecksimsConfig();
+                
+                JProgressBar progressBar = new JProgressBar(0, 100);
+                JProgressBar overallStatus = new JProgressBar(0, 6);
+                JLabel percent = new JLabel("Percent");
+                JLabel eta = new JLabel("Estimated Time Remaining: NaN");
+                JLabel elapsed = new JLabel("Elapsed Time: 0s");
+                JLabel message = new JLabel("initializing");
+                progressBar.setValue(0);
+                overallStatus.setValue(0);
+                
+                uiPanel.removeAll();
+                uiPanel.add(progressBar);
+                uiPanel.add(percent);
+                uiPanel.add(eta);
+                uiPanel.add(elapsed);
+                uiPanel.add(message);
+                uiPanel.add(overallStatus, BorderLayout.SOUTH);
+                
+                tickProgress(overallStatus, message, "initializing");
+                
+                
+                conf.setStatusLogger(new ProgressBarStatusLogger(progressBar, percent, eta, elapsed, ChecksimsInitializer.f));
+                tickProgress(overallStatus, message, "creating UI display");
+                
+                conf.ignoreInvalid();
+                conf.setOutputPrinters(new HashSet<MatrixPrinter>(){{
+                    add(new GraphicalMatrixPrinter());
+                }});
+                tickProgress(overallStatus, message, "loading compilers");
+                
+                conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedItem());
+
+                tickProgress(overallStatus, message, "loading submissions (this may take a while)");
                 try
                 {
-                    Map<String, String> output = ChecksimsRunner.runChecksims(conf);
-                    for(String strategy : output.keySet()) {
-                        System.out.println("\n\n");
-                        System.out.println("Output from " + strategy + "\n");
-                        System.out.println(output.get(strategy));
+                    Set<File> files = submissionPaths.getFileSet();
+                    if (files != null && files.size() > 0)
+                    {
+                        conf.setSubmissions(ChecksimsCommandLine.getSubmissions(
+                                files, conf.getAlgorithm().getDefaultGlobPattern(), false, false));
+                    }
+                    else
+                    {
+                        ((JButton)ae.getSource()).setEnabled(true);
+                        throw new ChecksimsException("missing files");
                     }
                 }
-                catch (ChecksimsException e)
+                catch (IOException | ChecksimsException e)
                 {
-                    e.printStackTrace();
+                    message.setText("Could not process files - "+e.getMessage());
+                    return;
                 }
+                tickProgress(overallStatus, message, "loading archived submissions (this may take a while)");
+                
+                try
+                {
+                    Set<File> files = archivePaths.getFileSet();
+                    if (files != null && files.size() > 0)
+                    {
+                        conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(
+                                files, conf.getAlgorithm().getDefaultGlobPattern(), false, false));
+                    }
+                }
+                catch (IOException | ChecksimsException e)
+                {
+                    message.setText("Could not process files - "+e.getMessage());
+                    return;
+                }
+                tickProgress(overallStatus, message, "Comparing Student submissions");
+                
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try
+                        {
+                            Map<String, String> output = ChecksimsRunner.runChecksims(conf);
+                            for(String strategy : output.keySet()) {
+                                System.out.println("\n\n");
+                                System.out.println("Output from " + strategy + "\n");
+                                System.out.println(output.get(strategy));
+                            }
+                        }
+                        catch (ChecksimsException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    }
+                }.start();
             }
-        }.start();
-        
+        }.start();   
     }
 
+    private void tickProgress(JProgressBar progress, JLabel jl, String message)
+    {
+        try
+        {
+            Thread.sleep(100);
+        }
+        catch (InterruptedException e)
+        {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        progress.setValue(progress.getValue()+1);
+        jl.setText(message);
+        uiPanel.revalidate();
+        uiPanel.repaint();
+        uiPanel.setVisible(true);
+    }
 }

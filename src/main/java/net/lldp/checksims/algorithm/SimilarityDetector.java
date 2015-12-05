@@ -63,4 +63,13 @@ public abstract class SimilarityDetector<T extends Percentable> implements Named
     {
         return getName();
     }
+
+    /**
+     * get the default glob pattern
+     * @return the default glob pattern for the algorithm. defaults to * (all files)
+     */
+    public String getDefaultGlobPattern()
+    {
+        return "*";
+    }
 }

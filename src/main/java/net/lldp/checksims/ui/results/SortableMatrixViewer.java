@@ -48,7 +48,12 @@ public class SortableMatrixViewer extends JPanel
     {
         Submission[] subs = sm.getSubmissionsAboveThreshold(d);
         removeAll();
-        setLayout(new GridLayout(subs.length, subs.length));
+        if (subs.length == 0) {
+            setLayout(new GridLayout(1,1));
+            add(new BlankMatrixElement());
+        } else {
+            setLayout(new GridLayout(subs.length, subs.length));
+        }
         
         for(int i=0; i<subs.length; i++)
         {

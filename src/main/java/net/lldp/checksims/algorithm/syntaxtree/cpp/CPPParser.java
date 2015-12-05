@@ -40,5 +40,11 @@ public class CPPParser extends SimilarityDetector<AST>
         //System.out.println("Similarity: " + atb);
         return new AlgorithmResults(ab, atb, bta);
     }
+    
+    @Override
+    public String getDefaultGlobPattern()
+    {
+        return "*.cpp";
+    }
 
 }
