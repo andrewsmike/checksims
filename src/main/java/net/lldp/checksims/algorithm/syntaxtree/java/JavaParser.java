@@ -64,4 +64,10 @@ public class JavaParser extends SimilarityDetector<AST>
     {
         return ASTSimilarityDetector.detectSimilarity(ab, rft, comt);
     }
+    
+    @Override
+    public String getDefaultGlobPattern()
+    {
+        return "*.java";
+    }
 }

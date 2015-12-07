@@ -493,6 +493,7 @@ public final class ChecksimsCommandLine {
         // Get glob match pattern
         // Default to *
         String globPattern = cli.getOptionValue("g", "*");
+        
 
         // Check if we are recursively building
         boolean recursive = cli.hasOption("r");

@@ -8,6 +8,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
@@ -25,17 +26,21 @@ public class SortableMatrixViewer extends JPanel
     public SortableMatrixViewer(SortableMatrix sm)
     {
         this.sm = sm;
-        int size = updateMatrix(70) * DEFAULT_ELEMENT_SIZE;
-        setPreferredSize(new Dimension(size, size));
         ins = new ResultsInspector(){
             @Override
             public void handleResults(PairScore ps)
             {
                 SubmissionPair sp = ps.getSubmissions();
-                System.out.println(sp.getAName());
-                System.out.println(sp.getBName());
+                String students = sp.getBName() + " // " + sp.getAName();
+                JOptionPane.showMessageDialog(null,
+                        "<html>Comparison for students: <br> "
+                                +students+"<br>matched at "
+                                +ps.getScore()*100+"% :: "+ps.getInverseScore()*100
+                                +"%</html>", students, JOptionPane.INFORMATION_MESSAGE);
             }
         };
+        int size = updateMatrix(70) * DEFAULT_ELEMENT_SIZE;
+        setPreferredSize(new Dimension(size, size));
     }
     
     public void updateThreshold(double d)
@@ -48,7 +53,12 @@ public class SortableMatrixViewer extends JPanel
     {
         Submission[] subs = sm.getSubmissionsAboveThreshold(d);
         removeAll();
-        setLayout(new GridLayout(subs.length, subs.length));
+        if (subs.length == 0) {
+            setLayout(new GridLayout(1,1));
+            add(new BlankMatrixElement());
+        } else {
+            setLayout(new GridLayout(subs.length, subs.length));
+        }
         
         for(int i=0; i<subs.length; i++)
         {
@@ -89,6 +99,7 @@ public class SortableMatrixViewer extends JPanel
                 setBackground(hsl.getRGB());
                 l.setForeground(Color.BLACK);
                 this.addMouseListener(this);
+                this.setToolTipText(ps.getFormattedSubmissions());
             }
         }
 

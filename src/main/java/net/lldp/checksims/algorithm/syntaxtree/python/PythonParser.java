@@ -64,4 +64,10 @@ public class PythonParser extends SimilarityDetector<AST>
     {
         return ASTSimilarityDetector.detectSimilarity(ab, rft, comt);
     }
+    
+    @Override
+    public String getDefaultGlobPattern()
+    {
+        return "*.py";
+    }
 }
