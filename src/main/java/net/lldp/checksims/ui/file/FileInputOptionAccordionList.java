@@ -42,6 +42,8 @@ public class FileInputOptionAccordionList extends JPanel
                 fios.add(new FileInputOption(self, nextID++, 50, 400));
                 
                 repopulate();
+                
+                click.setText("Add another "+type+" Directory or Turnin zip file");
             }
             
         });

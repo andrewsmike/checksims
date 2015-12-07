@@ -6,7 +6,12 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -19,7 +24,9 @@ public class SortableMatrixViewer extends JPanel
 {
     private final SortableMatrix sm;
     private final ResultsInspector ins;
-    
+
+    private Map<Submission, List<MatrixElement>> highlightSelectorRows;
+    private Map<Submission, List<MatrixElement>> highlightSelectorColumns;
     public static final int DEFAULT_ELEMENT_SIZE = 80;
     
     
@@ -51,6 +58,8 @@ public class SortableMatrixViewer extends JPanel
     
     private int updateMatrix(double d)
     {
+        highlightSelectorColumns = new HashMap<>();
+        highlightSelectorRows = new HashMap<>();
         Submission[] subs = sm.getSubmissionsAboveThreshold(d);
         removeAll();
         if (subs.length == 0) {
@@ -70,7 +79,18 @@ public class SortableMatrixViewer extends JPanel
                 }
                 else
                 {
-                    add(new MatrixElement(sm.getPairForSubmissions(subs[i], subs[j]), ins));
+                    if (highlightSelectorColumns.get(subs[i]) == null)
+                    {
+                        highlightSelectorColumns.put(subs[i], new LinkedList<>());
+                    }
+                    if (highlightSelectorRows.get(subs[j]) == null)
+                    {
+                        highlightSelectorRows.put(subs[j], new LinkedList<>());
+                    }
+                    MatrixElement res = new MatrixElement(sm.getPairForSubmissions(subs[i], subs[j]), ins);
+                    add(res);
+                    highlightSelectorColumns.get(subs[i]).add(res);
+                    highlightSelectorRows.get(subs[j]).add(res);
                 }
             }
         }
@@ -124,6 +144,20 @@ public class SortableMatrixViewer extends JPanel
         @Override
         public void mouseReleased(MouseEvent arg0)
         { }
+
+        public void setVerticalHighlight(boolean b)
+        {
+            if (b)
+            {
+                this.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createLineBorder(Color.red),
+                        BorderFactory.createLineBorder(Color.black)));
+            }
+            else
+            {
+                this.setBorder(null);
+            }
+        }
     }
     
     public static class BlankMatrixElement extends MatrixElement
@@ -133,5 +167,67 @@ public class SortableMatrixViewer extends JPanel
             super(null, null);
             setBackground(Color.BLACK);
         }
-    }    
+    }
+
+    public void highlightMatching(String textA)
+    {
+        for(Submission k : highlightSelectorColumns.keySet())
+        {
+            highlightSelectorColumns.get(k).stream().forEach(ME -> {
+                ME.setVerticalHighlight(false);
+            });
+        }
+        
+        for(Submission k : highlightSelectorColumns.keySet())
+        {
+            if (k.getName().contains(textA))
+            {
+                highlightSelectorColumns.get(k).stream().forEach(ME -> {
+                    ME.setVerticalHighlight(true);
+                });
+                highlightSelectorRows.get(k).stream().forEach(ME -> {
+                    ME.setVerticalHighlight(true);
+                });
+            }
+        }
+    }
+    
+    public void highlightMatching(String textA, String textB)
+    {
+        for(Submission k : highlightSelectorColumns.keySet())
+        {
+            highlightSelectorColumns.get(k).stream().forEach(ME -> {
+                ME.setVerticalHighlight(false);
+            });
+        }
+        
+        
+        for(Submission k : highlightSelectorColumns.keySet())
+        {
+            if (k.getName().contains(textA))
+            {
+                for(MatrixElement me : highlightSelectorColumns.get(k))
+                {
+                    if (me.ps.getSubmissions().getBName().contains(textB))
+                    {
+                        me.setVerticalHighlight(true);
+                    }
+                }
+            }
+        }
+        
+        for(Submission k : highlightSelectorColumns.keySet())
+        {
+            if (k.getName().contains(textB))
+            {
+                for(MatrixElement me : highlightSelectorColumns.get(k))
+                {
+                    if (me.ps.getSubmissions().getBName().contains(textA))
+                    {
+                        me.setVerticalHighlight(true);
+                    }
+                }
+            }
+        }
+    }
 }
