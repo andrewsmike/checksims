@@ -91,7 +91,7 @@ public class RunChecksimsListener implements ActionListener
                     if (files != null && files.size() > 0)
                     {
                         conf.setSubmissions(ChecksimsCommandLine.getSubmissions(
-                                files, conf.getAlgorithm().getDefaultGlobPattern(), false, false));
+                                files, conf.getAlgorithm().getDefaultGlobPattern(), true, false));
                     }
                     else
                     {
@@ -112,7 +112,7 @@ public class RunChecksimsListener implements ActionListener
                     if (files != null && files.size() > 0)
                     {
                         conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(
-                                files, conf.getAlgorithm().getDefaultGlobPattern(), false, false));
+                                files, conf.getAlgorithm().getDefaultGlobPattern(), true, false));
                     }
                 }
                 catch (IOException | ChecksimsException e)
