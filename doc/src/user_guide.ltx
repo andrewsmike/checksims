@@ -72,7 +72,7 @@ would also be named ``A'', for example.
 
 A \textit{glob pattern} can be specified to change which files are included.
 This is a shell-style match pattern, created using the same wildcard characters
-accepted by a shell. fFr example, providing a \texttt{*} does match every file
+accepted by a shell. For example, providing a \texttt{*} does match every file
 in a submission, while \texttt{*.c} includes all C files. To ensure that these
 are not parsed by your shell, it is recommended to escape this pattern
 (typically using double quotes --- \texttt{\textquotedbl*.c\textquotedbl} for
@@ -280,7 +280,7 @@ or submissions may have input that does not belong to the correct language.
 Common examples of this are selecting the wrong parser, attempting to parse
 README or Makefiles, or treating archive files as program files in submissions.
 To correct this, be sure the correct parser is being used, use the glob file
-matching option to ignore extranious files, and be sure all archives are
+matching option to ignore extraneous files, and be sure all archives are
 extracted.
 
 \subsection{Description of Tokenizations}
@@ -426,7 +426,7 @@ in the abstract representation, these methods are able to handle multiple forms
 of language based obfuscation, such as renamed variables and reorganized code.
 They tend to be more robust, but are limited to their associated language.
 
-If extranious files are introduced, such as \textit{README} or
+If extraneous files are introduced, such as \textit{README} or
 \textit{Makefiles}, the language aware parsers will not function correctly.
 Submissions will be considered invalid. If there are syntactic errors in a
 submission, it will be considered invalid. If you have the
