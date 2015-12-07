@@ -72,7 +72,7 @@ would also be named ``A'', for example.
 
 A \textit{glob pattern} can be specified to change which files are included.
 This is a shell-style match pattern, created using the same wildcard characters
-accepted by a shell. fFr example, providing a \texttt{*} does match every file
+accepted by a shell. For example, providing a \texttt{*} does match every file
 in a submission, while \texttt{*.c} includes all C files. To ensure that these
 are not parsed by your shell, it is recommended to escape this pattern
 (typically using double quotes --- \texttt{\textquotedbl*.c\textquotedbl} for
@@ -104,6 +104,15 @@ offering of the course. The submissions from the previous offering(s) of the
 course are included as archive directories, reducing the number of comparisons
 required and allowing \textit{Checksims} to run faster. 
 
+
+\subsubsection{ZIP Archive Submission Files}
+\textit{ZIP} files may be used as archive or submission directories, provided
+they conform to a particular format. The \textit{ZIP} files should contain both
+a students/ and a groups/ directory, where each will be treated as containing
+multiple submissions. Nested \textit{ZIP} files in submissions will be recursively
+extracted.
+
+
 \subsubsection{Arguments}
 The following arguments can be specified when running \textit{Checksims}. The
 \texttt{-s} argument is mandatory and must be provided. All other arguments are
@@ -111,14 +120,19 @@ optional.
 
 \begin{itemize}
 \item \texttt{-a}, \texttt{-{}-algorithm}: Specify algorithm to use for
-	similarity detection. Available options are \texttt{linecompare} and
-	\texttt{smithwaterman} at present, and can be listed with the \texttt{-h}
-	option. If no algorithm is given, the default is used.
+	similarity detection. Available options are \texttt{linecompare},
+	\texttt{smithwaterman}, \texttt{cparser}, \texttt{pythonparser},
+	\texttt{javaparser}, and \texttt{cppparser} at present, and can be
+	listed with the \texttt{-h} option. If no algorithm is given, the
+	default is used.
 \item \texttt{-archive, \texttt{-{}-archivedir}}: Specify one or more archive
 	directories to include in comparisons.
 \item \texttt{-c}, \texttt{-{}-common}: Perform common code removal. Specify a
 	directory containing common code (files within this directory will be
 	identified using the same glob matcher as normal submissions).
+\item \texttt{-e}, \texttt{-{}-empty}: Retain empty submissions. Do not throw
+	out empty submissions, instead, compare them as if they were valid.
+	This will leave all empty submission on the output similarity matrix.
 \item \texttt{-f}, \texttt{-{}-file}: Output to a file. Must provide filename
 	of output file as argument. The name of the output strategy used will be
 	appended to the given filename as an extension. If more than one output
@@ -128,6 +142,8 @@ optional.
 	files to include in submissions. Defaults to \texttt{*} --- all files.
 \item \texttt{-h}, \texttt{-{}-help}: Print usage information and available
 	algorithms, preprocessors, and output strategies.
+\item \texttt{-{}-ignoreInvalid}: For parser based algorithms, ignore
+	submissions with invalid code. Do not show them in the output.
 \item \texttt{-j}, \texttt{-{}-jobs}: Specify number of threads to use.
 	Defaults to number of CPUs available on your system.
 \item \texttt{-o}, \texttt{-{}-output}: Specify output format(s) to use. More
@@ -144,6 +160,8 @@ optional.
 	when generating submissions.
 \item \texttt{-s}, \texttt{-{}-submissiondir}: Add one or more directories
 	containing student submissions to be compared. Mandatory argument.
+	May also be used for \texttt{Turnin}-structured zip files. That is,
+	zip files with students/ and groups/ as subdirectories.
 \item \texttt{-t}, \texttt{-{}-token}: Specify tokenization to use. Available
 	options are \texttt{line}, \texttt{whitespace}, and \texttt{character} at
 	present, and can be listed with the \texttt{-h} option. If the \texttt{-t}
@@ -253,6 +271,18 @@ a single file, it must be contained in a subdirectory. Student submission
 directories may contain subdirectories themselves without issue.
 
 
+\paragraph{Parser Methods Not Terminating}
+Parser based methods take an excessive amount of time to handle invalid inputs,
+such as invalid programs, unrelated binary data, or programs of a different
+language. If a parser method does not appear to be making progress after a
+significant length of time, \textit{Checksims} may be using the wrong parser,
+or submissions may have input that does not belong to the correct language.
+Common examples of this are selecting the wrong parser, attempting to parse
+README or Makefiles, or treating archive files as program files in submissions.
+To correct this, be sure the correct parser is being used, use the glob file
+matching option to ignore extraneous files, and be sure all archives are
+extracted.
+
 \subsection{Description of Tokenizations}
 \textit{Checksims} breaks submissions into a sequence of tokens as they are
 read in. Several options are provided, each providing a tradeoff of speed
@@ -268,8 +298,9 @@ tokenization, and another using whitespace tokenizations. This is done to
 ensure a uniform basis for token comparison.
 
 Three tokenization options are provided by default: \texttt{Character},
-\texttt{Whitespace}, and \texttt{Line}. Their advantages and disadvantages are
-listed below.
+\texttt{Whitespace}, and \texttt{Line}. Parser based detection methods do not
+consider tolkenization, and generate their own AST format. The advantages and
+disadvantages of each method are listed below.
 
 
 \subsubsection{Character Tokenization}
@@ -323,10 +354,14 @@ and newlines).
 
 
 \subsection{Description of Algorithms}
-\textit{Checksims} provides two detection algorithms at present. The first is
-\textit{Smith-Waterman}. It offers accurate detection but slow performance.
-The second is \textit{Line Comparison}. It is very fast, but not very accurate
-and easily fooled by obfuscation.
+\textit{Checksims} provides multiple detection algorithms at present. The first
+is \textit{Smith-Waterman}. It offers accurate text based detection but with
+slow performance. The second is \textit{Line Comparison}. It is very fast, but
+not very accurate and easily fooled by obfuscation. The remaining are
+\textit{cparser}, \textit{cppparser}, \textit{javaparser}, and
+\textit{pythonparser}. These are language dependent syntax aware detection
+algorithms that are typically more resistant to obfuscation. As their names
+imply, they handle C, C++, Java, and Python submissions respectively.
 
 
 \subsubsection{Smith-Waterman}
@@ -382,6 +417,27 @@ whitespace or addition of comments). However, other alterations, like
 reordering statements or changes to identifier names, are very difficult to
 catch with preprocessors. \textit{Line Comparison} is thus very limited in
 terms of accuracy.
+
+
+\subsubsection{Parser Methods}
+The language dependent detection methods use language aware syntax parsers to
+generate an abstract representation of the code. By searching for similarities
+in the abstract representation, these methods are able to handle multiple forms
+of language based obfuscation, such as renamed variables and reorganized code.
+They tend to be more robust, but are limited to their associated language.
+
+If extraneous files are introduced, such as \textit{README} or
+\textit{Makefiles}, the language aware parsers will not function correctly.
+Submissions will be considered invalid. If there are syntactic errors in a
+submission, it will be considered invalid. If you have the
+\textit{-{}-ignoreInvalid} flag enabled, the invalid submissions will be
+excluded from the output.
+
+When running detection on a set of assignments, the slowest factor is usually
+the time it takes to generate the abstract representation of each submission,
+rather than the $O(n^2)$ comparisons done to check for similarity. While these
+methods have the same asymptotic efficiency as other detection methods, they
+tend to run more quickly for large classes.
 
 
 \subsection{Description of Output Strategies}

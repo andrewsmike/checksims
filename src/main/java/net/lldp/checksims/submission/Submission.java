@@ -235,7 +235,7 @@ public interface Submission extends Comparable<Submission> {
         }
 
         // Get files in this directory
-        File[] contents = directory.listFiles((f) -> matcher.matches(Paths.get(f.getAbsolutePath()).getFileName()));
+        File[] contents = directory.listFiles((f) -> matcher.matches(Paths.get(f.getAbsolutePath()).getFileName()) && f.isFile());
 
         // TODO consider mapping to absolute paths?
 
