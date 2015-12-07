@@ -9,7 +9,7 @@
 
     <groupId>net.lldp.checksims</groupId>
     <artifactId>checksims</artifactId>
-    <version>1.3.0-GUI</version>
+    <version>1.3.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -75,9 +75,9 @@
             <version>1.7.10</version>
         </dependency>
         <dependency>
-        	<groupId>org.antlr</groupId>
-        	<artifactId>antlr4-runtime</artifactId>
-        	<version>4.5.1-1</version>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr4-runtime</artifactId>
+            <version>4.5.1-1</version>
         </dependency>
         <dependency>
             <groupId>net.lingala.zip4j</groupId>
@@ -104,36 +104,74 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.6</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>net.lldp.checksims.ui.ChecksimsInitializer</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
+		        <executions>
+		            <execution>
+			            <id>GUI</id>
+			            <goals><goal>jar</goal></goals>
+			            <phase>package</phase>
+			            <configuration>
+			                <classifier>GUI</classifier>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <mainClass>net.lldp.checksims.ui.ChecksimsInitializer</mainClass>
+                                </manifest>
+                            </archive>
+			            </configuration>
+		            </execution>
+		            <execution>
+			            <id>CLI</id>
+			            <goals><goal>jar</goal></goals>
+			            <phase>package</phase>
+			            <configuration>
+			                <classifier>CLI</classifier>
+                            <archive>
+                                <manifest>
+                                    <addClasspath>true</addClasspath>
+                                    <mainClass>net.lldp.checksims.ChecksimsRunner</mainClass>
+                                </manifest>
+                            </archive>
+			            </configuration>
+		            </execution>
+		        </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.5.4</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>net.lldp.checksims.ui.ChecksimsInitializer</mainClass>
-                        </manifest>
-                    </archive>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
+                        <id>GUI</id>
                         <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
+                        <goals><goal>single</goal></goals>
+			            <configuration>
+			                <classifier>GUI</classifier>
+			                <finalName>${project.artifactId}-${project.version}-GUI</finalName>
+			                <archive>
+                                <manifest>
+                                    <mainClass>net.lldp.checksims.ui.ChecksimsInitializer</mainClass>
+                                </manifest>
+			                </archive>
+			            </configuration>
+                    </execution>
+                    <execution>
+                        <id>CLI</id>
+                        <phase>package</phase>
+                        <goals><goal>single</goal></goals>
+			            <configuration>
+			                <classifier>CLI</classifier>
+			                <finalName>${project.artifactId}-${project.version}-CLI</finalName>
+			                <archive>
+                                <manifest>
+                                    <mainClass>net.lldp.checksims.ChecksimsRunner</mainClass>
+                                </manifest>
+			                </archive>
+			            </configuration>
                     </execution>
                 </executions>
             </plugin>
