@@ -24,7 +24,7 @@ public class GraphicalMatrixPrinter implements MatrixPrinter
         
         JFrame f = new JFrame();
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        f.setResizable(false);
+        f.setResizable(true);
         
         f.add(new ScrollViewer(new SortableMatrixViewer(sm), f), BorderLayout.CENTER);
         f.pack();

@@ -61,4 +61,14 @@ public class SubmissionPair
     {
         return "<html>" + a.getName() + "<br>" + b.getName() + "</html>";
     }
+
+    public Submission getA()
+    {
+        return a;
+    }
+    
+    public Submission getB()
+    {
+        return b;
+    }
 }

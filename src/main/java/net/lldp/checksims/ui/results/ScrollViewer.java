@@ -2,6 +2,8 @@ package net.lldp.checksims.ui.results;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
@@ -22,10 +24,35 @@ public class ScrollViewer extends JPanel
     public ScrollViewer(SortableMatrixViewer results, JFrame toRevalidate)
     {
         resultsView = new JScrollPane(results);
+        resultsView.addComponentListener(new ComponentListener(){
+
+            @Override
+            public void componentHidden(ComponentEvent arg0)
+            { }
+
+            @Override
+            public void componentMoved(ComponentEvent arg0)
+            { }
+
+            @Override
+            public void componentResized(ComponentEvent ce)
+            {
+                Dimension size = ce.getComponent().getSize();
+                results.padToSize(size);
+            }
+
+            @Override
+            public void componentShown(ComponentEvent arg0)
+            { }
+        });
+        resultsView.setBackground(Color.black);
         sidebar = new JPanel();
         
         setPreferredSize(new Dimension(900, 631));
+        setMinimumSize(new Dimension(900, 631));
         sidebar.setPreferredSize(new Dimension(200, 631));
+        sidebar.setMaximumSize(new Dimension(200, 3000));
+        resultsView.setMinimumSize(new Dimension(700, 631));
         resultsView.setPreferredSize(new Dimension(700, 631));
         
         sidebar.setBackground(Color.GRAY);
@@ -38,9 +65,11 @@ public class ScrollViewer extends JPanel
         resultsView.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         resultsView.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
         resultsView.getVerticalScrollBar().setUnitIncrement(16);
+        resultsView.getHorizontalScrollBar().setUnitIncrement(16);
         
-        Integer[] presetThresholds = {90, 80, 70, 60, 50, 40, 0};
+        Integer[] presetThresholds = {90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 0};
         JComboBox<Integer> threshHold = new JComboBox<Integer>(presetThresholds);
+        threshHold.setSelectedIndex(8);
         threshHold.addItemListener(new ItemListener(){
             public void itemStateChanged(ItemEvent event) {
                 if (event.getStateChange() == ItemEvent.SELECTED) {

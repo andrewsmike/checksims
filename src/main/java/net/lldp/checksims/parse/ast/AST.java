@@ -21,6 +21,7 @@
 package net.lldp.checksims.parse.ast;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,6 +32,7 @@ import java.util.stream.Stream;
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.util.data.Monad;
 import net.lldp.checksims.util.data.Real;
+
 import static net.lldp.checksims.util.data.Monad.unwrap;
 import static net.lldp.checksims.util.data.Monad.wrap;
 
@@ -47,6 +49,7 @@ public class AST implements Percentable
     private final Set<Integer> hashes;
     private final Integer hashCode;
     private final Map<Integer, AST> fingerprints;
+    private final Monad<AST> parent = wrap(null);
     
     // scoring heuristics?
     public final Integer size;
@@ -82,6 +85,7 @@ public class AST implements Percentable
             hashes.add(A.hashCode());
             size.set(unwrap(size) + A.size);
             depth.set(A.depth > unwrap(depth) ? A.depth: unwrap(depth));
+            A.parent.set(this);
         });
         
         this.size = unwrap(size)+1;
@@ -206,5 +210,29 @@ public class AST implements Percentable
     public Real getPercentageMatched()
     {
         throw new RuntimeException("cannot evaluate getPercentMatched()");
+    }
+
+    /**
+     * @return the parent of the AST, or null if it has no parent
+     */
+    public AST getParent()
+    {
+        return unwrap(parent);
+    }
+    
+    /**
+     * @return the AST tag.
+     */
+    public String getTag()
+    {
+        return tag;
+    }
+    
+    /**
+     * @return a collection of the children of this AST node
+     */
+    public Collection<AST> getChildren()
+    {
+        return Collections.unmodifiableSet(asts);
     }
 }

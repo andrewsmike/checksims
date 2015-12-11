@@ -11,14 +11,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.ui.HSLColor;
+import net.lldp.checksims.ui.results.color.ColorGenerationAlgorithm;
+import net.lldp.checksims.ui.results.color.OrangeGreenColorGenerationAlgorithm;
+import net.lldp.checksims.ui.results.color.RedWhiteColorGenerationAlgorithm;
+import net.lldp.checksims.util.data.Monad;
+
+import static net.lldp.checksims.util.data.Monad.unwrap;
+import static net.lldp.checksims.util.data.Monad.wrap;
 
 public class SortableMatrixViewer extends JPanel
 {
@@ -29,6 +33,9 @@ public class SortableMatrixViewer extends JPanel
     private Map<Submission, List<MatrixElement>> highlightSelectorColumns;
     public static final int DEFAULT_ELEMENT_SIZE = 80;
     
+    private Dimension preferredElementCount = new Dimension(1, 1);
+    private double threshold;
+    
     
     public SortableMatrixViewer(SortableMatrix sm)
     {
@@ -38,20 +45,16 @@ public class SortableMatrixViewer extends JPanel
             public void handleResults(PairScore ps)
             {
                 SubmissionPair sp = ps.getSubmissions();
-                String students = sp.getBName() + " // " + sp.getAName();
-                JOptionPane.showMessageDialog(null,
-                        "<html>Comparison for students: <br> "
-                                +students+"<br>matched at "
-                                +ps.getScore()*100+"% :: "+ps.getInverseScore()*100
-                                +"%</html>", students, JOptionPane.INFORMATION_MESSAGE);
+                new IndividualInspectorWindow(sp.getA(), sp.getB(), ps);
             }
         };
-        int size = updateMatrix(70) * DEFAULT_ELEMENT_SIZE;
+        int size = updateMatrix(50) * DEFAULT_ELEMENT_SIZE; //TODO make this match default option
         setPreferredSize(new Dimension(size, size));
     }
     
     public void updateThreshold(double d)
     {
+        threshold = d;
         int size = updateMatrix(d) * DEFAULT_ELEMENT_SIZE;
         setPreferredSize(new Dimension(size, size));
     }
@@ -62,12 +65,17 @@ public class SortableMatrixViewer extends JPanel
         highlightSelectorRows = new HashMap<>();
         Submission[] subs = sm.getSubmissionsAboveThreshold(d);
         removeAll();
-        if (subs.length == 0) {
-            setLayout(new GridLayout(1,1));
-            add(new BlankMatrixElement());
-        } else {
-            setLayout(new GridLayout(subs.length, subs.length));
+        int minWidth = subs.length;
+        int minHeight = subs.length;
+        if (preferredElementCount.width > minWidth)
+        {
+            minWidth = preferredElementCount.width;
         }
+        if (preferredElementCount.height > minHeight)
+        {
+            minHeight = preferredElementCount.height;
+        }
+        setLayout(new GridLayout(minHeight, minWidth));
         
         for(int i=0; i<subs.length; i++)
         {
@@ -93,6 +101,20 @@ public class SortableMatrixViewer extends JPanel
                     highlightSelectorRows.get(subs[j]).add(res);
                 }
             }
+            if (subs.length < preferredElementCount.width)
+            {
+                for(int j=0; j<preferredElementCount.width-subs.length; j++)
+                {
+                    add(new BlankMatrixElement());
+                }
+            }
+        }
+        if (subs.length < preferredElementCount.height)
+        {
+            for(int j=0; j<(preferredElementCount.height-subs.length)*preferredElementCount.width; j++)
+            {
+                add(new BlankMatrixElement());
+            }
         }
         return subs.length;
     }
@@ -101,22 +123,18 @@ public class SortableMatrixViewer extends JPanel
     {
         private final PairScore ps;
         private final ResultsInspector ri;
+        private final Monad<ColorGenerationAlgorithm> color;
         
         public MatrixElement(PairScore ps, ResultsInspector ri)
         {
             this.ps = ps;
             this.ri = ri;
+            color = wrap(new RedWhiteColorGenerationAlgorithm());
             if (ps != null)
             {
                 JLabel l = new JLabel(((int)(ps.getScore()*100))+"", SwingConstants.CENTER);
                 this.add(l, BorderLayout.CENTER);
-                
-                HSLColor hsl = new HSLColor(
-                        (float) ((1.0 - ps.getScore()) * 60)
-                       ,(float) (ps.getScore() * 100)
-                       ,(float) (100 - (ps.getScore() * 50))
-                );
-                setBackground(hsl.getRGB());
+                setBackground(unwrap(color).getColorFromScore(ps.getScore()));
                 l.setForeground(Color.BLACK);
                 this.addMouseListener(this);
                 this.setToolTipText(ps.getFormattedSubmissions());
@@ -149,14 +167,18 @@ public class SortableMatrixViewer extends JPanel
         {
             if (b)
             {
-                this.setBorder(BorderFactory.createCompoundBorder(
-                        BorderFactory.createLineBorder(Color.red),
-                        BorderFactory.createLineBorder(Color.black)));
+                this.color.set(new OrangeGreenColorGenerationAlgorithm());
             }
             else
             {
-                this.setBorder(null);
+                this.color.set(new RedWhiteColorGenerationAlgorithm());
             }
+            setBackground(unwrap(color).getColorFromScore(ps.getScore()));
+        }
+
+        public void setHorizontalHighlight(boolean b)
+        {
+            this.setVerticalHighlight(b);
         }
     }
     
@@ -186,7 +208,7 @@ public class SortableMatrixViewer extends JPanel
                     ME.setVerticalHighlight(true);
                 });
                 highlightSelectorRows.get(k).stream().forEach(ME -> {
-                    ME.setVerticalHighlight(true);
+                    ME.setHorizontalHighlight(true);
                 });
             }
         }
@@ -228,6 +250,20 @@ public class SortableMatrixViewer extends JPanel
                     }
                 }
             }
+        }
+    }
+
+    public void padToSize(Dimension size)
+    {
+        Dimension nec = new Dimension(
+                (int)size.getWidth() / DEFAULT_ELEMENT_SIZE,
+                (int)size.getHeight() / DEFAULT_ELEMENT_SIZE
+        );
+        
+        if (preferredElementCount.height != nec.height || preferredElementCount.width != nec.width)
+        {
+            preferredElementCount = nec;
+            updateThreshold(threshold);
         }
     }
 }
