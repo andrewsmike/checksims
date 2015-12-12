@@ -24,6 +24,7 @@ public class ScrollViewer extends JPanel
     public ScrollViewer(SortableMatrixViewer results, JFrame toRevalidate)
     {
         resultsView = new JScrollPane(results);
+        setBackground(Color.black);
         resultsView.addComponentListener(new ComponentListener(){
 
             @Override
@@ -67,9 +68,9 @@ public class ScrollViewer extends JPanel
         resultsView.getVerticalScrollBar().setUnitIncrement(16);
         resultsView.getHorizontalScrollBar().setUnitIncrement(16);
         
-        Integer[] presetThresholds = {90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 0};
+        Integer[] presetThresholds = {100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 0};
         JComboBox<Integer> threshHold = new JComboBox<Integer>(presetThresholds);
-        threshHold.setSelectedIndex(8);
+        threshHold.setSelectedIndex(0);
         threshHold.addItemListener(new ItemListener(){
             public void itemStateChanged(ItemEvent event) {
                 if (event.getStateChange() == ItemEvent.SELECTED) {

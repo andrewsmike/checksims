@@ -34,7 +34,7 @@ public class SortableMatrixViewer extends JPanel
     public static final int DEFAULT_ELEMENT_SIZE = 80;
     
     private Dimension preferredElementCount = new Dimension(1, 1);
-    private double threshold;
+    private double threshold = 100;
     
     
     public SortableMatrixViewer(SortableMatrix sm)
@@ -48,7 +48,7 @@ public class SortableMatrixViewer extends JPanel
                 new IndividualInspectorWindow(sp.getA(), sp.getB(), ps);
             }
         };
-        int size = updateMatrix(50) * DEFAULT_ELEMENT_SIZE; //TODO make this match default option
+        int size = updateMatrix(100) * DEFAULT_ELEMENT_SIZE; //TODO make this match default option
         setPreferredSize(new Dimension(size, size));
     }
     
