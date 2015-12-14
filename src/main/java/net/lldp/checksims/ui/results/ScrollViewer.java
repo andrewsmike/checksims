@@ -9,6 +9,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -123,8 +124,23 @@ public class ScrollViewer extends JPanel
         student1.addKeyListener(search);
         student2.addKeyListener(search);
         
-        sidebar.add(threshHold);
-        sidebar.add(student1);
-        sidebar.add(student2);
+        JPanel thresholdLabel = new JPanel();
+        JPanel studentSearchLabel = new JPanel();
+
+        thresholdLabel.setBorder(BorderFactory.createTitledBorder("Matching Threshold"));
+        studentSearchLabel.setBorder(BorderFactory.createTitledBorder("Student Search"));
+
+        thresholdLabel.add(threshHold);
+        studentSearchLabel.add(student1);
+        studentSearchLabel.add(student2);
+
+
+        studentSearchLabel.setPreferredSize(new Dimension(200, 100));
+        studentSearchLabel.setMinimumSize(new Dimension(200, 100));
+        thresholdLabel.setPreferredSize(new Dimension(200, 100));
+        thresholdLabel.setMinimumSize(new Dimension(200, 100));
+
+        sidebar.add(thresholdLabel);
+        sidebar.add(studentSearchLabel);
     }
 }
