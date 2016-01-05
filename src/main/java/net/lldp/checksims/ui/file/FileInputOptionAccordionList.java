@@ -12,6 +12,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -21,8 +22,15 @@ public class FileInputOptionAccordionList extends JPanel
     private final JButton click; // TODO replace with fancy button
     private long nextID = 0;
     private final JFrame superParent;
+    private final JComponent parent;
+    private final Boolean multiselect;
     
-    public FileInputOptionAccordionList(JFrame repack, String type)
+    public FileInputOptionAccordionList(JFrame repack, JComponent parent, String type)
+    {
+        this(repack, parent, type, true);
+    }
+    
+    public FileInputOptionAccordionList(JFrame f, JComponent selectors, String string, boolean b)
     {
         fios = new TreeSet<>(new Comparator<FileInputOption>(){
             @Override
@@ -32,27 +40,33 @@ public class FileInputOptionAccordionList extends JPanel
             }
         });
         
-        click = new JButton(type.toUpperCase() + ": Add a directory or turnin zip file");
+        click = new JButton(string.toUpperCase() + ": Add a directory or turnin zip file");
         FileInputOptionAccordionList self = this;
         click.addActionListener(new ActionListener(){
 
             @Override
             public void actionPerformed(ActionEvent ae)
             {
+                click.setEnabled(multiselect);
                 fios.add(new FileInputOption(self, nextID++, 50, 400));
+                Dimension d = parent.getPreferredSize();
+                d.setSize(d.getWidth(), d.getHeight()+50);
+                parent.setPreferredSize(d);
                 
                 repopulate();
                 
-                click.setText(type.toUpperCase() + ": Add another directory or turnin zip file");
+                click.setText(string.toUpperCase() + ": Add another directory or turnin zip file");
             }
             
         });
         
-        superParent = repack;
+        superParent = f;
+        parent = selectors;
+        multiselect = b;
         
         repopulate();
     }
-    
+
     private void repopulate()
     {
         removeAll();
@@ -70,6 +84,10 @@ public class FileInputOptionAccordionList extends JPanel
     public void remove(FileInputOption fio)
     {
         fios.remove(fio);
+        Dimension d = parent.getPreferredSize();
+        d.setSize(d.getWidth(), d.getHeight()-50);
+        parent.setPreferredSize(d);
+        click.setEnabled(true);
         repopulate();
     }
 

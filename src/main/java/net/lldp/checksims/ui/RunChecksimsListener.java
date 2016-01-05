@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JProgressBar;
 
 import net.lldp.checksims.ChecksimsCommandLine;
@@ -29,15 +29,15 @@ public class RunChecksimsListener implements ActionListener
     private final ChecksimsInitializer uiPanel;
     private final FileInputOptionAccordionList submissionPaths;
     private final FileInputOptionAccordionList archivePaths;
-    private final JComboBox<SimilarityDetector<? extends Percentable>> selection;
+    private final JList<SimilarityDetector<? extends Percentable>> selection;
 
     public RunChecksimsListener(ChecksimsInitializer checksimsInitializer,
-            JComboBox<SimilarityDetector<? extends Percentable>> parsers, 
+            JList<SimilarityDetector<? extends Percentable>> list, 
             FileInputOptionAccordionList submissionPaths, FileInputOptionAccordionList archivePaths)
     {
         this.submissionPaths = submissionPaths;
         this.archivePaths = archivePaths;
-        this.selection = parsers;
+        this.selection = list;
 
         uiPanel = checksimsInitializer;
     }
@@ -82,7 +82,7 @@ public class RunChecksimsListener implements ActionListener
                 }});
                 tickProgress(overallStatus, message, "loading compilers");
                 
-                conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedItem());
+                conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedValue());
 
                 tickProgress(overallStatus, message, "loading submissions (this may take a while)");
                 try

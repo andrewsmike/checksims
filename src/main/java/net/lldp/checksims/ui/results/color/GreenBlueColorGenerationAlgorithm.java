@@ -11,7 +11,7 @@ public class GreenBlueColorGenerationAlgorithm implements ColorGenerationAlgorit
     public Color getColorFromScore(double score)
     {
         return new HSLColor(
-                (float) (((1.0 - score) * 120) + 120)
+                (float) ((score * 120) + 120)
                ,(float) (50)
                ,(float) (50)
         ).getRGB();

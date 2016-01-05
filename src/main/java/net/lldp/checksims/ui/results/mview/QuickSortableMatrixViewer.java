@@ -17,10 +17,7 @@ import java.util.Comparator;
 
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.ui.results.IndividualInspectorWindow;
-import net.lldp.checksims.ui.results.PairScore;
-import net.lldp.checksims.ui.results.ResultsInspector;
 import net.lldp.checksims.ui.results.SortableMatrix;
-import net.lldp.checksims.ui.results.SubmissionPair;
 import net.lldp.checksims.ui.results.color.ColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.GreenBlueColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.RedWhiteColorGenerationAlgorithm;
@@ -111,14 +108,7 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
                 else
                 {
                     System.out.println(A.getName() + " :: " + B.getName());
-                    new ResultsInspector(){
-                        @Override
-                        public void handleResults(PairScore ps)
-                        {
-                            SubmissionPair sp = ps.getSubmissions();
-                            new IndividualInspectorWindow(sp.getA(), sp.getB(), ps);
-                        }
-                    }.handleResults(sm.getPairForSubmissions(A, B));
+                    new IndividualInspectorWindow(A, B, sm.getPairForSubmissions(A, B));
                 }
             }
         });

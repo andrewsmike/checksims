@@ -111,24 +111,9 @@ public class ScrollViewer extends JPanel
             @Override
             public void keyReleased(KeyEvent e)
             {
-                if (student1.getText().length() > 0 && student2.getText().length() > 0)
-                {
-                    results.highlightMatching(student1.getText(), student2.getText());
-                    toRevalidate.revalidate();
-                    toRevalidate.repaint();
-                }
-                else if (student1.getText().length() > 0)
-                {
-                    results.highlightMatching(student1.getText());
-                    toRevalidate.revalidate();
-                    toRevalidate.repaint();
-                }
-                else if (student2.getText().length() > 0)
-                {
-                    results.highlightMatching(student2.getText());
-                    toRevalidate.revalidate();
-                    toRevalidate.repaint();
-                }
+                results.highlightMatching(student1.getText(), student2.getText());
+                toRevalidate.revalidate();
+                toRevalidate.repaint();
             }
 
             @Override
