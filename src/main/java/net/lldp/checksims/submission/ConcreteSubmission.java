@@ -179,7 +179,7 @@ public final class ConcreteSubmission implements Submission {
     }
 
     @Override
-    public double getMaximumCopyScore()
+    public Double getMaximumCopyScore()
     {
         return maximumScore;
     }

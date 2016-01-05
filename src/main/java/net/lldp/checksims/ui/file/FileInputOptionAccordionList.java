@@ -32,7 +32,7 @@ public class FileInputOptionAccordionList extends JPanel
             }
         });
         
-        click = new JButton("Add " + type + " Directory or turnin zip file");
+        click = new JButton(type.toUpperCase() + ": Add a directory or turnin zip file");
         FileInputOptionAccordionList self = this;
         click.addActionListener(new ActionListener(){
 
@@ -43,7 +43,7 @@ public class FileInputOptionAccordionList extends JPanel
                 
                 repopulate();
                 
-                click.setText("Add another "+type+" Directory or Turnin zip file");
+                click.setText(type.toUpperCase() + ": Add another directory or turnin zip file");
             }
             
         });

@@ -52,26 +52,11 @@ public class SortableMatrix
     
     private int getLowestIndexAbove(double score)
     {
-        int mod = submissions.length;
         int check = 0;
-        
-        while(mod > 0 && check >= 0)
-        {
-            double max = submissions[check].getMaximumCopyScore();
-            if (score > max)
-            {
-                check += (mod /= 2);
-            }
-            else if (score < max)
-            {
-                check -= (mod /= 2);
-            }
-            else
-            {
-                return check;
-            }
+        while(check < submissions.length && submissions[check].getMaximumCopyScore() <= score) {
+            check++;
         }
-        return check>0?check+1:0;
+        return check;
     }
     
     public Submission[] getSubmissionsAboveThreshold(double thresh)

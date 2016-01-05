@@ -134,8 +134,8 @@ public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorato
     }
 
     @Override
-    public double getMaximumCopyScore()
+    public Double getMaximumCopyScore()
     {
-        return 0;
+        return 0d;
     }
 }

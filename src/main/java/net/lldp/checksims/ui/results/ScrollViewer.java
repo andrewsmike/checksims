@@ -2,6 +2,7 @@ package net.lldp.checksims.ui.results;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
@@ -16,6 +17,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import net.lldp.checksims.ui.results.mview.SortableMatrixViewer;
 
 public class ScrollViewer extends JPanel
 {
@@ -47,6 +52,17 @@ public class ScrollViewer extends JPanel
             public void componentShown(ComponentEvent arg0)
             { }
         });
+        
+        resultsView.getViewport().addChangeListener(new ChangeListener() {
+            
+            @Override
+            public void stateChanged(ChangeEvent e)
+            {
+                Rectangle r = resultsView.getViewport().getViewRect();
+                results.setViewAt(r);
+            }
+        });
+        
         resultsView.setBackground(Color.black);
         sidebar = new JPanel();
         

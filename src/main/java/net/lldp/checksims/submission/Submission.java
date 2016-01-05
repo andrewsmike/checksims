@@ -73,7 +73,7 @@ public interface Submission extends Comparable<Submission> {
      * see {@link #increaseScore(Real)}
      * @return the maximum score for this submission
      */
-    double getMaximumCopyScore();
+    Double getMaximumCopyScore();
     
     /**
      * set an arbitrary flag on a submission

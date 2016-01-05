@@ -59,7 +59,7 @@ public class SubmissionPair
 
     public String getFormattedSubmissions()
     {
-        return "<html>" + a.getName() + "<br>" + b.getName() + "</html>";
+        return "<html>" + a.getName() + ": " +a.getMaximumCopyScore()+ "<br>" + b.getName() + ": " +b.getMaximumCopyScore()+ "</html>";
     }
 
     public Submission getA()
