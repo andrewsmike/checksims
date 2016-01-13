@@ -16,7 +16,7 @@
  *
  * CDDL HEADER END
  *
- * Copyright (c) 2014-2015 Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
+ * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
  */
 
 /**

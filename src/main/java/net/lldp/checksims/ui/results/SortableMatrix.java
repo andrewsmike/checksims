@@ -1,3 +1,23 @@
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ *
+ * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
+ */
 package net.lldp.checksims.ui.results;
 
 import java.util.Arrays;
@@ -10,11 +30,21 @@ import java.util.Set;
 import net.lldp.checksims.algorithm.similaritymatrix.SimilarityMatrix;
 import net.lldp.checksims.submission.Submission;
 
+/**
+ * 
+ * @author ted
+ *
+ */
 public class SortableMatrix
 {
     private final Submission[] submissions;
     private final Map<SubmissionPair, PairScore> scores;
     
+    /**
+     * Create a sortable matrix of submissions,
+     * can be sorted on multiple queries, and does lookups
+     * @param matrix the similarity matrix to be created from
+     */
     public SortableMatrix(SimilarityMatrix matrix)
     {
         Set<Submission> submissions = new HashSet<>();
@@ -59,6 +89,11 @@ public class SortableMatrix
         return check;
     }
     
+    /**
+     * get submissions that meet threshold criteria
+     * @param thresh the minimum threshold a submission must be above
+     * @return all submissions with a match above the threshold
+     */
     public Submission[] getSubmissionsAboveThreshold(double thresh)
     {
         int indx = getLowestIndexAbove(thresh);
@@ -78,11 +113,22 @@ public class SortableMatrix
         return result;
     }
     
+    /**
+     * get the score for two submissions
+     * @param a first submission
+     * @param b second submission
+     * @return the score between a and b (not to be confused with the score between b and a)
+     */
     public PairScore getPairForSubmissions(Submission a, Submission b)
     {
         return getPairForSubmissions(new SubmissionPair(a, b));
     }
     
+    /**
+     * see {@code getPairForSubmissions}
+     * @param sp a submission pair
+     * @return the score for these submissions
+     */
     public PairScore getPairForSubmissions(SubmissionPair sp)
     {
         return scores.get(sp);
