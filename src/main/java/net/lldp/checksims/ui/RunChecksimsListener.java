@@ -6,8 +6,10 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -19,6 +21,7 @@ import net.lldp.checksims.ChecksimsConfig;
 import net.lldp.checksims.ChecksimsException;
 import net.lldp.checksims.ChecksimsRunner;
 import net.lldp.checksims.algorithm.SimilarityDetector;
+import net.lldp.checksims.algorithm.preprocessor.SubmissionPreprocessor;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.ui.file.FileInputOptionAccordionList;
@@ -29,14 +32,18 @@ public class RunChecksimsListener implements ActionListener
     private final ChecksimsInitializer uiPanel;
     private final FileInputOptionAccordionList submissionPaths;
     private final FileInputOptionAccordionList archivePaths;
+    private final FileInputOptionAccordionList commonCode;
     private final JList<SimilarityDetector<? extends Percentable>> selection;
 
     public RunChecksimsListener(ChecksimsInitializer checksimsInitializer,
             JList<SimilarityDetector<? extends Percentable>> list, 
-            FileInputOptionAccordionList submissionPaths, FileInputOptionAccordionList archivePaths)
+            FileInputOptionAccordionList submissionPaths,
+            FileInputOptionAccordionList archivePaths,
+            FileInputOptionAccordionList commonCode)
     {
         this.submissionPaths = submissionPaths;
         this.archivePaths = archivePaths;
+        this.commonCode = commonCode;
         this.selection = list;
 
         uiPanel = checksimsInitializer;
@@ -51,10 +58,10 @@ public class RunChecksimsListener implements ActionListener
                 ((JButton)ae.getSource()).setEnabled(false);
                 
                 //TODO check conditions!
-                ChecksimsConfig conf = new ChecksimsConfig();
+                final ChecksimsConfig conf = new ChecksimsConfig();
                 
                 JProgressBar progressBar = new JProgressBar(0, 100);
-                JProgressBar overallStatus = new JProgressBar(0, 7);
+                JProgressBar overallStatus = new JProgressBar(0, 8);
                 JLabel percent = new JLabel("Percent");
                 JLabel eta = new JLabel("Estimated Time Remaining: NaN");
                 JLabel elapsed = new JLabel("Elapsed Time: 0s");
@@ -85,9 +92,11 @@ public class RunChecksimsListener implements ActionListener
                 conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedValue());
 
                 tickProgress(overallStatus, message, "loading submissions (this may take a while)");
+                Set<File> all = new HashSet<>();
                 try
                 {
                     Set<File> files = submissionPaths.getFileSet();
+                    all.addAll(files);
                     if (files != null && files.size() > 0)
                     {
                         conf.setSubmissions(ChecksimsCommandLine.getSubmissions(
@@ -101,7 +110,8 @@ public class RunChecksimsListener implements ActionListener
                 }
                 catch (IOException | ChecksimsException e)
                 {
-                    message.setText("Could not process files - "+e.getMessage());
+                    message.setText("Could not process Submission dir - "+e.getMessage());
+                    e.printStackTrace();
                     return;
                 }
                 tickProgress(overallStatus, message, "loading archived submissions (this may take a while)");
@@ -109,6 +119,7 @@ public class RunChecksimsListener implements ActionListener
                 try
                 {
                     Set<File> files = archivePaths.getFileSet();
+                    all.addAll(files);
                     if (files != null && files.size() > 0)
                     {
                         conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(
@@ -117,9 +128,41 @@ public class RunChecksimsListener implements ActionListener
                 }
                 catch (IOException | ChecksimsException e)
                 {
-                    message.setText("Could not process files - "+e.getMessage());
+                    message.setText("Could not process Archive Dir - "+e.getMessage());
+                    e.printStackTrace();
                     return;
                 }
+                
+                tickProgress(overallStatus, message, "Converting Preprocessor for Common Code");
+                
+                try
+                {
+                    Set<File> files = commonCode.getFileSet();
+                    if (files != null && files.size() > 0)
+                    {
+                        List<SubmissionPreprocessor> preprops = files.stream().map(f -> {
+                            try
+                            {
+                                return ChecksimsCommandLine.getCommonCodeRemoval(
+                                            f.getAbsolutePath(),
+                                            all,
+                                            conf.getAlgorithm().getDefaultGlobPattern());
+                            }
+                            catch (ChecksimsException | IOException e)
+                            {
+                                return null;
+                            }
+                        }).collect(Collectors.toList());
+                        conf.setPreprocessors(preprops);
+                    }
+                }
+                catch (Exception e)
+                {
+                    message.setText("Could not create preprocessor from  - "+e.getMessage());
+                    return;
+                }
+                
+                
                 tickProgress(overallStatus, message, "Comparing Student submissions");
                 
                 new Thread() {

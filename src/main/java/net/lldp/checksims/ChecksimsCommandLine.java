@@ -534,32 +534,17 @@ public final class ChecksimsCommandLine {
         if(cli.hasOption("c")) {
             // Get the directory containing the common code
             String commonCodeDirString = cli.getOptionValue("c");
-
-            // Make a file from it
-            File commonCodeDir = new File(commonCodeDirString).getAbsoluteFile();
-
-            logs.debug("Creating common code submission " + commonCodeDir.getName());
-
-            // Verify that it's not a submission dir
-            if(submissionDirs.contains(commonCodeDir)) {
-                throw new ChecksimsException("Common code directory cannot be a submission directory!");
+            
+            List<SubmissionPreprocessor> procs = new ArrayList<>(toReturn.getPreprocessors());
+            try
+            {
+                procs.add(getCommonCodeRemoval(commonCodeDirString, submissionDirs, globPattern));
             }
-
-            // All right, parse common code
-            Submission commonCodeSubmission = Submission.submissionFromDir(commonCodeDir, globPattern,
-                    recursive);
-
-            if(commonCodeSubmission.getContentAsString().isEmpty()) {
-                logs.warn("Common code is empty --- cowardly refusing to perform common code removal!");
-            } else {
-                SubmissionPreprocessor commonCodeRemover = new CommonCodeLineRemovalPreprocessor(commonCodeSubmission);
-
-                // Common code removal first, always
-                List<SubmissionPreprocessor> oldPreprocessors = new ArrayList<>(toReturn.getPreprocessors());
-                oldPreprocessors.add(0, commonCodeRemover);
-
-                toReturn = toReturn.setPreprocessors(oldPreprocessors);
+            catch(IOException | ChecksimsException e)
+            {
+                logs.debug(e.getMessage());
             }
+            toReturn = toReturn.setPreprocessors(procs);
         }
 
         // Check if we need to add archive directories
@@ -597,6 +582,30 @@ public final class ChecksimsCommandLine {
 
         return toReturn;
     }
+    
+    public static SubmissionPreprocessor getCommonCodeRemoval(String commonCodeDirString, Set<File> submissionAndArchiveDirs, String glob) throws ChecksimsException, IOException
+    {
+        // Make a file from it
+        File commonCodeDir = new File(commonCodeDirString).getAbsoluteFile();
+        
+        // Verify that it's not a submission dir
+        if(submissionAndArchiveDirs.contains(commonCodeDir))
+        {
+            throw new ChecksimsException("Common code directory cannot be a submission directory!");
+        }
+
+        // All right, parse common code
+        Submission commonCodeSubmission =
+                Submission.submissionFromDir(commonCodeDir, glob, true);
+
+        if (! commonCodeSubmission.getContentAsString().isEmpty())
+        {
+            return new CommonCodeLineRemovalPreprocessor(commonCodeSubmission);
+        }
+        
+        throw new ChecksimsException("Common Code directory is empty");
+    }
+    
 
     /**
      * Build the collection of submissions Checksims will be run on.

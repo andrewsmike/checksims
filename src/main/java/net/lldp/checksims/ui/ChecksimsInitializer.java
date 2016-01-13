@@ -49,12 +49,12 @@ public class ChecksimsInitializer extends JPanel
         JPanel selectors = new JPanel();
         FileInputOptionAccordionList subs = new FileInputOptionAccordionList(f, selectors, "source");
         FileInputOptionAccordionList archs = new FileInputOptionAccordionList(f, selectors, "archive");
-        FileInputOptionAccordionList common = new FileInputOptionAccordionList(f, selectors, "common code", false);
+        FileInputOptionAccordionList common = new FileInputOptionAccordionList(f, selectors, "common code", FileInputOptionAccordionList.SingleInput);
         JPanel bot = new JPanel();
         
         subs.setBackground(new Color(0xA9, 0xB0, 0xB7)); // WPI colors
         archs.setBackground(new Color(0xA9, 0xB0, 0xB7)); // WPI colors
-        bot.setBackground(new Color(0xA9, 0xB0, 0xB7));
+        bot.setBackground(new Color(0xA9, 0xB0, 0xB7)); // TODO make constant
 
         bot.add(checkSims);
         
@@ -80,7 +80,7 @@ public class ChecksimsInitializer extends JPanel
         add(UI);
         add(bot);
         
-        checkSims.addActionListener(new RunChecksimsListener(this, list, subs, archs));
+        checkSims.addActionListener(new RunChecksimsListener(this, list, subs, archs, common));
     }
 
     

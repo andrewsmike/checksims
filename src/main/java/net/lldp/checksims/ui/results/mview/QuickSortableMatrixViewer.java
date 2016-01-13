@@ -17,9 +17,10 @@ import java.util.Comparator;
 
 import net.lldp.checksims.submission.Submission;
 import net.lldp.checksims.ui.results.IndividualInspectorWindow;
+import net.lldp.checksims.ui.results.PairScore;
 import net.lldp.checksims.ui.results.SortableMatrix;
+import net.lldp.checksims.ui.results.color.BurntRedWhiteColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.ColorGenerationAlgorithm;
-import net.lldp.checksims.ui.results.color.GreenBlueColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.RedWhiteColorGenerationAlgorithm;
 import net.lldp.checksims.util.data.Monad;
 
@@ -29,8 +30,8 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
     final int CELL = 80;
     private final SortableMatrix sm;
     private List<Submission> subs = new ArrayList<>();
-    private ColorGenerationAlgorithm color = new RedWhiteColorGenerationAlgorithm();
-    private ColorGenerationAlgorithm colorHighlight = new GreenBlueColorGenerationAlgorithm();
+    private ColorGenerationAlgorithm color = new BurntRedWhiteColorGenerationAlgorithm();
+    private ColorGenerationAlgorithm colorHighlight = new RedWhiteColorGenerationAlgorithm();
     private int lx = 0;
     private int ly = 0;
     private int mx = 0;
@@ -118,6 +119,12 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
     {
         boolean A = Monad.unwrap(searchA).equals("");
         boolean B = Monad.unwrap(searchB).equals("");
+        
+        if (A && B)
+        {
+            return true;
+        }
+        
         if (!A && s.getName().contains(Monad.unwrap(searchA)))
         {
             return true;
@@ -170,18 +177,27 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
                     {
                         if (!X.equals(Y))
                         {
-                            double score = sm.getPairForSubmissions(X, Y).getScore();
-                            if (isTagged(Y) || isTagged(X))
+                            PairScore ps = sm.getPairForSubmissions(X, Y);
+                            if (ps != null)
                             {
-                                g.setColor(colorHighlight.getColorFromScore(score));
+                                double score = ps.getScore();
+                                if (isTagged(Y) || isTagged(X))
+                                {
+                                    g.setColor(colorHighlight.getColorFromScore(score));
+                                }
+                                else
+                                {
+                                    g.setColor(color.getColorFromScore(score));
+                                }
+                                g.fillRect(cx, cy, CELL, CELL);
+                                g.setColor(Color.black);
+                                g.drawString(((int)(100*score))+"", cx+2, cy+34);
                             }
                             else
                             {
-                                g.setColor(color.getColorFromScore(score));
+                                g.setColor(Color.black);
+                                g.fillRect(cx, cy, CELL, CELL);
                             }
-                            g.fillRect(cx, cy, CELL, CELL);
-                            g.setColor(Color.black);
-                            g.drawString(((int)(100*score))+"", cx+2, cy+34);
                         }
                         else
                         {
@@ -283,6 +299,10 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
         }
         x -= HEADER;
         x /= CELL;
-        return subs.get(x);
+        if (subs.size() > x)
+        {
+            return subs.get(x);
+        }
+        return null;
     }
 }

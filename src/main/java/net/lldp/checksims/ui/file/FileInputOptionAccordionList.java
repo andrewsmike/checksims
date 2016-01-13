@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 
 public class FileInputOptionAccordionList extends JPanel
 {
+    public static final boolean SingleInput = false;
     private final SortedSet<FileInputOption> fios;
     private final JButton click; // TODO replace with fancy button
     private long nextID = 0;
