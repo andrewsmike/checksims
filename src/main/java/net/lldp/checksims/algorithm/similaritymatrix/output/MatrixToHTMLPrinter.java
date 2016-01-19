@@ -90,12 +90,12 @@ public final class MatrixToHTMLPrinter implements MatrixPrinter {
 
     @Override
     public String getName() {
-        return "html";
+        return toString();
     }
 
     @Override
     public String toString() {
-        return "Singleton instance of MatrixToHTMLPrinter";
+        return "html";
     }
 
     @Override

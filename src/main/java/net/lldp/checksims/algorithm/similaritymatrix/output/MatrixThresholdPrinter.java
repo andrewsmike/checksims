@@ -140,7 +140,7 @@ public final class MatrixThresholdPrinter implements MatrixPrinter {
 
     @Override
     public String toString() {
-        return "Singleton instance of MatrixThresholdPrinter";
+        return "threshold";
     }
 
     @Override

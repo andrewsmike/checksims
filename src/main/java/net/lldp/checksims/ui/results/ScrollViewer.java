@@ -29,6 +29,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.IOException;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -42,11 +43,13 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import java.util.Set;
+import java.util.Collection;
+import java.util.Vector;
 
 import org.apache.commons.io.FileUtils;
 
 import net.lldp.checksims.ui.results.mview.SortableMatrixViewer;
+import net.lldp.checksims.algorithm.InternalAlgorithmError;
 import net.lldp.checksims.algorithm.similaritymatrix.SimilarityMatrix;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
 import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinterRegistry;
@@ -158,39 +161,37 @@ public class ScrollViewer extends JPanel
             @Override
             public void keyTyped(KeyEvent e)
             { }
-
         };
 
         student1.addKeyListener(search);
         student2.addKeyListener(search);
 
-
-        Set<String> printerNameSet = MatrixPrinterRegistry.getInstance()
-            .getSupportedImplementationNames();
-        String[] printerNames = printerNameSet.toArray(new String[0]);
-
-        JComboBox<String> output1 = new JComboBox<String>(printerNames);
-        JButton output2 = new JButton("Save");
+        Collection<MatrixPrinter> printerNameSet = MatrixPrinterRegistry.getInstance().getSupportedImplementations();
+        JComboBox<MatrixPrinter> exportAs = new JComboBox<>(new Vector<>(printerNameSet));
+        JButton exportAsSave = new JButton("Save");
 
         JFileChooser fc = new JFileChooser();
-
 
         fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setCurrentDirectory(new java.io.File("."));
         fc.setDialogTitle("Save results");
 
-        output2.addActionListener(ae -> {
+        exportAsSave.addActionListener(ae -> {
+            MatrixPrinter method = (MatrixPrinter) exportAs.getSelectedItem();
 
-                try {
-                    MatrixPrinter method = MatrixPrinterRegistry.getInstance()
-                        .getImplementationInstance((String) output1.getSelectedItem());
-
-                    int err = fc.showDialog(null, "Save");
-                    if (err == JFileChooser.APPROVE_OPTION) {
-                        FileUtils.writeStringToFile(fc.getSelectedFile(), method.printMatrix(exportMatrix));
-                    }
-                } catch (Exception e) {}
-            });
+            int err = fc.showDialog(toRevalidate, "Save");
+            if (err == JFileChooser.APPROVE_OPTION)
+            {
+                try
+                {
+                    FileUtils.writeStringToFile(fc.getSelectedFile(), method.printMatrix(exportMatrix));
+                }
+                catch (InternalAlgorithmError | IOException e1)
+                {
+                    // TODO log / show error
+                }
+            }
+        });
 
         JPanel thresholdLabel = new JPanel();
         JPanel studentSearchLabel = new JPanel();
@@ -203,9 +204,8 @@ public class ScrollViewer extends JPanel
         thresholdLabel.add(threshHold);
         studentSearchLabel.add(student1);
         studentSearchLabel.add(student2);
-        fileOutputLabel.add(output1);
-        fileOutputLabel.add(output2);
-
+        fileOutputLabel.add(exportAs);
+        fileOutputLabel.add(exportAsSave);
 
         studentSearchLabel.setPreferredSize(new Dimension(200, 100));
         studentSearchLabel.setMinimumSize(new Dimension(200, 100));
@@ -213,6 +213,8 @@ public class ScrollViewer extends JPanel
         thresholdLabel.setMinimumSize(new Dimension(200, 100));
         fileOutputLabel.setPreferredSize(new Dimension(200, 100));
         fileOutputLabel.setMinimumSize(new Dimension(200, 100));
+        
+        sidebar.setMaximumSize(new Dimension(200, 4000));
 
         sidebar.add(thresholdLabel);
         sidebar.add(studentSearchLabel);

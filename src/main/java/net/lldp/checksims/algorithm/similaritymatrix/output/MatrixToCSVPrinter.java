@@ -100,12 +100,12 @@ public final class MatrixToCSVPrinter implements MatrixPrinter {
 
     @Override
     public String getName() {
-        return "csv";
+        return toString();
     }
 
     @Override
     public String toString() {
-        return "Singleton matrix of MatrixToCSVPrinter";
+        return "csv";
     }
 
     @Override
