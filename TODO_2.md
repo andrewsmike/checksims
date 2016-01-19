@@ -17,7 +17,7 @@ UI Help Documentation
 
 Save Output from UI
 -------------------
- - [ ] write to image or html or proprietary?
+ - [x] write to image or html or proprietary?
  - [ ] if proprietary, create viewer
 
 Assignment Inspector
