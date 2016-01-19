@@ -32,7 +32,9 @@ import java.awt.event.KeyListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,7 +42,14 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+
 import net.lldp.checksims.ui.results.mview.SortableMatrixViewer;
+import net.lldp.checksims.algorithm.similaritymatrix.SimilarityMatrix;
+import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinter;
+import net.lldp.checksims.algorithm.similaritymatrix.output.MatrixPrinterRegistry;
 
 /**
  * 
@@ -57,7 +66,7 @@ public class ScrollViewer extends JPanel
      * @param results the sortableMatrix to view
      * @param toRevalidate frame to revalidate sometimes
      */
-    public ScrollViewer(SortableMatrixViewer results, JFrame toRevalidate)
+    public ScrollViewer(SimilarityMatrix exportMatrix, SortableMatrixViewer results, JFrame toRevalidate)
     {
         resultsView = new JScrollPane(results);
         setBackground(Color.black);
@@ -149,29 +158,64 @@ public class ScrollViewer extends JPanel
             @Override
             public void keyTyped(KeyEvent e)
             { }
-            
+
         };
-        
+
         student1.addKeyListener(search);
         student2.addKeyListener(search);
-        
+
+
+        Set<String> printerNameSet = MatrixPrinterRegistry.getInstance()
+            .getSupportedImplementationNames();
+        String[] printerNames = printerNameSet.toArray(new String[0]);
+
+        JComboBox<String> output1 = new JComboBox<String>(printerNames);
+        JButton output2 = new JButton("Save");
+
+        JFileChooser fc = new JFileChooser();
+
+
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        fc.setCurrentDirectory(new java.io.File("."));
+        fc.setDialogTitle("Save results");
+
+        output2.addActionListener(ae -> {
+
+                try {
+                    MatrixPrinter method = MatrixPrinterRegistry.getInstance()
+                        .getImplementationInstance((String) output1.getSelectedItem());
+
+                    int err = fc.showDialog(null, "Save");
+                    if (err == JFileChooser.APPROVE_OPTION) {
+                        FileUtils.writeStringToFile(fc.getSelectedFile(), method.printMatrix(exportMatrix));
+                    }
+                } catch (Exception e) {}
+            });
+
         JPanel thresholdLabel = new JPanel();
         JPanel studentSearchLabel = new JPanel();
+        JPanel fileOutputLabel = new JPanel();
 
         thresholdLabel.setBorder(BorderFactory.createTitledBorder("Matching Threshold"));
         studentSearchLabel.setBorder(BorderFactory.createTitledBorder("Student Search"));
+        fileOutputLabel.setBorder(BorderFactory.createTitledBorder("Save Results"));
 
         thresholdLabel.add(threshHold);
         studentSearchLabel.add(student1);
         studentSearchLabel.add(student2);
+        fileOutputLabel.add(output1);
+        fileOutputLabel.add(output2);
 
 
         studentSearchLabel.setPreferredSize(new Dimension(200, 100));
         studentSearchLabel.setMinimumSize(new Dimension(200, 100));
         thresholdLabel.setPreferredSize(new Dimension(200, 100));
         thresholdLabel.setMinimumSize(new Dimension(200, 100));
+        fileOutputLabel.setPreferredSize(new Dimension(200, 100));
+        fileOutputLabel.setMinimumSize(new Dimension(200, 100));
 
         sidebar.add(thresholdLabel);
         sidebar.add(studentSearchLabel);
+        sidebar.add(fileOutputLabel);
     }
 }
