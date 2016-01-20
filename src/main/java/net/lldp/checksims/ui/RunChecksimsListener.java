@@ -88,135 +88,140 @@ public class RunChecksimsListener implements ActionListener
         new Thread() {
             @Override
             public void run() {
-                ((JButton)ae.getSource()).setEnabled(false);
-                
-                //TODO check conditions!
-                final ChecksimsConfig conf = new ChecksimsConfig();
-                
-                JProgressBar progressBar = new JProgressBar(0, 100);
-                JProgressBar overallStatus = new JProgressBar(0, 8);
-                JLabel percent = new JLabel("Percent");
-                JLabel eta = new JLabel("Estimated Time Remaining: NaN");
-                JLabel elapsed = new JLabel("Elapsed Time: 0s");
-                JLabel message = new JLabel("initializing");
-                progressBar.setValue(0);
-                overallStatus.setValue(0);
-                
-                uiPanel.removeAll();
-                uiPanel.add(progressBar);
-                uiPanel.add(percent);
-                uiPanel.add(eta);
-                uiPanel.add(elapsed);
-                uiPanel.add(message);
-                uiPanel.add(overallStatus, BorderLayout.SOUTH);
-                
-                tickProgress(overallStatus, message, "initializing");
-                
-                
-                conf.setStatusLogger(new ProgressBarStatusLogger(progressBar, percent, eta, elapsed, ChecksimsInitializer.f));
-                tickProgress(overallStatus, message, "creating UI display");
-                
-                conf.ignoreInvalid();
-                conf.setOutputPrinters(new HashSet<MatrixPrinter>(){{
-                    add(new GraphicalMatrixPrinter());
-                }});
-                tickProgress(overallStatus, message, "loading compilers");
-                
-                conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedValue());
-
-                tickProgress(overallStatus, message, "loading submissions (this may take a while)");
-                Set<File> all = new HashSet<>();
                 try
                 {
-                    Set<File> files = submissionPaths.getFileSet();
-                    all.addAll(files);
-                    if (files != null && files.size() > 0)
+                    ((JButton)ae.getSource()).setEnabled(false);
+                    
+                    //TODO check conditions!
+                    final ChecksimsConfig conf = new ChecksimsConfig();
+                    
+                    JProgressBar progressBar = new JProgressBar(0, 100);
+                    JProgressBar overallStatus = new JProgressBar(0, 8);
+                    JLabel percent = new JLabel("Percent");
+                    JLabel eta = new JLabel("Estimated Time Remaining: NaN");
+                    JLabel elapsed = new JLabel("Elapsed Time: 0s");
+                    JLabel message = new JLabel("initializing");
+                    progressBar.setValue(0);
+                    overallStatus.setValue(0);
+                    
+                    uiPanel.removeAll();
+                    uiPanel.add(progressBar);
+                    uiPanel.add(percent);
+                    uiPanel.add(eta);
+                    uiPanel.add(elapsed);
+                    uiPanel.add(message);
+                    uiPanel.add(overallStatus, BorderLayout.SOUTH);
+                    
+                    tickProgress(overallStatus, message, "initializing");
+                    
+                    
+                    conf.setStatusLogger(new ProgressBarStatusLogger(progressBar, percent, eta, elapsed, uiPanel.getWindow()));
+                    tickProgress(overallStatus, message, "creating UI display");
+                    
+                    conf.ignoreInvalid();
+                    conf.setOutputPrinters(new HashSet<MatrixPrinter>(){{
+                        add(new GraphicalMatrixPrinter());
+                    }});
+                    tickProgress(overallStatus, message, "loading compilers");
+                    
+                    conf.setAlgorithm((SimilarityDetector<?>) selection.getSelectedValue());
+    
+                    tickProgress(overallStatus, message, "loading submissions (this may take a while)");
+                    Set<File> all = new HashSet<>();
+                    try
                     {
-                        conf.setSubmissions(ChecksimsCommandLine.getSubmissions(
-                                files, conf.getAlgorithm().getDefaultGlobPattern(), true, false));
+                        Set<File> files = submissionPaths.getFileSet();
+                        all.addAll(files);
+                        if (files != null && files.size() > 0)
+                        {
+                            conf.setSubmissions(ChecksimsCommandLine.getSubmissions(
+                                    files, conf.getAlgorithm().getDefaultGlobPattern(), true, false));
+                        }
+                        else
+                        {
+                            ((JButton)ae.getSource()).setEnabled(true);
+                            throw new ChecksimsException("missing files");
+                        }
                     }
-                    else
+                    catch (IOException | ChecksimsException e)
                     {
-                        ((JButton)ae.getSource()).setEnabled(true);
-                        throw new ChecksimsException("missing files");
+                        uiPanel.UhOhException(e, "Invalid Submission Directory");
+                        return;
                     }
-                }
-                catch (IOException | ChecksimsException e)
-                {
-                    message.setText("Could not process Submission dir - "+e.getMessage());
-                    e.printStackTrace();
-                    return;
-                }
-                tickProgress(overallStatus, message, "loading archived submissions (this may take a while)");
-                
-                try
-                {
-                    Set<File> files = archivePaths.getFileSet();
-                    all.addAll(files);
-                    if (files != null && files.size() > 0)
+                    tickProgress(overallStatus, message, "loading archived submissions (this may take a while)");
+                    
+                    try
                     {
-                        conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(
-                                files, conf.getAlgorithm().getDefaultGlobPattern(), true, false));
+                        Set<File> files = archivePaths.getFileSet();
+                        all.addAll(files);
+                        if (files != null && files.size() > 0)
+                        {
+                            conf.setArchiveSubmissions(ChecksimsCommandLine.getSubmissions(
+                                    files, conf.getAlgorithm().getDefaultGlobPattern(), true, false));
+                        }
                     }
-                }
-                catch (IOException | ChecksimsException e)
-                {
-                    message.setText("Could not process Archive Dir - "+e.getMessage());
-                    e.printStackTrace();
-                    return;
-                }
-                
-                tickProgress(overallStatus, message, "Converting Preprocessor for Common Code");
-                
-                try
-                {
-                    Set<File> files = commonCode.getFileSet();
-                    if (files != null && files.size() > 0)
+                    catch (IOException | ChecksimsException e)
                     {
-                        List<SubmissionPreprocessor> preprops = files.stream().map(f -> {
+                        uiPanel.UhOhException(e, "Invalid Archive Directory");
+                        return;
+                    }
+                    
+                    tickProgress(overallStatus, message, "Converting Preprocessor for Common Code");
+                    
+                    try
+                    {
+                        Set<File> files = commonCode.getFileSet();
+                        if (files != null && files.size() > 0)
+                        {
+                            List<SubmissionPreprocessor> preprops = files.stream().map(f -> {
+                                try
+                                {
+                                    return ChecksimsCommandLine.getCommonCodeRemoval(
+                                                f.getAbsolutePath(),
+                                                all,
+                                                conf.getAlgorithm().getDefaultGlobPattern());
+                                }
+                                catch (ChecksimsException | IOException e)
+                                {
+                                    return null;
+                                }
+                            }).collect(Collectors.toList());
+                            conf.setPreprocessors(preprops);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        uiPanel.UhOhException(e, "Invalid Common Code Directory");
+                        return;
+                    }
+                    
+                    
+                    tickProgress(overallStatus, message, "Comparing Student submissions");
+                    
+                    new Thread() {
+                        @Override
+                        public void run() {
                             try
                             {
-                                return ChecksimsCommandLine.getCommonCodeRemoval(
-                                            f.getAbsolutePath(),
-                                            all,
-                                            conf.getAlgorithm().getDefaultGlobPattern());
+                                Map<String, String> output = ChecksimsRunner.runChecksims(conf);
+                                tickProgress(overallStatus, message, "done");
+                                for(String strategy : output.keySet()) {
+                                    System.out.println("\n\n");
+                                    System.out.println("Output from " + strategy + "\n");
+                                    System.out.println(output.get(strategy));
+                                }
                             }
-                            catch (ChecksimsException | IOException e)
+                            catch (ChecksimsException e)
                             {
-                                return null;
+                                uiPanel.UhOhException(e);
                             }
-                        }).collect(Collectors.toList());
-                        conf.setPreprocessors(preprops);
-                    }
+                        }
+                    }.start();
                 }
                 catch (Exception e)
                 {
-                    message.setText("Could not create preprocessor from  - "+e.getMessage());
-                    return;
+                    uiPanel.UhOhException(e);
                 }
-                
-                
-                tickProgress(overallStatus, message, "Comparing Student submissions");
-                
-                new Thread() {
-                    @Override
-                    public void run() {
-                        try
-                        {
-                            Map<String, String> output = ChecksimsRunner.runChecksims(conf);
-                            tickProgress(overallStatus, message, "done");
-                            for(String strategy : output.keySet()) {
-                                System.out.println("\n\n");
-                                System.out.println("Output from " + strategy + "\n");
-                                System.out.println(output.get(strategy));
-                            }
-                        }
-                        catch (ChecksimsException e)
-                        {
-                            message.setText(e.getMessage());
-                        }
-                    }
-                }.start();
             }
         }.start();   
     }

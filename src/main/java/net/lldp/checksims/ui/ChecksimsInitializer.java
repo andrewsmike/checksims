@@ -35,6 +35,9 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 
 import net.lldp.checksims.algorithm.AlgorithmRegistry;
 import net.lldp.checksims.algorithm.SimilarityDetector;
@@ -50,9 +53,51 @@ import net.lldp.checksims.ui.file.FileInputOptionAccordionList;
 public class ChecksimsInitializer extends JPanel
 {
     private final JButton checkSims;
+    private final JFrame titleableFrame;
+    
+    /**
+     * Use this panel to show exceptions. Hide the other UI components
+     * maybe show a helpful tip
+     * @param e an exception to show
+     * @param helpfulTip a custom tip to the user (maybe how to fix what they did wrong)
+     */
+    public void UhOhException(Exception e, String helpfulTip)
+    {
+        if (helpfulTip == null || helpfulTip != null)
+        { // just show the exception
+            this.removeAll();
+            this.setLayout(new GridLayout(1, 1));
+            JTextPane jta = new JTextPane();
+            this.add(jta);
+            StyledDocument doc = jta.getStyledDocument();
+            for(StackTraceElement ste : e.getStackTrace())
+            {
+                try
+                {
+                    doc.insertString(doc.getLength(), ste.toString() + '\n', null);
+                }
+                catch (BadLocationException e1)
+                {
+                    e1.printStackTrace();
+                }
+            }
+            
+            titleableFrame.setTitle("Checksims Error report. Please send this to the developers");
+        }
+    }
+    
+    /**
+     * Used for catchall errors, usually the fault of developers rather than users
+     * @param e just an exception
+     */
+    public void UhOhException(Exception e)
+    {
+        UhOhException(e, null);
+    }
 
     private ChecksimsInitializer(JFrame f) throws IOException
     {
+        this.titleableFrame = f;
         JList<SimilarityDetector<? extends Percentable>> list =
                 new JList<SimilarityDetector<? extends Percentable>>(
                         new Vector<SimilarityDetector<? extends Percentable>>(
@@ -108,11 +153,11 @@ public class ChecksimsInitializer extends JPanel
         
         checkSims.addActionListener(new RunChecksimsListener(this, list, subs, archs, common));
     }
-
-    public static final JFrame f = new JFrame();
     
     public static void main(String ... args) throws IOException
     {
+        JFrame f = new JFrame();
+        f.setTitle("Checksims Similarity Detector");
         f.setMinimumSize(new Dimension(600, 350));
         f.setResizable(false);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -122,4 +167,8 @@ public class ChecksimsInitializer extends JPanel
         f.setVisible(true);
     }
 
+    public JFrame getWindow()
+    {
+        return this.titleableFrame;
+    }
 }
