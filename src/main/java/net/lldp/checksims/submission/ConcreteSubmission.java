@@ -29,6 +29,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import net.lldp.checksims.parse.Percentable;
 
 /**
@@ -182,5 +184,11 @@ public final class ConcreteSubmission implements Submission {
     public Double getMaximumCopyScore()
     {
         return maximumScore;
+    }
+
+    @Override
+    public int getLinesOfCode()
+    {
+        return StringUtils.countMatches(getContentAsString(), "\n") + 1;
     }
 }

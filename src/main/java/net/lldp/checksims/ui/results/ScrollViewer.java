@@ -127,9 +127,8 @@ public class ScrollViewer extends JPanel
         resultsView.getVerticalScrollBar().setUnitIncrement(16);
         resultsView.getHorizontalScrollBar().setUnitIncrement(16);
         
-        Integer[] presetThresholds = {100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45, 40, 35, 30, 0};
+        Integer[] presetThresholds = {80, 60, 40, 20, 0};
         JComboBox<Integer> threshHold = new JComboBox<Integer>(presetThresholds);
-        threshHold.setSelectedIndex(0);
         threshHold.addItemListener(new ItemListener(){
             public void itemStateChanged(ItemEvent event) {
                 if (event.getStateChange() == ItemEvent.SELECTED) {
@@ -140,6 +139,8 @@ public class ScrollViewer extends JPanel
                 }
              }
         });
+        threshHold.setSelectedIndex(0);
+        results.updateThreshold((Integer)threshHold.getSelectedItem() / 100.0);
         
         JTextField student1 = new JTextField(15);
         JTextField student2 = new JTextField(15);

@@ -18,22 +18,21 @@
  *
  * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
  */
-package net.lldp.checksims.ui.results.color;
+package net.lldp.checksims.ui.compare;
 
-import java.awt.Color;
+import net.lldp.checksims.ui.results.PairScore;
 
 /**
  * 
  * @author ted
  *
+ * An interface for representing any means of viewing specific results
  */
-public class BurntRedWhiteColorGenerationAlgorithm implements ColorGenerationAlgorithm
+public interface ResultsInspector
 {
-    RedWhiteColorGenerationAlgorithm base = new RedWhiteColorGenerationAlgorithm();
-    @Override
-    public Color getColorFromScore(double score)
-    {
-        return base.getColorFromScore(score).darker().darker();
-    }
-
+    /**
+     * TODO: change this method
+     * @param ps
+     */
+    void handleResults(PairScore ps);
 }

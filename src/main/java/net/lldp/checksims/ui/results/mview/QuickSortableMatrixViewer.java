@@ -29,17 +29,20 @@ import java.awt.RenderingHints;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import java.util.Comparator;
 
 import net.lldp.checksims.submission.Submission;
-import net.lldp.checksims.ui.results.IndividualInspectorWindow;
+import net.lldp.checksims.ui.Util;
+import net.lldp.checksims.ui.compare.DetailedResultsInspector;
 import net.lldp.checksims.ui.results.PairScore;
 import net.lldp.checksims.ui.results.SortableMatrix;
-import net.lldp.checksims.ui.results.color.BurntRedWhiteColorGenerationAlgorithm;
+import net.lldp.checksims.ui.results.color.BurntColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.ColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.RedWhiteColorGenerationAlgorithm;
 import net.lldp.checksims.util.data.Monad;
@@ -52,11 +55,11 @@ import net.lldp.checksims.util.data.Monad;
 public class QuickSortableMatrixViewer extends SortableMatrixViewer
 {
     final int HEADER = 40;
-    final int CELL = 80;
+    final int CELL = 120;
     private final SortableMatrix sm;
     private List<Submission> subs = new ArrayList<>();
-    private ColorGenerationAlgorithm color = new BurntRedWhiteColorGenerationAlgorithm();
     private ColorGenerationAlgorithm colorHighlight = new RedWhiteColorGenerationAlgorithm();
+    private ColorGenerationAlgorithm color = new BurntColorGenerationAlgorithm(colorHighlight);
     private int lx = 0;
     private int ly = 0;
     private int mx = 0;
@@ -138,7 +141,7 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
                 else
                 {
                     System.out.println(A.getName() + " :: " + B.getName());
-                    new IndividualInspectorWindow(A, B, sm.getPairForSubmissions(A, B));
+                    new DetailedResultsInspector().handleResults(sm.getPairForSubmissions(A, B));
                 }
             }
         });
@@ -163,6 +166,13 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
             return true;
         }
         return false;
+    }
+    
+    private boolean doubleSearch()
+    {
+        boolean A = Monad.unwrap(searchA).equals("");
+        boolean B = Monad.unwrap(searchB).equals("");
+        return !(A || B);
     }
     
     @Override
@@ -190,7 +200,8 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
             }
             g.fillRect(header_cur, 0, CELL, HEADER);
             g.setColor(Color.black);
-            g.drawString(s.getName(), header_cur+2, 14);
+            int width = (CELL - Util.getWidth(s.getName(), g)) / 2;
+            g.drawString(s.getName(), header_cur+width, 14);
             header_cur += CELL;
         }
         
@@ -210,7 +221,11 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
                             if (ps != null)
                             {
                                 double score = ps.getScore();
-                                if (isTagged(Y) || isTagged(X))
+                                if (doubleSearch() && isTagged(Y) && isTagged(X))
+                                {
+                                    g.setColor(colorHighlight.getColorFromScore(score));
+                                }
+                                else if (!doubleSearch() && (isTagged(Y) || isTagged(X)))
                                 {
                                     g.setColor(colorHighlight.getColorFromScore(score));
                                 }
@@ -241,6 +256,7 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
         }
         
         setFontRotated(g);
+        Graphics gq = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB).createGraphics();
         header_cur = HEADER;
         for(Submission s : subs)
         {
@@ -254,7 +270,8 @@ public class QuickSortableMatrixViewer extends SortableMatrixViewer
             }
             g.fillRect(0, header_cur, HEADER, CELL);
             g.setColor(Color.black);
-            g.drawString(s.getName(), 14, header_cur+2);
+            int width = (CELL - Util.getWidth(s.getName(), gq)) / 2;
+            g.drawString(s.getName(), 14, header_cur+width);
             header_cur += CELL;
         }
     }

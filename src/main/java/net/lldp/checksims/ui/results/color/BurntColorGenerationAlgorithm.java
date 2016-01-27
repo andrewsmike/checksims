@@ -18,19 +18,27 @@
  *
  * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
  */
-package net.lldp.checksims.ui.results;
+package net.lldp.checksims.ui.results.color;
+
+import java.awt.Color;
 
 /**
  * 
  * @author ted
  *
- * An interface for representing any means of viewing specific results
  */
-public interface ResultsInspector
+public class BurntColorGenerationAlgorithm implements ColorGenerationAlgorithm
 {
-    /**
-     * TODO: change this method
-     * @param ps
-     */
-    void handleResults(PairScore ps);
+    private final ColorGenerationAlgorithm base;
+    public BurntColorGenerationAlgorithm(ColorGenerationAlgorithm base)
+    {
+        this.base = base;
+    }
+    
+    @Override
+    public Color getColorFromScore(double score)
+    {
+        return base.getColorFromScore(score).darker().darker();
+    }
+
 }

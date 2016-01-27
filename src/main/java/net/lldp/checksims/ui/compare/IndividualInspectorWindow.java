@@ -18,7 +18,7 @@
  *
  * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
  */
-package net.lldp.checksims.ui.results;
+package net.lldp.checksims.ui.compare;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -28,6 +28,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.ui.results.PairScore;
 import net.lldp.checksims.ui.results.color.ColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.RedWhiteColorGenerationAlgorithm;
 

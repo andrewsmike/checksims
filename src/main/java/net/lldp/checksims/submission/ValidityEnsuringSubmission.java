@@ -33,6 +33,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * Submission which enforces token validity - two tokens, even if invalid, are not considered equal.
  *
@@ -137,5 +139,11 @@ public final class ValidityEnsuringSubmission extends AbstractSubmissionDecorato
     public Double getMaximumCopyScore()
     {
         return 0d;
+    }
+    
+    @Override
+    public int getLinesOfCode()
+    {
+        return StringUtils.countMatches(getContentAsString(), "\n") + 1;
     }
 }

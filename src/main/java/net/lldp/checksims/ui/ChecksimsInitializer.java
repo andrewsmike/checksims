@@ -20,7 +20,6 @@
  */
 package net.lldp.checksims.ui;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -123,9 +122,9 @@ public class ChecksimsInitializer extends JPanel
         FileInputOptionAccordionList common = new FileInputOptionAccordionList(f, selectors, "common code", FileInputOptionAccordionList.SingleInput);
         JPanel bot = new JPanel();
         
-        subs.setBackground(new Color(0xA9, 0xB0, 0xB7)); // WPI colors
-        archs.setBackground(new Color(0xA9, 0xB0, 0xB7)); // WPI colors
-        bot.setBackground(new Color(0xA9, 0xB0, 0xB7)); // TODO make constant
+        subs.setBackground(ChecksimsColors.WPI_GREY);
+        archs.setBackground(ChecksimsColors.WPI_GREY);
+        bot.setBackground(ChecksimsColors.WPI_GREY);
 
         bot.add(checkSims);
         

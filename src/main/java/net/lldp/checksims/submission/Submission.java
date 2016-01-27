@@ -98,6 +98,12 @@ public interface Submission extends Comparable<Submission> {
      * @return String consisting of the body of the submission
      */
     String getContentAsString();
+
+    /**
+     * get the total number of lines of code in this submission.
+     * @return
+     */
+    int getLinesOfCode();
     
     /**
      * 
