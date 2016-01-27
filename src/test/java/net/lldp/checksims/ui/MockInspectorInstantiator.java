@@ -14,6 +14,7 @@ public class MockInspectorInstantiator
     @Test
     public void test()
     {
+        boolean synchronizing = false;
         Submission A = new ConcreteSubmission("A_very_long_localized_name", "SUGAR CONTENT");
         Submission B = new ConcreteSubmission("Another Very Long Name", "SUGAR CONTENT");
         
@@ -21,15 +22,18 @@ public class MockInspectorInstantiator
         
         new DetailedResultsInspector().handleResults(ps);
         
-        synchronized(ps)
+        if (synchronizing)
         {
-            try
+            synchronized(ps)
             {
-                ps.wait();
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
+                try
+                {
+                    ps.wait();
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
             }
         }
     }
