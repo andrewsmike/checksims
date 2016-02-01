@@ -1,4 +1,24 @@
-package net.lldp.checksims.ui.compare;
+/*
+ * CDDL HEADER START
+ *
+ * The contents of this file are subject to the terms of the
+ * Common Development and Distribution License (the "License").
+ * You may not use this file except in compliance with the License.
+ *
+ * See LICENSE.txt included in this distribution for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing Covered Code, include this CDDL HEADER in each
+ * file and include the License file at LICENSE.txt.
+ * If applicable, add the following below this CDDL HEADER, with the
+ * fields enclosed by brackets "[]" replaced with your own identifying
+ * information: Portions Copyright [yyyy] [name of copyright owner]
+ *
+ * CDDL HEADER END
+ *
+ * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
+ */
+package net.lldp.checksims.ui.lib;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -14,6 +34,11 @@ import javax.swing.JPanel;
 import net.lldp.checksims.ui.ChecksimsColors;
 import net.lldp.checksims.ui.Util;
 
+/**
+ * A class for drawing nice looking tables in a jpanel
+ * @author ted
+ *
+ */
 public class NiceTable extends JPanel
 {
     private final List<String> createHeading;
@@ -45,11 +70,21 @@ public class NiceTable extends JPanel
         }
     };
     
+    /**
+     * Create a default nice table with a list of column headings, row titles, and the data that goes inside.
+     * @param createHeading a list of Strings that represents headings
+     * @param createRows a list of Strings that represents row titles
+     * @param createTableData a 2D list of strings for the table contents
+     */
     public NiceTable(List<String> createHeading, List<String> createRows, List<List<String>> createTableData)
     {
         this(createHeading, createRows, createTableData, Collections.emptyList());
     }
     
+    /**
+     * Create a nice table with all the default table information, as well as custom row colorings
+     * @param color A list of RowColorings see @RowColor class for details
+     */
     public NiceTable(List<String> createHeading, List<String> createRows, List<List<String>> createTableData, List<RowColor> color)
     {
         this.createHeading = createHeading;
@@ -146,9 +181,32 @@ public class NiceTable extends JPanel
         }
     }
     
+    /**
+     * An interface for representing an object that optionally draws the cells for matching rows
+     * @author ted
+     *
+     */
     public interface RowColor
     {
+        /**
+         * @param row the title of the row
+         * @return whether this RowColor should be drawing the cells in the row
+         */
         boolean matchesRow(String row);
+        
+        /**
+         * Draw a custom cell
+         * @param g the graphics context
+         * @param s the String for the cell
+         * @param x the lower right X coordinate for the text
+         * @param y the lower right Y coordinate for the text
+         * @param fontW the font width
+         * @param fontH the font height
+         * @param cellX the lower right X coordinate for the cell
+         * @param cellY the lower right Y coordinate for the cell
+         * @param w the width of the cell
+         * @param h the height of the cell
+         */
         void drawCell(Graphics g, String s, int x, int y, int fontW, int fontH,  int cellX, int cellY, int w, int h);
     }
 }

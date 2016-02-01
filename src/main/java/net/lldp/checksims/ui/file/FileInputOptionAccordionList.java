@@ -14,9 +14,12 @@ import java.util.TreeSet;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
-public class FileInputOptionAccordionList extends JPanel
+import net.lldp.checksims.ui.help.Direction;
+import net.lldp.checksims.ui.help.DocumentationProviderPanel;
+import net.lldp.checksims.ui.lib.BubbleUpEventDispatcher;
+
+public class FileInputOptionAccordionList extends DocumentationProviderPanel
 {
     public static final boolean SingleInput = false;
     private final SortedSet<FileInputOption> fios;
@@ -43,13 +46,15 @@ public class FileInputOptionAccordionList extends JPanel
         
         click = new JButton(string.toUpperCase() + ": Add a directory or turnin zip file");
         FileInputOptionAccordionList self = this;
-        click.addActionListener(new ActionListener(){
+        click.addMouseListener(new BubbleUpEventDispatcher(this, new ActionListener(){
 
             @Override
             public void actionPerformed(ActionEvent ae)
             {
                 click.setEnabled(multiselect);
-                fios.add(new FileInputOption(self, nextID++, 50, 400));
+                FileInputOption fio = new FileInputOption(self, nextID++, 50, 400);
+                fio.addMouseListener(new BubbleUpEventDispatcher(self));
+                fios.add(fio);
                 Dimension d = parent.getPreferredSize();
                 d.setSize(d.getWidth(), d.getHeight()+50);
                 parent.setPreferredSize(d);
@@ -59,7 +64,7 @@ public class FileInputOptionAccordionList extends JPanel
                 click.setText(string.toUpperCase() + ": Add another directory or turnin zip file");
             }
             
-        });
+        }));
         
         superParent = f;
         parent = selectors;
@@ -105,5 +110,17 @@ public class FileInputOptionAccordionList extends JPanel
             result.add(f);
         }
         return result;
+    }
+
+    @Override
+    public Direction getDialogDirection()
+    {
+        return Direction.NORTH;
+    }
+
+    @Override
+    public String getMessageContents()
+    {
+        return "Use these buttons to select the current class submissions and optionally the archived submissions and common code";
     }
 }

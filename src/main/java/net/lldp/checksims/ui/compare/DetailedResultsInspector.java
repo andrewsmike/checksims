@@ -17,7 +17,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.lldp.checksims.ui.ChecksimsColors;
-import net.lldp.checksims.ui.compare.NiceTable.RowColor;
+import net.lldp.checksims.ui.lib.MaterialPanel;
+import net.lldp.checksims.ui.lib.NiceTable;
+import net.lldp.checksims.ui.lib.Stripe;
+import net.lldp.checksims.ui.lib.NiceTable.RowColor;
 import net.lldp.checksims.ui.results.PairScore;
 import net.lldp.checksims.ui.results.color.ColorGenerationAlgorithm;
 import net.lldp.checksims.ui.results.color.RedWhiteColorGenerationAlgorithm;
@@ -157,60 +160,5 @@ public class DetailedResultsInspector implements ResultsInspector
     public void handleResults(PairScore ps)
     {
         new DetailedResultsInspectorWindow(ps);
-    }
-    
-    private class Stripe
-    {
-        // y = mx + b
-        private final float m;
-        private final int b;
-        private Stripe(float m, int b)
-        {
-            this.m = m;
-            this.b = b;
-        }
-        
-        private int[] boundBy(int x, int y, int w, int h)
-        {
-            int[] result = new int[4];
-            float[][] i = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
-            i[0][1] = y;
-            i[1][0] = x;
-            i[2][1] = y+h;
-            i[3][0] = x+w;
-            i[0][0] = (i[0][1] - b)/m;
-            i[1][1] = (i[1][0] * m) + b;
-            i[2][0] = (i[2][1] - b)/m;
-            i[3][1] = (i[3][0] * m) + b;
-            int k = 0;
-            int p = 0;
-            int m = 4;
-            if (i[0][0] == i[1][0] && i[0][1] == i[1][1])
-            {
-                result[0] = (int) i[0][0];
-                result[1] = (int) i[0][1];
-                k+=2;
-                p+=2;
-            }
-            if (i[2][0] == i[3][0] && i[2][1] == i[3][1])
-            {
-                result[2] = (int) i[2][0];
-                result[3] = (int) i[2][1];
-                m -= 2;
-            }
-            for(;p<m&&k<4;p++)
-            {
-                if (i[p][0] >=x && i[p][0] <= x+w)
-                {
-                    if (i[p][1] >= y && i[p][1] <= y+h)
-                    {
-                        result[k] = (int) i[p][0];
-                        result[k+1] = (int) i[p][1];
-                        k+=2;
-                    }
-                }
-            }
-            return result;
-        }
     }
 }

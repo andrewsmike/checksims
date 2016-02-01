@@ -18,25 +18,36 @@
  *
  * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
  */
-package net.lldp.checksims.ui;
+package net.lldp.checksims.ui.help;
 
-import java.awt.Graphics;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
- * Some generic static method utilities for UI convenience.
+ * A central collection site for all Documentation providers, so that they may all be toggled on and off at once
  * @author ted
  *
  */
-public class Util
+public class DocumentationProviderRegistry
 {
+    private static Set<DocumentationProvider> dps = new HashSet<>();
+    
     /**
-     * Get the length of a string in pixels for a given graphics context
-     * @param s the string
-     * @param g the graphics context
-     * @return a length in pixels
+     * add a documentation provider
+     * @param dp
      */
-    public static int getWidth(String s, Graphics g)
+    public static void addSelf(DocumentationProvider dp)
     {
-        return g.getFontMetrics().stringWidth(s);
+        dps.add(dp);
+    }
+
+    /**
+     * get all documentation providers
+     * @return
+     */
+    public static Set<DocumentationProvider> getAll()
+    {
+        return Collections.unmodifiableSet(dps);
     }
 }

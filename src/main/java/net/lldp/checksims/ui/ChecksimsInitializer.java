@@ -20,9 +20,12 @@
  */
 package net.lldp.checksims.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +45,11 @@ import net.lldp.checksims.algorithm.AlgorithmRegistry;
 import net.lldp.checksims.algorithm.SimilarityDetector;
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.ui.file.FileInputOptionAccordionList;
+import net.lldp.checksims.ui.help.Direction;
+import net.lldp.checksims.ui.help.DocumentationProvider;
+import net.lldp.checksims.ui.help.DocumentationProviderPanel;
+import net.lldp.checksims.ui.help.DocumentationProviderRegistry;
+import net.lldp.checksims.ui.lib.BubbleUpEventDispatcher;
 
 /**
  * 
@@ -102,6 +110,7 @@ public class ChecksimsInitializer extends JPanel
                         new Vector<SimilarityDetector<? extends Percentable>>(
                                 AlgorithmRegistry.getInstance().getSupportedImplementations())); // buy your onahole here baka!
         checkSims = new JButton("Run CheckSims!");
+        JButton helpMode = new JButton("Enable Help");
         
         InputStream stream = ChecksimsInitializer.class.getResourceAsStream("/net/lldp/checksims/ui/logo.png");
         BufferedImage logoIMG = ImageIO.read(stream);
@@ -127,6 +136,31 @@ public class ChecksimsInitializer extends JPanel
         bot.setBackground(ChecksimsColors.WPI_GREY);
 
         bot.add(checkSims);
+        bot.add(helpMode);
+        
+        helpMode.addActionListener(new ActionListener() {
+            boolean toggle = false;
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                toggle = !toggle;
+                for(DocumentationProvider dp : DocumentationProviderRegistry.getAll())
+                {
+                    if (toggle)
+                    {
+                        dp.enableHelpMode();
+                        helpMode.setText("Disable Help");
+                    }
+                    else
+                    {
+                        dp.disableHelpMode();
+                        helpMode.setText("Enable Help");
+                    }
+                }
+                f.revalidate();
+                f.repaint();
+            }
+        });
         
         JPanel UI = new JPanel();
         selectors.setMinimumSize(new Dimension(400, 175));
@@ -136,10 +170,24 @@ public class ChecksimsInitializer extends JPanel
         selectors.add(archs);
         selectors.add(common);
         
-        JPanel algorithm = new JPanel();
+        DocumentationProviderPanel algorithm = new DocumentationProviderPanel() {
+            @Override
+            public Direction getDialogDirection()
+            {
+                return Direction.EAST;
+            }
+
+            @Override
+            public String getMessageContents()
+            {
+                return "Select an Algorithm to use";
+            }
+        };
         algorithm.setMinimumSize(new Dimension(200, 175));
         algorithm.setPreferredSize(new Dimension(200, 175));
-        algorithm.add(list);
+        list.setMinimumSize(new Dimension(200, 175));
+        algorithm.add(list, BorderLayout.CENTER);
+        list.addMouseListener(new BubbleUpEventDispatcher(algorithm));
         
         UI.setLayout(new BoxLayout(UI, BoxLayout.X_AXIS));
         UI.add(algorithm);

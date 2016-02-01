@@ -1,4 +1,4 @@
-package net.lldp.checksims.ui.compare;
+package net.lldp.checksims.ui.lib;
 /**
  * Copyright (c) 2006, Sun Microsystems, Inc
  * All rights reserved.

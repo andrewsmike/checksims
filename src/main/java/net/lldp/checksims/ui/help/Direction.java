@@ -18,25 +18,14 @@
  *
  * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
  */
-package net.lldp.checksims.ui;
-
-import java.awt.Graphics;
+package net.lldp.checksims.ui.help;
 
 /**
- * Some generic static method utilities for UI convenience.
+ * used for Documentation Providers
  * @author ted
  *
  */
-public class Util
+public enum Direction
 {
-    /**
-     * Get the length of a string in pixels for a given graphics context
-     * @param s the string
-     * @param g the graphics context
-     * @return a length in pixels
-     */
-    public static int getWidth(String s, Graphics g)
-    {
-        return g.getFontMetrics().stringWidth(s);
-    }
+    NORTH, EAST, SOUTH, WEST;
 }

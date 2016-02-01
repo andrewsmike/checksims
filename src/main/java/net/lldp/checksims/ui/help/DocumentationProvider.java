@@ -18,25 +18,22 @@
  *
  * Copyright (c) 2014-2016 Ted Meyer, Nicholas DeMarinis, Matthew Heon, and Dolan Murvihill
  */
-package net.lldp.checksims.ui;
+package net.lldp.checksims.ui.help;
 
-import java.awt.Graphics;
+import java.awt.Point;
 
 /**
- * Some generic static method utilities for UI convenience.
+ * A super type for any object which can provide documentation on itself
  * @author ted
  *
  */
-public class Util
+public interface DocumentationProvider
 {
-    /**
-     * Get the length of a string in pixels for a given graphics context
-     * @param s the string
-     * @param g the graphics context
-     * @return a length in pixels
-     */
-    public static int getWidth(String s, Graphics g)
-    {
-        return g.getFontMetrics().stringWidth(s);
-    }
+    Point getLocation();
+    Direction getDialogDirection();
+    String getMessageContents();
+    
+    void enableHelpMode();
+    void disableHelpMode();
+    boolean isHelpEnabled();
 }
