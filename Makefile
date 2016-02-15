@@ -23,10 +23,15 @@ builddir:
 
 userguide: builddir $(LATEX_DIST)/user_guide_only.pdf
 
+guiguide: builddir $(LATEX_DIST)/gui_guide_only.pdf
+
 devguide: builddir $(LATEX_DIST)/developer_guide_only.pdf
 
 $(LATEX_DIST)/user_guide_only.pdf: $(LATEX_SRC)/user_guide_only.ltx $(LATEX_SRC)/user_guide.ltx
 	$(LATEX) $(LATEX_BUILD_ARGS) $(LATEX_SRC)/user_guide_only.ltx
+
+$(LATEX_DIST)/gui_guide_only.pdf: $(LATEX_SRC)/gui_guide_only.ltx $(LATEX_SRC)/gui_guide.ltx
+	$(LATEX) $(LATEX_BUILD_ARGS) $(LATEX_SRC)/gui_guide_only.ltx
 
 $(LATEX_DIST)/developer_guide_only.pdf: $(LATEX_SRC)/developer_guide_only.ltx $(LATEX_SRC)/developer_guide.ltx
 	$(LATEX) $(LATEX_BUILD_ARGS) $(LATEX_SRC)/developer_guide_only.ltx
