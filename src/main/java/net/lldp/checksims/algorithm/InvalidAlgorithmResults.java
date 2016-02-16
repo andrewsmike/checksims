@@ -8,9 +8,11 @@ import net.lldp.checksims.submission.Submission;
 public class InvalidAlgorithmResults extends AlgorithmResults
 {
 
-    public InvalidAlgorithmResults(Pair<Submission, Submission> ab, Percentable a, Percentable b)
+    public InvalidAlgorithmResults(Pair<Submission, Submission> ab,
+                                   Percentable a, Percentable b,
+                                   SimilarityDetector<? extends Percentable> algorithm)
     {
-        super(ab, a, b);
+        super(ab, a, b, algorithm);
     }
 
     @Override

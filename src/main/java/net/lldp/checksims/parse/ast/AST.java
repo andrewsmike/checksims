@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.util.data.Monad;
 import net.lldp.checksims.util.data.Real;
@@ -177,6 +180,32 @@ public class AST implements Percentable
         }
         
         return result;
+    }
+
+    public BiMap<Range, Range> getRegionMappings(AST other)
+    {
+        BiMap<Range,Range> res = HashBiMap.create();
+
+        other.cacheFingerprinting();
+
+        AST match = other.fingerprints.get(hashCode());
+
+        if (equals(match))
+        {
+            res.put(interval, match.interval);
+            return res;
+        }
+
+        for (AST c : asts)
+        {
+            BiMap<Range,Range> subs = c.getRegionMappings(other);
+            for (Range r : subs.keySet())
+            {
+                res.put(r, subs.get(r));
+            }
+        }
+
+        return res;
     }
 
     /**

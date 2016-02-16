@@ -239,7 +239,7 @@ public final class SimilarityMatrix {
         for (int i = 0; i < orderedSubmissions.size(); i++) {
             Submission s = orderedSubmissions.get(i);
             
-            matrix[i][i] = new AlgorithmResults(Pair.of(s, s), Real.ONE, Real.ONE);
+            matrix[i][i] = new AlgorithmResults(Pair.of(s, s), Real.ONE, Real.ONE, null);
         }
 
         // Now go through all the results, and build appropriate two MatrixEntry objects for each
@@ -328,7 +328,7 @@ public final class SimilarityMatrix {
             int xIndex = xSubmissions.indexOf(xSub);
             int yIndex = ySubmissions.indexOf(xSub);
 
-            matrix[xIndex][yIndex] = new AlgorithmResults(Pair.of(xSub, xSub), Real.ONE, Real.ONE);
+            matrix[xIndex][yIndex] = new AlgorithmResults(Pair.of(xSub, xSub), Real.ONE, Real.ONE, null);
         }
 
         // Now iterate through all given algorithm results

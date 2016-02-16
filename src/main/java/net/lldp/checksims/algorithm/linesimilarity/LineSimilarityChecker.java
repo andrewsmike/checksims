@@ -121,7 +121,7 @@ public final class LineSimilarityChecker extends SimilarityDetector<PercentableT
         if(a.equals(b)) {
             a.getDataCopy().stream().forEach((token) -> token.setValid(false));
             b.getDataCopy().stream().forEach((token) -> token.setValid(false));
-            return new AlgorithmResults(ab, a, b);
+            return new AlgorithmResults(ab, a, b, this);
         }
 
         MessageDigest hasher;
@@ -200,7 +200,7 @@ public final class LineSimilarityChecker extends SimilarityDetector<PercentableT
         }
         */
 
-        return new AlgorithmResults(ab, a, b);
+        return new AlgorithmResults(ab, a, b, this);
     }
 
     void addLinesToMap(TokenList lines, Map<String, List<SubmissionLine>> lineDatabase, Submission submitter,

@@ -39,6 +39,7 @@ public class AlgorithmResults {
     public final Percentable percentableB;
     public final Real percentMatchedA;
     public final Real percentMatchedB;
+    public final SimilarityDetector<? extends Percentable> algorithm;
 
     /**
      * Construct results for a pairwise similarity detection algorithm.
@@ -47,8 +48,11 @@ public class AlgorithmResults {
      * @param b Second submission compared
      * @param percentableA Token list from submission A, with matched tokens set invalid
      * @param percentableB Token list from submission B, with matched tokens set invalid
+     * @param algorithm Method used to generate result. Used to inspect similarity regions.
      */
-    public AlgorithmResults(Submission a, Submission b, Percentable percentableA, Percentable percentableB) {
+    public AlgorithmResults(Submission a, Submission b,
+                            Percentable percentableA, Percentable percentableB,
+                            SimilarityDetector<? extends Percentable> algorithm) {
         checkNotNull(a);
         checkNotNull(b);
         checkNotNull(percentableA);
@@ -63,11 +67,18 @@ public class AlgorithmResults {
         this.percentMatchedA = percentableA.getPercentageMatched();
         this.percentMatchedB = percentableB.getPercentageMatched();
         
+        this.algorithm = algorithm;
     }
 
-    public AlgorithmResults(Pair<Submission, Submission> ab, Percentable a, Percentable b)
+    public AlgorithmResults(Pair<Submission, Submission> ab, Percentable a, Percentable b,
+                            SimilarityDetector<? extends Percentable> algorithm)
     {
-        this(ab.getLeft(), ab.getRight(), a, b);
+        this(ab.getLeft(), ab.getRight(), a, b, algorithm);
+    }
+
+    public AlgorithmResults(Submission a, Submission b, Percentable percentableA, Percentable percentableB)
+    {
+        this(a, b, percentableA, percentableB, null);
     }
 
     /**
@@ -133,7 +144,7 @@ public class AlgorithmResults {
 
     public AlgorithmResults inverse()
     {
-        return new AlgorithmResults(b, a, percentableB, percentableA);
+        return new AlgorithmResults(b, a, percentableB, percentableA, algorithm);
     }
 
     public boolean isValid()

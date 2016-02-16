@@ -103,10 +103,10 @@ public final class SmithWaterman extends SimilarityDetector<PercentableTokenList
         
         // Handle a 0-token submission (no similarity)
         if(a.size() == 0 || b.size() == 0) {
-            return new AlgorithmResults(ab, a, b);
+            return new AlgorithmResults(ab, a, b, this);
         } else if(a.equals(b)) {
             PercentableTokenListDecorator aInval = new PercentableTokenListDecorator(TokenList.invalidList(b.size()));
-            return new AlgorithmResults(ab, aInval, aInval);
+            return new AlgorithmResults(ab, aInval, aInval, this);
         }
 
         // Alright, easy cases taken care of. Generate an instance to perform the actual algorithm
@@ -125,7 +125,7 @@ public final class SmithWaterman extends SimilarityDetector<PercentableTokenList
         
         return new AlgorithmResults(ab,
                 new PercentableTokenListDecorator(endLists.getLeft()), 
-                new PercentableTokenListDecorator(endLists.getRight()));
+                new PercentableTokenListDecorator(endLists.getRight()), this);
     }
 
     @Override

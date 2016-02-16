@@ -23,10 +23,14 @@ package net.lldp.checksims.algorithm;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.parse.SubmissionPercentableCalculator;
 import net.lldp.checksims.parse.token.TokenTypeMismatchException;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.data.Range;
 import net.lldp.checksims.util.reflection.NamedInstantiable;
 
 /**
@@ -58,6 +62,19 @@ public abstract class SimilarityDetector<T extends Percentable> implements Named
     public abstract AlgorithmResults detectSimilarity(Pair<Submission, Submission> ab, T rft, T comt)
             throws TokenTypeMismatchException, InternalAlgorithmError;
     
+    /**
+     * Generate a mapping between regions in the documents.
+     *
+     * Only include extremely likely regions.
+     *
+     * @param res Results, with submission pair, to inspect
+     * @return BiMap between extremely interesting regions of res.a to regions of res.b
+     */
+    public BiMap<Range,Range> getRegionMappings(AlgorithmResults res)
+    {
+        return HashBiMap.create();
+    }
+
     @Override
     public String toString()
     {
