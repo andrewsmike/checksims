@@ -24,6 +24,8 @@ package net.lldp.checksims.parse.token.tokenizer;
 import net.lldp.checksims.parse.token.ConcreteToken;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.util.data.Monad;
+import net.lldp.checksims.util.data.Range;
 
 import java.util.Arrays;
 
@@ -64,9 +66,13 @@ public final class LineTokenizer implements Tokenizer {
             return toReturn;
         }
 
-        Arrays.stream(string.split("\n"))
-                .map((str) -> new ConcreteToken(str, TokenType.LINE))
-                .forEachOrdered(toReturn::add);
+        int start = 0;
+
+        for (String l : string.split("\n")) {
+            int len = l.length() + 1;
+            toReturn.add(new ConcreteToken(l, new Range(start, start + len + 1), TokenType.LINE));
+            start += len + 1;
+        }
 
         return toReturn;
     }

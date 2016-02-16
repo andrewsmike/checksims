@@ -24,6 +24,7 @@ package net.lldp.checksims.parse.token.tokenizer;
 import net.lldp.checksims.parse.token.ConcreteToken;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.util.data.Range;
 
 import java.util.Arrays;
 
@@ -60,12 +61,16 @@ public final class WhitespaceTokenizer implements Tokenizer {
 
         TokenList toReturn = new TokenList(this.getType());
 
-        String[] split = string.split("\\s+");
+        int start = 0;
 
-        Arrays.stream(split)
-                .filter((str) -> !str.isEmpty())
-                .map((str) -> new ConcreteToken(str, TokenType.WHITESPACE))
-                .forEachOrdered(toReturn::add);
+        for (String t : string.split("\\s+")) {
+            if (t.isEmpty())
+                continue;
+
+            int len = t.length() + 1; // Err... TODO
+            toReturn.add(new ConcreteToken(t, new Range(start, start + len + 1), TokenType.WHITESPACE));
+            start += len;
+        }
 
         return toReturn;
     }

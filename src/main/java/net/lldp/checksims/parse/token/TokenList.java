@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import net.lldp.checksims.util.data.Range;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -174,7 +176,7 @@ public class TokenList extends PredicatedList<Token> {
     public static TokenList invalidList(int size)
     {
         TokenList result = new TokenList(TokenType.WHITESPACE);
-        Token tok = new ConcreteToken("$$$", TokenType.WHITESPACE);
+        Token tok = new ConcreteToken("$$$", new Range(), TokenType.WHITESPACE);
         while(size --> 0)
         {
             result.add(tok);

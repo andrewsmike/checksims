@@ -23,6 +23,8 @@ package net.lldp.checksims.parse.token;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import net.lldp.checksims.util.data.Range;
+
 /**
  * Concrete implementation of comparable tokens with varying type and validity.
  *
@@ -34,15 +36,17 @@ public final class ConcreteToken implements Token {
     private boolean valid;
     private final int lexeme;
     private final TokenType type;
+    private final Range interval;
 
     /**
      * Construct a valid token with given type.
      *
      * @param token Object the token represents
+     * @param interval Range of token in document
      * @param type Type of token
      */
-    public ConcreteToken(Object token, TokenType type) {
-        this(token, type, true);
+    public ConcreteToken(Object token, Range interval, TokenType type) {
+        this(token, type, interval, true);
     }
 
     /**
@@ -50,15 +54,17 @@ public final class ConcreteToken implements Token {
      *
      * @param token Object the token represents
      * @param type Type of token
+     * @param interval Range of token in document
      * @param valid Whether the token is valid
      */
-    public ConcreteToken(Object token, TokenType type, boolean valid) {
+    public ConcreteToken(Object token, TokenType type, Range interval, boolean valid) {
         checkNotNull(token);
         checkNotNull(type);
 
         this.valid = valid;
         this.type = type;
         this.lexeme = LexemeMap.getLexemeForToken(token);
+        this.interval = interval;
     }
 
     /**
@@ -70,12 +76,26 @@ public final class ConcreteToken implements Token {
      *
      * @param lexeme Lexeme for this token
      * @param type Type of this token
+     * @param interval Range of token in document
      * @param valid Validity of this token
      */
-    private ConcreteToken(int lexeme, TokenType type, boolean valid) {
+    private ConcreteToken(int lexeme, TokenType type, Range interval, boolean valid) {
         this.valid = valid;
         this.type = type;
         this.lexeme = lexeme;
+        this.interval = interval;
+    }
+
+    public ConcreteToken(char token, TokenType character, boolean b) {
+        this(token, character, new Range(), b);
+    }
+
+    public ConcreteToken(char c, TokenType character) {
+        this(c, new Range(), character);
+    }
+
+    public ConcreteToken(String string, TokenType whitespace) {
+        this(string, new Range(), whitespace);
     }
 
     @Override
@@ -112,6 +132,11 @@ public final class ConcreteToken implements Token {
     @Override
     public void setValid(boolean isValid) {
         this.valid = isValid;
+    }
+
+    @Override
+    public Range getTokenRange() {
+        return interval;
     }
 
     /**
@@ -152,6 +177,6 @@ public final class ConcreteToken implements Token {
     public static Token cloneToken(Token token) {
         checkNotNull(token);
 
-        return new ConcreteToken(token.getLexeme(), token.getType(), token.isValid());
+        return new ConcreteToken(token.getLexeme(), token.getType(), token.getTokenRange(), token.isValid());
     }
 }

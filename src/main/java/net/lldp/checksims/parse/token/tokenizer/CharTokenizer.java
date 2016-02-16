@@ -24,6 +24,7 @@ package net.lldp.checksims.parse.token.tokenizer;
 import net.lldp.checksims.parse.token.ConcreteToken;
 import net.lldp.checksims.parse.token.TokenList;
 import net.lldp.checksims.parse.token.TokenType;
+import net.lldp.checksims.util.data.Range;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -64,9 +65,11 @@ public final class CharTokenizer implements Tokenizer {
 
         char[] chars = string.toCharArray();
 
-        Arrays.stream(ArrayUtils.toObject(chars))
-                .map((character) -> new ConcreteToken(character, TokenType.CHARACTER))
-                .forEachOrdered(toReturn::add);
+        int start = 0;
+        for (char c : chars) {
+            toReturn.add(new ConcreteToken(c, new Range(start, start+1), TokenType.CHARACTER));
+            start ++;
+        }
 
         return toReturn;
     }

@@ -21,6 +21,8 @@
 
 package net.lldp.checksims.parse.token;
 
+import net.lldp.checksims.util.data.Range;
+
 /**
  * Interface for Tokens.
  *
@@ -51,6 +53,11 @@ public interface Token {
      * @return String representation of the token
      */
     String getTokenAsString();
+
+    /**
+     * @return Range of token in submission.
+     */
+    Range getTokenRange();
 
     /**
      * @return Whether this token is valid

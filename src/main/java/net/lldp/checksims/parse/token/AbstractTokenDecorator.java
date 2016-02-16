@@ -23,6 +23,8 @@ package net.lldp.checksims.parse.token;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import net.lldp.checksims.util.data.Range;
+
 /**
  * Superclass for decorators for Tokens.
  */
@@ -63,6 +65,11 @@ public abstract class AbstractTokenDecorator implements Token {
     @Override
     public int getLexeme() {
         return wrappedToken.getLexeme();
+    }
+
+    @Override
+    public Range getTokenRange() {
+        return wrappedToken.getTokenRange();
     }
 
     @Override

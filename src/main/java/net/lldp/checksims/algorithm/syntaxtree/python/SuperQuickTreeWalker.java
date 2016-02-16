@@ -23,11 +23,13 @@ package net.lldp.checksims.algorithm.syntaxtree.python;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
 
 import net.lldp.checksims.parse.ast.AST;
 import net.lldp.checksims.parse.ast.python.Python3BaseVisitor;
+import net.lldp.checksims.util.data.Range;
 
 /**
  * 
@@ -56,6 +58,8 @@ public class SuperQuickTreeWalker extends Python3BaseVisitor<AST>
             asts.add(t);
         }
         
-        return new AST(name, asts.stream());
+        Interval range = rn.getSourceInterval();
+        
+        return new AST(name, new Range(range.a, range.b + 1), asts.stream());
     }
 }

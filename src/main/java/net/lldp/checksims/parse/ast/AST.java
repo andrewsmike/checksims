@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.util.data.Monad;
 import net.lldp.checksims.util.data.Real;
+import net.lldp.checksims.util.data.Range;
+
 
 import static net.lldp.checksims.util.data.Monad.unwrap;
 import static net.lldp.checksims.util.data.Monad.wrap;
@@ -50,6 +52,7 @@ public class AST implements Percentable
     private final Integer hashCode;
     private final Map<Integer, AST> fingerprints;
     private final Monad<AST> parent = wrap(null);
+    private final Range interval; // Range of document under this AST.
     
     // scoring heuristics?
     public final Integer size;
@@ -62,7 +65,18 @@ public class AST implements Percentable
      */
     public AST(String tag, AST ... children)
     {
-        this(tag, Arrays.asList(children).stream());
+        this(tag, new Range(), Arrays.asList(children).stream());
+    }
+    
+    /**
+     * Creates an AST with variadic children, document region.
+     * @param tag the name/tag of the AST
+     * @param children an array or variadic number of children
+     * @param interval Range in submission.
+     */
+    public AST(String tag, Range interval, AST ... children)
+    {
+        this(tag, interval, Arrays.asList(children).stream());
     }
     
     /**
@@ -72,10 +86,22 @@ public class AST implements Percentable
      */
     public AST(String tag, Stream<AST> children)
     {
+        this(tag, new Range(), children);
+    }
+    
+    /**
+     * Creates an AST from a stream of children
+     * @param tag the name/tag of the AST
+     * @param children a stream containing children to add to the AST
+     * @param interval Range in submission.
+     */
+    public AST(String tag, Range interval, Stream<AST> children)
+    {
         this.tag = tag;
         this.asts = new HashSet<>();
         this.hashes = new HashSet<>();
         this.fingerprints = new HashMap<>();
+        this.interval = interval;
         
         Monad<Integer> size = wrap(0);
         Monad<Integer> depth = wrap(0);
@@ -153,7 +179,14 @@ public class AST implements Percentable
         return result;
     }
 
-
+    /**
+     * Get the range covered by this AST node.
+     * @return Range of submission covered by AST.
+     */
+    public Range getRange()
+    {
+        return interval;
+    }
 
     /*
      * @see java.lang.Object#hashCode()
