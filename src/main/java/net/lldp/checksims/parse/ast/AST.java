@@ -188,7 +188,26 @@ public class AST implements Percentable
 
         other.cacheFingerprinting();
 
-        AST match = other.fingerprints.get(hashCode());
+        for (AST c : asts)
+        {
+            BiMap<Range,Range> subs = c.getRegionMappings(other.fingerprints);
+            for (Range r : subs.keySet())
+            {
+                res.forcePut(r, subs.get(r));
+            }
+        }
+
+        return res;
+    }
+
+    public BiMap<Range, Range> getRegionMappings(Map<Integer, AST> fpdb)
+    {
+        BiMap<Range,Range> res = HashBiMap.create();
+
+        if (interval.length() < 1)
+            return res;
+
+        AST match = fpdb.get(hashCode());
 
         if (equals(match))
         {
@@ -198,10 +217,10 @@ public class AST implements Percentable
 
         for (AST c : asts)
         {
-            BiMap<Range,Range> subs = c.getRegionMappings(other);
+            BiMap<Range,Range> subs = c.getRegionMappings(fpdb);
             for (Range r : subs.keySet())
             {
-                res.put(r, subs.get(r));
+                res.forcePut(r, subs.get(r));
             }
         }
 

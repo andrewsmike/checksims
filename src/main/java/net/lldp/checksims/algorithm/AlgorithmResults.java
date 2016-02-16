@@ -23,8 +23,11 @@ package net.lldp.checksims.algorithm;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.google.common.collect.BiMap;
+
 import net.lldp.checksims.parse.Percentable;
 import net.lldp.checksims.submission.Submission;
+import net.lldp.checksims.util.data.Range;
 import net.lldp.checksims.util.data.Real;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -93,6 +96,13 @@ public class AlgorithmResults {
      */
     public Real percentMatchedB() {
         return percentMatchedB;
+    }
+
+    /**
+     * @return Mappings from regions in submission A to similar regions in submission B.
+     */
+    public BiMap<Range,Range> getRegionMappings() {
+        return algorithm.getRegionMappings(this);
     }
 
     @Override
